@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: conciliacao-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: conciliacao
+      POSTGRES_PASSWORD: conciliacao
+      POSTGRES_DB: conciliacao
+    ports:
+      - '55432:5432'
+    volumes:
+      - conciliacao-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U conciliacao']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: conciliacao-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@conciliacao.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+
+volumes:
+  conciliacao-postgres-data:

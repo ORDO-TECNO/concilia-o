@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum TransactionType {
+  CREDITO
+  DEBITO
+}
+
+enum ReconciliationStatus {
+  PENDENTE
+  CONCILIADO
+  IGNORADO
+  DUPLICADO
+}
+
+enum CategoryKind {
+  RECEITA
+  DESPESA
+  INVESTIMENTO
+  FINANCIAMENTO
+}
+
+enum ImportSource {
+  CSV
+  OFX
+}
+
+enum ImportStatus {
+  PROCESSANDO
+  CONCLUIDO
+  PARCIAL
+  FALHOU
+}
+
+enum PartyKind {
+  FORNECEDOR
+  CLIENTE
+  AMBOS
+}
+
+enum RuleField {
+  DESCRICAO
+  HISTORICO
+  DOCUMENTO
+}
+
+enum RuleMatchType {
+  CONTAINS
+  REGEX
+  EQUALS
+}
+
+enum CategorySource {
+  MANUAL
+  REGRA
+}
+
+// Linhas-folha do DFC. Grupos, seções e subtotais são derivados em código
+// (packages/shared/src/dfc-structure.ts), não modelados como linhas de banco.
+enum DFCLine {
+  RECEBIMENTOS_CLIENTES
+  OUTRAS_RECEITAS
+  MATERIA_PRIMA
+  FOLHA
+  IMPOSTOS
+  SERVICOS
+  COMERCIAL
+  ADMINISTRATIVO
+  DESPESAS_FIXAS
+  APLICACOES
+  COMPRA_MAQUINAS
+  COMPRA_VEICULOS
+  IMOVEIS
+  VENDA_ATIVOS
+  EMPRESTIMOS
+  PARCELAMENTOS
+  CAPITAL
+  DIVIDENDOS
+}
+
+// ---------- Modelos ----------
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  companies     UserCompany[]
+  refreshTokens RefreshToken[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedBy String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Company {
+  id           String               @id @default(uuid())
+  name         String
+  cnpj         String?              @unique
+  users        UserCompany[]
+  bankAccounts BankAccount[]
+  categories   Category[]
+  parties      Party[]
+  transactions Transaction[]
+  rules        ClassificationRule[]
+  imports      ImportBatch[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("companies")
+}
+
+// Papel do usuário na empresa. String livre no MVP ("ADMIN"); vira RBAC
+// completo com tabela de perfis/permissões na Fase 2.
+model UserCompany {
+  id        String   @id @default(uuid())
+  userId    String
+  companyId String
+  role      String   @default("ADMIN")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, companyId])
+  @@map("user_companies")
+}
+
+model BankAccount {
+  id           String        @id @default(uuid())
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankCode     String?
+  bankName     String?
+  agencia      String?
+  conta        String
+  contaDigito  String?
+  apelido      String?
+  isActive     Boolean       @default(true)
+  transactions Transaction[]
+  imports      ImportBatch[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([companyId, bankCode, agencia, conta])
+  @@map("bank_accounts")
+}
+
+model Category {
+  id           String               @id @default(uuid())
+  companyId    String
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  parentId     String?
+  parent       Category?            @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children     Category[]           @relation("CategoryTree")
+  name         String
+  kind         CategoryKind
+  // Nulo em categorias "pai" (agrupadoras); obrigatório em categorias-folha.
+  dfcLine      DFCLine?
+  isActive     Boolean              @default(true)
+  transactions Transaction[]
+  rules        ClassificationRule[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([companyId, parentId])
+  @@map("categories")
+}
+
+model Party {
+  id           String               @id @default(uuid())
+  companyId    String
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name         String
+  document     String?
+  kind         PartyKind            @default(AMBOS)
+  transactions Transaction[]
+  rules        ClassificationRule[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([companyId, name])
+  @@unique([companyId, document])
+  @@map("parties")
+}
+
+model ImportBatch {
+  id                    String              @id @default(uuid())
+  companyId             String
+  company               Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankAccountId         String
+  bankAccount           BankAccount         @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  source                ImportSource
+  originalFileName      String
+  rawContent            String
+  status                ImportStatus        @default(PROCESSANDO)
+  parsedBankName        String?
+  parsedAgencia         String?
+  parsedConta           String?
+  statementStartDate    DateTime?           @db.Date
+  statementEndDate      DateTime?           @db.Date
+  statementStartBalance Decimal?            @db.Decimal(14, 2)
+  statementEndBalance   Decimal?            @db.Decimal(14, 2)
+  totalRecords          Int                 @default(0)
+  newRecords            Int                 @default(0)
+  duplicateRecords      Int                 @default(0)
+  ignoredRecords        Int                 @default(0)
+  errorMessage          String?
+  periods               ImportBatchPeriod[]
+  transactions          Transaction[]
+  createdAt             DateTime            @default(now())
+
+  @@map("import_batches")
+}
+
+model ImportBatchPeriod {
+  id             String      @id @default(uuid())
+  importBatchId  String
+  importBatch    ImportBatch @relation(fields: [importBatchId], references: [id], onDelete: Cascade)
+  year           Int
+  month          Int
+  recordCount    Int         @default(0)
+  openingBalance Decimal?    @db.Decimal(14, 2)
+  closingBalance Decimal?    @db.Decimal(14, 2)
+
+  @@unique([importBatchId, year, month])
+  @@map("import_batch_periods")
+}
+
+model Transaction {
+  id              String               @id @default(uuid())
+  companyId       String
+  company         Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankAccountId   String
+  bankAccount     BankAccount          @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  importBatchId   String?
+  importBatch     ImportBatch?         @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+  date            DateTime             @db.Date
+  settlementDate  DateTime?            @db.Date
+  description     String
+  historico       String?
+  document        String?
+  // Positivo para CREDITO, negativo para DEBITO — soma direta alimenta o DFC.
+  amount          Decimal              @db.Decimal(14, 2)
+  type            TransactionType
+  balanceAfter    Decimal?             @db.Decimal(14, 2)
+  competenceYear  Int
+  competenceMonth Int
+  origin          ImportSource
+  fitId           String?
+  dedupeHash      String
+  status          ReconciliationStatus @default(PENDENTE)
+  categoryId      String?
+  category        Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  partyId         String?
+  party           Party?               @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  categorySource  CategorySource?
+  appliedRuleId   String?
+  appliedRule     ClassificationRule?  @relation(fields: [appliedRuleId], references: [id], onDelete: SetNull)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@unique([bankAccountId, fitId])
+  @@unique([bankAccountId, dedupeHash])
+  @@index([companyId, competenceYear, competenceMonth])
+  @@index([companyId, status])
+  @@index([companyId, categoryId])
+  @@map("transactions")
+}
+
+model ClassificationRule {
+  id           String        @id @default(uuid())
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name         String
+  field        RuleField     @default(DESCRICAO)
+  matchType    RuleMatchType @default(CONTAINS)
+  pattern      String
+  categoryId   String?
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  partyId      String?
+  party        Party?        @relation(fields: [partyId], references: [id], onDelete: SetNull)
+  priority     Int           @default(0)
+  isActive     Boolean       @default(true)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([companyId, isActive, priority])
+  @@map("classification_rules")
+}
