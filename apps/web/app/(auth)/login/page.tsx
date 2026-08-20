@@ -3,11 +3,8 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LogIn } from 'lucide-react';
 import { useAuth, extractErrorMessage } from '@/lib/auth/auth-context';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,51 +29,64 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-lg text-foreground">Entrar</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Conciliação Bancária Inteligente
-          </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@empresa.com"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? 'Entrando...' : 'Entrar'}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Não tem conta?{' '}
-            <Link href="/register" className="text-primary underline-offset-4 hover:underline">
-              Criar conta
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+    <div className="w-full">
+      <div className="rounded-3xl border border-white/10 bg-neutral p-7 shadow-2xl shadow-black/30">
+        <h2 className="text-xl font-bold tracking-tight text-neutral-content">Bem-vindo de volta</h2>
+        <p className="mt-1 text-sm text-neutral-content/60">Entre para acessar sua conciliação</p>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div className="form-control">
+            <label className="label py-1" htmlFor="email">
+              <span className="label-text text-xs font-medium text-neutral-content/60">E-mail</span>
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="voce@empresa.com"
+              className="input input-bordered w-full border-white/15 bg-white/5 text-neutral-content placeholder:text-neutral-content/30 focus:input-primary"
+              autoComplete="email"
+            />
+          </div>
+          <div className="form-control">
+            <label className="label py-1" htmlFor="password">
+              <span className="label-text text-xs font-medium text-neutral-content/60">Senha</span>
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="input input-bordered w-full border-white/15 bg-white/5 text-neutral-content placeholder:text-neutral-content/30 focus:input-primary"
+              autoComplete="current-password"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-lg bg-error/10 px-3 py-2 text-sm text-error">{error}</div>
+          )}
+
+          <button type="submit" className="btn btn-primary w-full gap-2 rounded-full" disabled={submitting}>
+            {submitting ? (
+              <span className="loading loading-spinner loading-sm" />
+            ) : (
+              <LogIn className="h-4 w-4" />
+            )}
+            {submitting ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-neutral-content/60">
+          Não tem conta?{' '}
+          <Link href="/register" className="link link-primary font-medium no-underline">
+            Criar conta
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

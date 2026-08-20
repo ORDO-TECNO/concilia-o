@@ -41,11 +41,13 @@ export function DfcPivotTable({ report }: { report: DFCReport }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border bg-card">
+    <div className="overflow-hidden rounded-xl border border-base-300 bg-card shadow-sm">
+      <div className="h-1 w-full bg-gradient-to-r from-primary via-primary to-accent" />
+      <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b bg-muted/40">
-            <th className="sticky left-0 min-w-[260px] bg-muted/40 px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+            <th className="sticky left-0 min-w-[260px] bg-muted/40 px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Linha
             </th>
             {MONTH_LABELS.map((m) => (
@@ -99,8 +101,8 @@ export function DfcPivotTable({ report }: { report: DFCReport }) {
 
                         {sectionOpen &&
                           section.lines.map((line) => (
-                            <tr key={line.line} className="border-b last:border-b-0">
-                              <td className="sticky left-0 bg-card py-1 pl-12 pr-3 text-xs text-muted-foreground">
+                            <tr key={line.line} className="group border-b last:border-b-0 hover:bg-base-200/50">
+                              <td className="sticky left-0 bg-card py-1 pl-12 pr-3 text-xs text-muted-foreground group-hover:bg-base-200/50">
                                 {line.label}
                               </td>
                               {line.monthly.map((v, i) => (
@@ -142,6 +144,7 @@ export function DfcPivotTable({ report }: { report: DFCReport }) {
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

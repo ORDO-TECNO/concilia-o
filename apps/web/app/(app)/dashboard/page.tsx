@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { ArrowDownRight, ArrowUpRight, Scale } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useDashboardSummary } from '@/lib/hooks/use-dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,60 @@ import { MonthlyBalanceChart } from '@/components/dashboard/monthly-balance-char
 import { CategoryPieChart } from '@/components/dashboard/category-pie-chart';
 import { TopCategoriesList } from '@/components/dashboard/top-categories-list';
 import { formatBRL } from '@conciliacao/shared';
+
+function KpiCard({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  tone: 'success' | 'destructive' | 'primary';
+}) {
+  const toneClasses = {
+    success: 'bg-success/10 text-success',
+    destructive: 'bg-destructive/10 text-destructive',
+    primary: 'bg-primary/10 text-primary',
+  }[tone];
+
+  return (
+    <div className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${toneClasses}`}>
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+      <p className="mt-3 text-2xl font-semibold tracking-tight text-base-content">{value}</p>
+    </div>
+  );
+}
+
+function ChartCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="border-base-300">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold text-base-content">{title}</CardTitle>
+        {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
+function ChartSkeleton() {
+  return <div className="skeleton h-[240px] w-full rounded-lg bg-base-200" />;
+}
 
 export default function DashboardPage() {
   const { currentCompanyId } = useAuth();
@@ -28,9 +83,12 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <div>
+          <h1 className="text-xl font-semibold text-base-content">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Panorama financeiro do ano selecionado</p>
+        </div>
         <div className="w-32">
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
             <SelectTrigger>
@@ -47,71 +105,38 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
+      {isLoading && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton h-[104px] w-full rounded-xl bg-base-200" />
+          ))}
+        </div>
+      )}
 
       {data && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Receitas no ano</CardTitle>
-              </CardHeader>
-              <CardContent className="text-2xl font-semibold text-success">
-                {formatBRL(totals?.receitas ?? 0)}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Despesas no ano</CardTitle>
-              </CardHeader>
-              <CardContent className="text-2xl font-semibold text-destructive">
-                {formatBRL(totals?.despesas ?? 0)}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Saldo no ano</CardTitle>
-              </CardHeader>
-              <CardContent className="text-2xl font-semibold">{formatBRL(totals?.saldo ?? 0)}</CardContent>
-            </Card>
+            <KpiCard label="Receitas no ano" value={formatBRL(totals?.receitas ?? 0)} icon={ArrowUpRight} tone="success" />
+            <KpiCard label="Despesas no ano" value={formatBRL(totals?.despesas ?? 0)} icon={ArrowDownRight} tone="destructive" />
+            <KpiCard label="Saldo no ano" value={formatBRL(totals?.saldo ?? 0)} icon={Scale} tone="primary" />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Receitas x Despesas por mês</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MonthlyFlowChart data={data.monthly} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Saldo mensal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MonthlyBalanceChart data={data.monthly} />
-              </CardContent>
-            </Card>
+            <ChartCard title="Receitas x Despesas por mês" subtitle="Comparativo mensal do fluxo classificado">
+              <MonthlyFlowChart data={data.monthly} />
+            </ChartCard>
+            <ChartCard title="Saldo mensal" subtitle="Resultado líquido mês a mês">
+              <MonthlyBalanceChart data={data.monthly} />
+            </ChartCard>
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribuição por categoria</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CategoryPieChart data={data.categoryDistribution} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Top 5 categorias</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TopCategoriesList data={data.topCategories} />
-              </CardContent>
-            </Card>
+            <ChartCard title="Distribuição por categoria" subtitle="Participação de cada categoria no total">
+              <CategoryPieChart data={data.categoryDistribution} />
+            </ChartCard>
+            <ChartCard title="Top 5 categorias" subtitle="Maiores volumes classificados no ano">
+              <TopCategoriesList data={data.topCategories} />
+            </ChartCard>
           </div>
         </>
       )}

@@ -2,7 +2,7 @@
 
 import { formatBRL } from '@conciliacao/shared';
 
-const BAR_COLOR = '#2a78d6';
+const BAR_COLORS = ['#0D9488', '#4F46E5', '#D97706', '#E11D48', '#0284C7'];
 
 export function TopCategoriesList({ data }: { data: { name: string; total: number }[] }) {
   if (data.length === 0) {
@@ -13,7 +13,7 @@ export function TopCategoriesList({ data }: { data: { name: string; total: numbe
 
   return (
     <div className="space-y-3">
-      {data.map((d) => (
+      {data.map((d, i) => (
         <div key={d.name} className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium">{d.name}</span>
@@ -21,8 +21,8 @@ export function TopCategoriesList({ data }: { data: { name: string; total: numbe
           </div>
           <div className="h-2 rounded-full bg-muted">
             <div
-              className="h-2 rounded-full"
-              style={{ width: `${(d.total / max) * 100}%`, backgroundColor: BAR_COLOR }}
+              className="h-2 rounded-full transition-all"
+              style={{ width: `${(d.total / max) * 100}%`, backgroundColor: BAR_COLORS[i % BAR_COLORS.length] }}
             />
           </div>
         </div>

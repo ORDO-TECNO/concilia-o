@@ -3,10 +3,10 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { formatBRL, MONTH_LABELS } from '@conciliacao/shared';
 
-const COLOR_POSITIVE = '#2a78d6';
-const COLOR_NEGATIVE = '#e34948';
-const COLOR_GRID = '#e1e0d9';
-const COLOR_AXIS = '#898781';
+const COLOR_POSITIVE = 'hsl(var(--primary))';
+const COLOR_NEGATIVE = 'hsl(var(--destructive))';
+const COLOR_GRID = 'hsl(var(--border))';
+const COLOR_AXIS = 'hsl(var(--muted-foreground))';
 
 export function MonthlyBalanceChart({ data }: { data: { month: number; saldo: number }[] }) {
   const chartData = data.map((d) => ({ month: MONTH_LABELS[d.month - 1].slice(0, 3), saldo: d.saldo }));
@@ -23,7 +23,16 @@ export function MonthlyBalanceChart({ data }: { data: { month: number; saldo: nu
           tickFormatter={(v) => formatBRL(v)}
           width={90}
         />
-        <Tooltip formatter={(value: number) => [formatBRL(value), 'Saldo']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+        <Tooltip
+          formatter={(value: number) => [formatBRL(value), 'Saldo']}
+          contentStyle={{
+            fontSize: 12,
+            borderRadius: 10,
+            border: '1px solid hsl(var(--border))',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
+          }}
+        />
         <Bar dataKey="saldo" radius={[3, 3, 3, 3]} maxBarSize={28}>
           {chartData.map((d, i) => (
             <Cell key={i} fill={d.saldo >= 0 ? COLOR_POSITIVE : COLOR_NEGATIVE} />

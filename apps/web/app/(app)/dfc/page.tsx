@@ -29,7 +29,10 @@ export default function DfcPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Demonstração do Fluxo de Caixa (DFC)</h1>
+        <div>
+          <h1 className="text-xl font-semibold text-base-content">Demonstração do Fluxo de Caixa</h1>
+          <p className="text-sm text-muted-foreground">DFC consolidada por mês e categoria</p>
+        </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
             Exportar CSV
@@ -54,12 +57,13 @@ export default function DfcPage() {
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <div className="flex items-start gap-2 rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-xs text-muted-foreground">
+        <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
         Saldo inicial e final representam o acumulado do fluxo de caixa classificado dentro do ano
-        selecionado (não o saldo bancário real da conta, que depende dos extratos importados).
-      </p>
+        selecionado (não é o saldo bancário real da conta, que depende dos extratos importados).
+      </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
+      {isLoading && <div className="skeleton h-96 w-full rounded-xl bg-base-200" />}
       {report && <DfcPivotTable report={report} />}
     </div>
   );

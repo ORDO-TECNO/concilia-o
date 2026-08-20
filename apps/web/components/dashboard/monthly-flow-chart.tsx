@@ -3,10 +3,10 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { formatBRL, MONTH_LABELS } from '@conciliacao/shared';
 
-const COLOR_RECEITAS = '#0ca30c';
-const COLOR_DESPESAS = '#d03b3b';
-const COLOR_GRID = '#e1e0d9';
-const COLOR_AXIS = '#898781';
+const COLOR_RECEITAS = 'hsl(var(--success))';
+const COLOR_DESPESAS = 'hsl(var(--destructive))';
+const COLOR_GRID = 'hsl(var(--border))';
+const COLOR_AXIS = 'hsl(var(--muted-foreground))';
 
 export function MonthlyFlowChart({
   data,
@@ -33,7 +33,13 @@ export function MonthlyFlowChart({
         />
         <Tooltip
           formatter={(value: number, name: string) => [formatBRL(Math.abs(value)), name]}
-          contentStyle={{ fontSize: 12, borderRadius: 8 }}
+          contentStyle={{
+            fontSize: 12,
+            borderRadius: 10,
+            border: '1px solid hsl(var(--border))',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
+          }}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         <Bar dataKey="Receitas" fill={COLOR_RECEITAS} radius={[3, 3, 0, 0]} maxBarSize={28} />

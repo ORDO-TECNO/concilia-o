@@ -3,8 +3,8 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatBRL } from '@conciliacao/shared';
 
-const CATEGORICAL_COLORS = ['#2a78d6', '#1baf7a', '#eda100', '#008300', '#4a3aa7', '#e34948'];
-const OUTROS_COLOR = '#c3c2b7';
+const CATEGORICAL_COLORS = ['#0D9488', '#4F46E5', '#D97706', '#E11D48', '#0284C7', '#7C3AED'];
+const OUTROS_COLOR = 'hsl(var(--muted-foreground) / 0.5)';
 
 export function CategoryPieChart({ data }: { data: { name: string; value: number }[] }) {
   if (data.length === 0) {
@@ -23,6 +23,8 @@ export function CategoryPieChart({ data }: { data: { name: string; value: number
           paddingAngle={2}
           label={({ name, percent }) => `${name} (${Math.round(percent * 100)}%)`}
           labelLine={false}
+          fontSize={11}
+          fill="hsl(var(--muted-foreground))"
         >
           {data.map((d, i) => (
             <Cell
@@ -31,8 +33,17 @@ export function CategoryPieChart({ data }: { data: { name: string; value: number
             />
           ))}
         </Pie>
-        <Tooltip formatter={(value: number) => formatBRL(value)} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Tooltip
+          formatter={(value: number) => formatBRL(value)}
+          contentStyle={{
+            fontSize: 12,
+            borderRadius: 10,
+            border: '1px solid hsl(var(--border))',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
+          }}
+        />
+        <Legend wrapperStyle={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }} />
       </PieChart>
     </ResponsiveContainer>
   );
