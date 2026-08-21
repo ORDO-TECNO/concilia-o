@@ -1,69 +1,92 @@
-import { ShieldCheck, TrendingUp, FileBarChart2 } from 'lucide-react';
+'use client';
 
-const HIGHLIGHTS = [
-  {
-    icon: ShieldCheck,
-    title: 'Conciliação automática',
-    desc: 'Importe CSV/OFX e deixe as regras classificarem os lançamentos por você.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Visão clara do caixa',
-    desc: 'Dashboards e DFC atualizados a cada importação, sem planilhas manuais.',
-  },
-  {
-    icon: FileBarChart2,
-    title: 'Relatórios prontos para decisão',
-    desc: 'Exporte a DFC em CSV/Excel com a estrutura contábil já organizada.',
-  },
+import * as React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { TrendingUp, ChevronDown } from 'lucide-react';
+import { AuthMarketing } from '@/components/auth/auth-marketing';
+
+const NAV_LINKS = [
+  { href: '#funcionalidades', label: 'Funcionalidades' },
+  { href: '#roadmap', label: 'Roadmap' },
 ];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isRegister = pathname === '/register';
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  React.useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary px-4 py-10">
-      {/* base field */}
-      <div className="absolute inset-0 bg-grid" />
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/10 to-primary/60" />
+    <div className="min-h-screen bg-base-100">
+      <header className="sticky top-0 z-50 border-b border-base-300 bg-base-100">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-content shadow-md shadow-primary/30">
+              <TrendingUp className="h-4 w-4" />
+            </span>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-base-content">Ordo</p>
+              <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
+            </div>
+          </div>
 
-      {/* drifting glow blobs */}
-      <div className="animate-blob-a pointer-events-none absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-accent/40 blur-[110px]" />
-      <div className="animate-blob-b pointer-events-none absolute -bottom-40 -right-24 h-[460px] w-[460px] rounded-full bg-secondary/50 blur-[120px]" />
-
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
-        <div className="w-full max-w-lg text-center lg:text-left">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary-content/25 bg-primary-content/10 px-3 py-1 font-mono text-[11px] font-medium tracking-wide text-primary-content backdrop-blur-sm">
-            // conciliação bancária
-          </span>
-
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-primary-content sm:text-5xl">
-            Descubra quando seu
-            <br className="hidden sm:block" /> caixa fica no azul.
-          </h1>
-          <p className="mx-auto mt-4 max-w-md text-sm text-primary-content/80 lg:mx-0">
-            Importe extratos, classifique automaticamente e acompanhe a DFC da sua empresa —
-            tudo em um só lugar.
-          </p>
-
-          <div className="mt-8 hidden flex-col gap-3 lg:flex">
-            {HIGHLIGHTS.map((h) => (
-              <div
-                key={h.title}
-                className="flex items-center gap-3 rounded-2xl border border-primary-content/15 bg-primary-content/5 px-4 py-3 backdrop-blur-sm"
+          <nav className="hidden items-center gap-6 md:flex">
+            {NAV_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-base-content"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-content/15 text-primary-content">
-                  <h.icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-primary-content">{h.title}</p>
-                  <p className="text-xs text-primary-content/65">{h.desc}</p>
-                </div>
-              </div>
+                {link.label}
+              </a>
             ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href={isRegister ? '/login' : '/register'}
+              className="hidden text-sm font-medium text-muted-foreground hover:text-base-content sm:inline"
+            >
+              {isRegister ? 'Já tem conta?' : 'Não tem conta?'}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="btn btn-primary btn-sm gap-1.5 rounded-full px-4"
+              aria-expanded={open}
+            >
+              {isRegister ? 'Criar conta' : 'Entrar'}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+            </button>
           </div>
         </div>
+      </header>
 
-        <div className="w-full max-w-sm shrink-0">{children}</div>
-      </div>
+      {open && (
+        <>
+          <div
+            className="fixed inset-x-0 top-16 bottom-0 z-40 bg-black/40 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+          />
+          <div className="fixed right-4 top-16 z-50 mt-3 w-[calc(100%-2rem)] max-w-sm sm:right-6">
+            {children}
+          </div>
+        </>
+      )}
+
+      <AuthMarketing onOpenAuth={() => setOpen(true)} />
     </div>
   );
 }

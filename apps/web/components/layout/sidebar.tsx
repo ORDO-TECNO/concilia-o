@@ -32,7 +32,7 @@ export function Sidebar() {
           <TrendingUp className="h-4 w-4" />
         </span>
         <div className="leading-tight">
-          <p className="text-sm font-semibold text-base-content">Conciliação</p>
+          <p className="text-sm font-semibold text-base-content">Ordo</p>
           <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
         </div>
       </div>

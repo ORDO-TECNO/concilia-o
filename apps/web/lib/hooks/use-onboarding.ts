@@ -8,7 +8,7 @@ const STORAGE_PREFIX = 'conciliacao-onboarding-seen-';
 export const ONBOARDING_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Bem-vindo à Conciliação Bancária Inteligente',
+    title: 'Bem-vindo ao Ordo',
     description:
       'Em poucos passos você importa extratos, classifica lançamentos e acompanha a DFC da sua empresa. Vamos mostrar por onde começar.',
   },

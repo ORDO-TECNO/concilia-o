@@ -1,0 +1,553 @@
+'use client';
+
+import * as React from 'react';
+import { usePathname } from 'next/navigation';
+import {
+  ShieldCheck,
+  TrendingUp,
+  FileBarChart2,
+  Check,
+  ChevronDown,
+  FileUp,
+  Building2,
+  Landmark,
+} from 'lucide-react';
+
+const HIGHLIGHTS = [
+  {
+    icon: ShieldCheck,
+    title: 'Conciliação automática',
+    desc: 'Importe CSV/OFX e deixe as regras classificarem os lançamentos por você.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Visão clara do caixa',
+    desc: 'Dashboards e DFC atualizados a cada importação, sem planilhas manuais.',
+  },
+  {
+    icon: FileBarChart2,
+    title: 'Relatórios prontos para decisão',
+    desc: 'Exporte a DFC em CSV/Excel com a estrutura contábil já organizada.',
+  },
+];
+
+const ROADMAP = [
+  'IA de sugestão por similaridade',
+  'Import de OFC e XLSX',
+  'RBAC completo por empresa',
+  'Auditoria e versionamento',
+  'Centro de custo e projeto',
+  'Conexão com Power BI',
+];
+
+function Reveal({
+  id,
+  className = '',
+  children,
+}: {
+  id?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      id={id}
+      className={`reveal-wipe scroll-mt-24 ${visible ? 'is-visible' : ''} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function MockupFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-2xl shadow-black/15">
+      <div className="flex items-center gap-1.5 border-b border-base-300 bg-base-200 px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-destructive/40" />
+        <span className="h-2.5 w-2.5 rounded-full bg-warning/50" />
+        <span className="h-2.5 w-2.5 rounded-full bg-success/50" />
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function ImportMockup() {
+  return (
+    <MockupFrame>
+      <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-base-300 bg-base-200/50 px-6 py-8 text-center">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <FileUp className="h-5 w-5" />
+        </span>
+        <p className="text-sm font-medium text-base-content">extrato_agosto.ofx</p>
+        <div className="h-1.5 w-full max-w-[220px] overflow-hidden rounded-full bg-base-300">
+          <div className="h-full w-full rounded-full bg-primary" />
+        </div>
+        <div className="flex gap-4 text-xs">
+          <span className="font-semibold text-success">128 importados</span>
+          <span className="text-muted-foreground">4 duplicados ignorados</span>
+        </div>
+      </div>
+    </MockupFrame>
+  );
+}
+
+const RULES = [
+  { cond: "descrição contém 'ENERGISA'", cat: 'Utilidades › Energia' },
+  { cond: "descrição contém 'FOLHA'", cat: 'Pessoal › Salários' },
+  { cond: "descrição contém 'PIX RECEBIDO'", cat: 'Receitas › Vendas' },
+];
+
+function RulesMockup() {
+  return (
+    <MockupFrame>
+      <div className="space-y-2">
+        {RULES.map((r) => (
+          <div
+            key={r.cond}
+            className="flex items-center justify-between gap-3 rounded-lg border border-base-300 bg-base-200/40 px-3 py-2.5 text-xs"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-base-content/70">SE {r.cond}</p>
+              <p className="mt-0.5 truncate font-medium text-base-content">→ {r.cat}</p>
+            </div>
+            <span className="badge badge-success badge-sm shrink-0 text-success-content">Ativa</span>
+          </div>
+        ))}
+      </div>
+    </MockupFrame>
+  );
+}
+
+const GRID_ROWS = [
+  { date: '12/08', desc: 'ENERGISA DISTRIB.', cat: 'Energia', value: '-R$ 842,10' },
+  { date: '12/08', desc: 'PIX RECEBIDO - CLIENTE X', cat: 'Vendas', value: '+R$ 3.200,00' },
+  { date: '13/08', desc: 'TARIFA MANUTENÇÃO CC', cat: '—', value: '-R$ 29,90' },
+];
+
+function GridMockup() {
+  return (
+    <MockupFrame>
+      <div className="overflow-hidden rounded-lg border border-base-300">
+        <table className="w-full text-xs">
+          <thead className="bg-base-200 text-muted-foreground">
+            <tr>
+              <th className="px-3 py-2 text-left font-medium">Data</th>
+              <th className="px-3 py-2 text-left font-medium">Descrição</th>
+              <th className="px-3 py-2 text-left font-medium">Categoria</th>
+              <th className="px-3 py-2 text-right font-medium">Valor</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-base-300">
+            {GRID_ROWS.map((r) => (
+              <tr key={r.desc}>
+                <td className="px-3 py-2 text-muted-foreground">{r.date}</td>
+                <td className="max-w-[140px] truncate px-3 py-2 text-base-content">{r.desc}</td>
+                <td className="px-3 py-2">
+                  {r.cat === '—' ? (
+                    <span className="badge badge-outline badge-sm">pendente</span>
+                  ) : (
+                    <span className="badge badge-ghost badge-sm">{r.cat}</span>
+                  )}
+                </td>
+                <td
+                  className={`px-3 py-2 text-right font-medium ${
+                    r.value.startsWith('+') ? 'text-success' : 'text-base-content'
+                  }`}
+                >
+                  {r.value}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </MockupFrame>
+  );
+}
+
+const DFC_ROWS = [
+  { label: 'Operacional', values: ['12.400', '9.850', '14.220'], bold: true },
+  { label: 'Recebimentos de clientes', values: ['18.900', '15.200', '21.000'], bold: false },
+  { label: 'Pagamentos a fornecedores', values: ['-6.500', '-5.350', '-6.780'], bold: false },
+  { label: 'Investimento', values: ['-2.100', '0', '-800'], bold: true },
+  { label: 'Financiamento', values: ['-1.200', '-1.200', '-1.200'], bold: true },
+];
+
+function DfcMockup() {
+  return (
+    <MockupFrame>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[320px] text-xs">
+          <thead className="text-muted-foreground">
+            <tr>
+              <th className="px-2 py-1.5 text-left font-medium">Linha</th>
+              <th className="px-2 py-1.5 text-right font-medium">Jun</th>
+              <th className="px-2 py-1.5 text-right font-medium">Jul</th>
+              <th className="px-2 py-1.5 text-right font-medium">Ago</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-base-300">
+            {DFC_ROWS.map((r) => (
+              <tr key={r.label}>
+                <td
+                  className={`px-2 py-1.5 ${
+                    r.bold ? 'font-semibold text-base-content' : 'pl-4 text-muted-foreground'
+                  }`}
+                >
+                  {r.label}
+                </td>
+                {r.values.map((v, i) => (
+                  <td
+                    key={i}
+                    className={`px-2 py-1.5 text-right ${r.bold ? 'font-semibold' : ''} ${
+                      v.startsWith('-') ? 'text-destructive' : 'text-base-content'
+                    }`}
+                  >
+                    {v}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </MockupFrame>
+  );
+}
+
+function DashboardMockup() {
+  const bars = [40, 65, 50, 80, 55, 90, 70];
+  return (
+    <MockupFrame>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-lg border border-base-300 bg-base-200/40 p-2.5">
+          <p className="text-[10px] text-muted-foreground">Entradas</p>
+          <p className="text-sm font-semibold text-success">R$ 42,1k</p>
+        </div>
+        <div className="rounded-lg border border-base-300 bg-base-200/40 p-2.5">
+          <p className="text-[10px] text-muted-foreground">Saídas</p>
+          <p className="text-sm font-semibold text-destructive">R$ 28,4k</p>
+        </div>
+        <div className="rounded-lg border border-base-300 bg-base-200/40 p-2.5">
+          <p className="text-[10px] text-muted-foreground">Saldo</p>
+          <p className="text-sm font-semibold text-primary">R$ 13,7k</p>
+        </div>
+      </div>
+      <div className="mt-3 flex h-20 items-end gap-1.5 rounded-lg border border-base-300 bg-base-200/30 p-3">
+        {bars.map((h, i) => (
+          <div key={i} className="flex-1 rounded-t bg-primary/70" style={{ height: `${h}%` }} />
+        ))}
+      </div>
+    </MockupFrame>
+  );
+}
+
+function CadastrosMockup() {
+  return (
+    <MockupFrame>
+      <div className="space-y-2.5 text-xs">
+        <div className="flex items-center gap-2 font-semibold text-base-content">
+          <Building2 className="h-3.5 w-3.5 text-primary" /> Minha Empresa LTDA
+        </div>
+        <div className="ml-5 space-y-1.5 border-l border-base-300 pl-3">
+          <div className="flex items-center gap-2 text-base-content/80">
+            <Landmark className="h-3.5 w-3.5 text-secondary" /> Banco do Brasil · CC 12345-6
+          </div>
+          <div className="flex items-center gap-2 text-base-content/80">
+            <Landmark className="h-3.5 w-3.5 text-secondary" /> Itaú · CC 98765-4
+          </div>
+        </div>
+        <div className="ml-5 flex flex-wrap gap-1.5 border-l border-base-300 pl-3">
+          {['Receitas', 'Pessoal', 'Utilidades', 'Impostos', 'Investimentos'].map((c) => (
+            <span key={c} className="badge badge-ghost badge-sm">
+              {c}
+            </span>
+          ))}
+        </div>
+      </div>
+    </MockupFrame>
+  );
+}
+
+function FeatureSection({
+  id,
+  eyebrow,
+  title,
+  description,
+  bullets,
+  reverse,
+  mockup,
+}: {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  reverse?: boolean;
+  mockup: React.ReactNode;
+}) {
+  return (
+    <Reveal id={id} className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:gap-16">
+      <div className={reverse ? 'lg:order-2' : ''}>
+        <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+          {eyebrow}
+        </span>
+        <h3 className="mt-4 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">{title}</h3>
+        <p className="mt-3 text-base text-muted-foreground">{description}</p>
+        <ul className="mt-5 space-y-2">
+          {bullets.map((b) => (
+            <li key={b} className="flex items-start gap-2 text-sm text-base-content/80">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className={reverse ? 'lg:order-1' : ''}>{mockup}</div>
+    </Reveal>
+  );
+}
+
+function RoadmapSection() {
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    function syncFromHash() {
+      if (window.location.hash === '#roadmap') setOpen(true);
+    }
+    syncFromHash();
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  return (
+    <Reveal id="roadmap" className="py-16">
+      <div className="text-center">
+        <span className="inline-flex items-center rounded-full bg-secondary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-secondary">
+          Roadmap
+        </span>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="mx-auto mt-4 flex items-center justify-center gap-2 text-2xl font-bold tracking-tight text-base-content transition-colors hover:text-primary sm:text-3xl"
+        >
+          O que vem por aí
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-300 ${
+              open ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+        <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+          O MVP já resolve o essencial da conciliação. Clique acima para ver o que vem nas próximas
+          fases.
+        </p>
+      </div>
+      <div
+        className={`grid transition-[grid-template-rows] duration-500 ease-out ${
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
+            {ROADMAP.map((item) => (
+              <div
+                key={item}
+                className="flex items-center justify-between gap-3 rounded-xl border border-base-300 bg-base-100 px-4 py-3"
+              >
+                <span className="text-sm text-base-content">{item}</span>
+                <span className="badge badge-outline badge-sm shrink-0">Em breve</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
+  const pathname = usePathname();
+  const isRegister = pathname === '/register';
+  const ctaLabel = isRegister ? 'Criar minha conta' : 'Entrar agora';
+
+  return (
+    <main>
+      <section className="relative overflow-hidden bg-primary px-4 py-20 sm:py-28">
+        <div className="absolute inset-0 bg-grid" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/10 to-primary/60" />
+        <div className="animate-blob-a pointer-events-none absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-accent/40 blur-[110px]" />
+        <div className="animate-blob-b pointer-events-none absolute -bottom-40 -right-24 h-[460px] w-[460px] rounded-full bg-secondary/50 blur-[120px]" />
+
+        <div className="relative z-10 mx-auto max-w-3xl text-center">
+          <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-primary-content sm:text-6xl">
+            Descubra quando seu
+            <br className="hidden sm:block" /> caixa fica no azul.
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base text-primary-content/80">
+            Importe extratos, classifique automaticamente e acompanhe a DFC da sua empresa — tudo em
+            um só lugar.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="btn btn-accent gap-2 rounded-full px-6"
+            >
+              {ctaLabel}
+            </button>
+            <a
+              href="#funcionalidades"
+              className="btn btn-ghost gap-2 rounded-full px-6 text-primary-content hover:bg-primary-content/10"
+            >
+              Ver funcionalidades
+            </a>
+          </div>
+
+          <div className="mt-12 grid gap-3 sm:grid-cols-3">
+            {HIGHLIGHTS.map((h) => (
+              <div
+                key={h.title}
+                className="flex items-center gap-3 rounded-2xl border border-primary-content/15 bg-primary-content/5 px-4 py-3 text-left backdrop-blur-sm"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-content/15 text-primary-content">
+                  <h.icon className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-primary-content">{h.title}</p>
+                  <p className="text-xs text-primary-content/65">{h.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="funcionalidades"
+        className="mx-auto max-w-6xl scroll-mt-20 divide-y divide-base-300 px-4 sm:px-6"
+      >
+        <FeatureSection
+          id="importacao"
+          eyebrow="Importação"
+          title="Solte o extrato, o resto é automático"
+          description="Extrato importado, lançamentos prontos na hora."
+          bullets={[
+            'Detecção automática de colunas no CSV',
+            'Dedupe por hash da transação + FitID do OFX',
+            'Split automático por competência',
+          ]}
+          mockup={<ImportMockup />}
+        />
+        <FeatureSection
+          id="classificacao"
+          eyebrow="Classificação"
+          title="Regras que aprendem sua rotina financeira"
+          description="Regras classificam cada lançamento sozinhas."
+          bullets={[
+            'Prioridade configurável entre regras',
+            'Aplicação automática logo após o import',
+            '"Reaplicar em pendentes" sob demanda',
+          ]}
+          reverse
+          mockup={<RulesMockup />}
+        />
+        <FeatureSection
+          id="grid"
+          eyebrow="Conciliação"
+          title="Uma grid pensada pra revisar rápido"
+          description="Revise e concilie tudo numa única tela."
+          bullets={[
+            'Filtros por período, conta, categoria e status',
+            'Ações em lote para reclassificar em massa',
+            'Export para CSV/Excel',
+          ]}
+          mockup={<GridMockup />}
+        />
+        <FeatureSection
+          id="dfc"
+          eyebrow="Relatórios"
+          title="DFC pronta, sem planilha"
+          description="Seu fluxo de caixa, montado automaticamente."
+          bullets={[
+            'Estrutura contábil já organizada',
+            'Categoria-folha mapeada direto pra linha do DFC',
+            'Export CSV/Excel com um clique',
+          ]}
+          reverse
+          mockup={<DfcMockup />}
+        />
+        <FeatureSection
+          id="dashboard"
+          eyebrow="Visão executiva"
+          title="Seu caixa em gráficos, atualizado a cada import"
+          description="Seu caixa em números, sempre atualizado."
+          bullets={[
+            'Entradas, saídas e saldo do período',
+            'Fluxo mensal e saldo acumulado',
+            'Top categorias por volume',
+          ]}
+          mockup={<DashboardMockup />}
+        />
+        <FeatureSection
+          id="cadastros"
+          eyebrow="Organização"
+          title="Empresas, contas e categorias no seu jeito"
+          description="Empresas, contas e categorias, do seu jeito."
+          bullets={[
+            'Várias empresas e contas bancárias',
+            'Categorias hierárquicas (grupo → seção → linha)',
+            'Fornecedores e clientes cadastrados',
+          ]}
+          reverse
+          mockup={<CadastrosMockup />}
+        />
+      </section>
+
+      <section className="bg-base-200/50 px-4 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <RoadmapSection />
+        </div>
+      </section>
+
+      <section className="bg-primary px-4 py-16 text-center sm:px-6">
+        <h3 className="text-2xl font-bold text-primary-content sm:text-3xl">
+          Pronto pra organizar seu fluxo de caixa?
+        </h3>
+        <p className="mx-auto mt-2 max-w-md text-sm text-primary-content/80">
+          Leva menos de 2 minutos pra importar seu primeiro extrato.
+        </p>
+        <button type="button" onClick={onOpenAuth} className="btn btn-accent mt-6 gap-2 rounded-full px-6">
+          {ctaLabel}
+        </button>
+      </section>
+
+      <footer className="bg-base-100 px-4 py-8 text-center text-xs text-muted-foreground sm:px-6">
+        Ordo · Conciliação Bancária Inteligente · Fase 1 — MVP
+      </footer>
+    </main>
+  );
+}

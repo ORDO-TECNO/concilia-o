@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@property --reveal {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -40%;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -83,6 +89,23 @@
     .animate-blob-a,
     .animate-blob-b {
       animation: none;
+    }
+  }
+
+  .reveal-wipe {
+    --reveal: -40%;
+    -webkit-mask-image: linear-gradient(to top, black var(--reveal), transparent calc(var(--reveal) + 38%));
+    mask-image: linear-gradient(to top, black var(--reveal), transparent calc(var(--reveal) + 38%));
+    transition: --reveal 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal-wipe.is-visible {
+    --reveal: 140%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-wipe {
+      transition: none;
+      --reveal: 140%;
     }
   }
 }

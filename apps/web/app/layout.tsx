@@ -5,7 +5,7 @@ import { AuthProvider } from '@/lib/auth/auth-context';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
 
 export const metadata: Metadata = {
-  title: 'Conciliação Bancária Inteligente',
+  title: 'Ordo — Conciliação Bancária Inteligente',
   description: 'Plataforma de conciliação bancária, classificação e DFC',
 };
 

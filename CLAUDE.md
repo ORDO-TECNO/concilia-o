@@ -1,9 +1,9 @@
-# Conciliação Bancária Inteligente — guia do projeto
+# Ordo — guia do projeto
 
-Plataforma de conciliação bancária, classificação automática de movimentações
-e geração de DFC (Demonstração do Fluxo de Caixa), com integração futura a
-Power BI. Este arquivo documenta a arquitetura e o roadmap de fases para
-orientar trabalho futuro no projeto.
+Ordo é uma plataforma de conciliação bancária, classificação automática de
+movimentações e geração de DFC (Demonstração do Fluxo de Caixa), com
+integração futura a Power BI. Este arquivo documenta a arquitetura e o
+roadmap de fases para orientar trabalho futuro no projeto.
 
 ## Stack
 
