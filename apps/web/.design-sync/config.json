@@ -1,0 +1,27 @@
+{
+  "pkg": "@conciliacao/web",
+  "globalName": "OrdoUI",
+  "shape": "package",
+  "projectId": "3bfec093-30e4-4993-9b1f-cc076e87a2d8",
+  "tsconfig": "./tsconfig.json",
+  "srcDir": "components/ui",
+  "buildCmd": "npx tailwindcss -c ./.design-sync/tailwind.build.ts -i ./.design-sync/ds-globals.css -o ./.design-sync/.cache/ds-compiled.css --minify",
+  "cssEntry": "./.design-sync/.cache/ds-compiled.css",
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "Dialog": { "cardMode": "single", "viewport": "460x360" },
+    "Select": { "cardMode": "single", "viewport": "300x280" },
+    "Table": { "cardMode": "column" }
+  },
+  "componentSrcMap": {
+    "Badge": "components/ui/badge.tsx",
+    "Button": "components/ui/button.tsx",
+    "Card": "components/ui/card.tsx",
+    "Checkbox": "components/ui/checkbox.tsx",
+    "Dialog": "components/ui/dialog.tsx",
+    "Input": "components/ui/input.tsx",
+    "Label": "components/ui/label.tsx",
+    "Select": "components/ui/select.tsx",
+    "Table": "components/ui/table.tsx"
+  }
+}
