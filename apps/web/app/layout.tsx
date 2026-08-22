@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AppQueryProvider } from '@/lib/query-client';
 import { AuthProvider } from '@/lib/auth/auth-context';
@@ -11,6 +11,12 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: 'Ordo — Conciliação Bancária Inteligente',
   description: 'Plataforma de conciliação bancária, classificação e DFC',
@@ -18,7 +24,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="concilia" className={plusJakartaSans.variable}>
+    <html
+      lang="pt-BR"
+      data-theme="concilia"
+      className={`${plusJakartaSans.variable} ${playfairDisplay.variable}`}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

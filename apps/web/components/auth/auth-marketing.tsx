@@ -4,13 +4,16 @@ import * as React from 'react';
 import { usePathname } from 'next/navigation';
 import {
   ShieldCheck,
-  TrendingUp,
-  FileBarChart2,
   Check,
+  CheckCircle2,
   ChevronDown,
   FileUp,
   Building2,
   Landmark,
+  Sparkles,
+  ArrowRight,
+  ArrowUpRight,
+  BarChart3,
 } from 'lucide-react';
 
 const HERO_HEADLINES: [string, string][] = [
@@ -35,31 +38,15 @@ function RotatingHeadline() {
   return (
     <h1
       key={index}
-      className="hero-headline-slide text-4xl font-extrabold leading-[1.05] tracking-tight text-primary-content sm:text-6xl"
+      className="hero-headline-slide font-serif text-4xl font-bold leading-[1.1] tracking-tight text-base-content sm:text-5xl"
     >
       {line1}
-      <br className="hidden sm:block" /> {line2}
+      <br /> <span className="text-primary">{line2}</span>
     </h1>
   );
 }
 
-const HIGHLIGHTS = [
-  {
-    icon: ShieldCheck,
-    title: 'Conciliação automática',
-    desc: 'Importe CSV/OFX e deixe as regras classificarem os lançamentos por você.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Visão clara do caixa',
-    desc: 'Dashboards e DFC atualizados a cada importação, sem planilhas manuais.',
-  },
-  {
-    icon: FileBarChart2,
-    title: 'Relatórios prontos para decisão',
-    desc: 'Exporte a DFC em CSV/Excel com a estrutura contábil já organizada.',
-  },
-];
+const TRUST_ITEMS = ['Conciliação automática', 'Sem planilhas manuais'];
 
 const ROADMAP = [
   'IA de sugestão por similaridade',
@@ -418,39 +405,89 @@ function RoadmapSection() {
   );
 }
 
-function HeroVideo() {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+const BALANCE_BARS = [30, 38, 34, 46, 40, 55, 50, 62, 56, 68, 78];
 
-  React.useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      video.pause();
-      return;
-    }
-    video.playbackRate = 0.7;
-    video.play().catch(() => {});
-  }, []);
-
+function FinancialPictureCard() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <video
-        ref={videoRef}
-        className="h-full w-full scale-105 object-cover opacity-40 blur-[3px]"
-        src="/videos/moedas.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse at center, rgba(13,148,136,0.94) 0%, rgba(13,148,136,0.6) 45%, rgba(13,148,136,0.2) 100%)',
-        }}
-      />
-      <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-accent/30 blur-[100px] mix-blend-screen" />
+    <div className="relative mx-auto max-w-md pb-8 pt-6 lg:mx-0">
+      <div className="absolute -top-2 right-2 z-20 flex items-center gap-3 rounded-2xl border border-base-300 bg-base-100 px-4 py-3 shadow-xl shadow-black/5">
+        <span className="h-2 w-2 rounded-full bg-primary" />
+        <div>
+          <p className="text-[11px] text-muted-foreground">Saldo total</p>
+          <p className="text-sm font-bold text-base-content">
+            R$ 248.430,00 <span className="font-semibold text-primary">+18,4%</span>
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-base-300 bg-base-100 p-6 shadow-2xl shadow-primary/10">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Seu fluxo de caixa
+        </p>
+        <p className="mt-1 text-lg font-bold text-base-content">Atualizado a cada importação</p>
+
+        <div className="mt-5 rounded-2xl bg-base-200/60 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">Saldo do período</p>
+            <span className="badge badge-success badge-sm gap-1 text-success-content">
+              <ArrowUpRight className="h-3 w-3" /> 12,8%
+            </span>
+          </div>
+          <p className="mt-1 text-2xl font-bold text-base-content">R$ 82.460,12</p>
+
+          <div className="mt-4 flex h-24 items-end gap-1.5">
+            {BALANCE_BARS.map((h, i) => (
+              <div
+                key={i}
+                className={`flex-1 rounded-t ${
+                  i === BALANCE_BARS.length - 1 ? 'bg-primary' : 'bg-primary/20'
+                }`}
+                style={{ height: `${h}%` }}
+              />
+            ))}
+          </div>
+          <div className="mt-1.5 flex justify-between text-[10px] text-muted-foreground">
+            <span>Jan</span>
+            <span>Mai</span>
+            <span>Set</span>
+            <span>Nov</span>
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-base-300 p-2.5">
+            <p className="text-[10px] text-muted-foreground">Entradas</p>
+            <p className="text-sm font-semibold text-success">R$ 42,1k</p>
+            <div className="mt-1.5 h-1 rounded-full bg-base-300">
+              <div className="h-1 w-3/4 rounded-full bg-success" />
+            </div>
+          </div>
+          <div className="rounded-xl border border-base-300 p-2.5">
+            <p className="text-[10px] text-muted-foreground">Saídas</p>
+            <p className="text-sm font-semibold text-destructive">R$ 28,4k</p>
+            <div className="mt-1.5 h-1 rounded-full bg-base-300">
+              <div className="h-1 w-1/2 rounded-full bg-destructive" />
+            </div>
+          </div>
+          <div className="rounded-xl border border-base-300 p-2.5">
+            <p className="text-[10px] text-muted-foreground">Conciliado</p>
+            <p className="text-sm font-semibold text-primary">92%</p>
+            <div className="mt-1.5 h-1 rounded-full bg-base-300">
+              <div className="h-1 w-[92%] rounded-full bg-primary" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute -bottom-2 left-1/2 z-20 flex w-[87%] -translate-x-1/2 items-center gap-3 rounded-2xl bg-secondary px-4 py-3 text-secondary-content shadow-xl shadow-black/10">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-content/15">
+          <ShieldCheck className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-xs text-secondary-content/70">Dados protegidos</p>
+          <p className="text-sm font-semibold">Seus dados são só seus</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -462,49 +499,55 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
 
   return (
     <main>
-      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-primary px-4 py-16 sm:py-20">
-        <HeroVideo />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/5 to-primary/80" />
+      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-gradient-to-b from-primary/25 via-primary/15 to-primary/10 px-4 py-16 sm:py-20">
+        <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/20 blur-[120px]" />
+        <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-primary/10 blur-[120px]" />
 
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <RotatingHeadline />
-          <p className="mx-auto mt-5 max-w-xl text-base text-primary-content/80">
-            Importe extratos, classifique automaticamente e acompanhe a DFC da sua empresa — tudo em
-            um só lugar.
-          </p>
+        <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              Conciliação, com clareza
+            </span>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={onOpenAuth}
-              className="btn btn-accent gap-2 rounded-full px-6"
-            >
-              {ctaLabel}
-            </button>
-            <a
-              href="#funcionalidades"
-              className="btn btn-outline gap-2 rounded-full border-primary-content/40 bg-primary-content/10 px-6 text-primary-content hover:border-primary-content hover:bg-primary-content/20"
-            >
-              Ver funcionalidades
-            </a>
-          </div>
+            <div className="mt-5">
+              <RotatingHeadline />
+            </div>
 
-          <div className="mt-12 grid gap-3 sm:grid-cols-3">
-            {HIGHLIGHTS.map((h) => (
-              <div
-                key={h.title}
-                className="flex items-center gap-3 rounded-2xl border border-primary-content/15 bg-primary-content/5 px-4 py-3 text-left backdrop-blur-sm"
+            <p className="mt-5 max-w-xl text-base text-muted-foreground">
+              Importe extratos, classifique automaticamente e acompanhe a DFC da sua empresa — tudo
+              em um só lugar.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-5">
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="btn btn-primary gap-2 rounded-full px-6"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-content/15 text-primary-content">
-                  <h.icon className="h-4 w-4" />
+                {ctaLabel}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <a
+                href="#funcionalidades"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-base-content hover:text-primary"
+              >
+                Ver funcionalidades
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2">
+              {TRUST_ITEMS.map((item) => (
+                <span key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  {item}
                 </span>
-                <div>
-                  <p className="text-sm font-semibold text-primary-content">{h.title}</p>
-                  <p className="text-xs text-primary-content/65">{h.desc}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          <FinancialPictureCard />
         </div>
       </section>
 
@@ -595,16 +638,54 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
         </div>
       </section>
 
-      <section className="bg-primary px-4 py-16 text-center sm:px-6">
-        <h3 className="text-2xl font-bold text-primary-content sm:text-3xl">
-          Pronto pra organizar seu fluxo de caixa?
-        </h3>
-        <p className="mx-auto mt-2 max-w-md text-sm text-primary-content/80">
-          Importe seu primeiro extrato e veja os lançamentos classificados na hora.
-        </p>
-        <button type="button" onClick={onOpenAuth} className="btn btn-accent mt-6 gap-2 rounded-full px-6">
-          {ctaLabel}
-        </button>
+      <section className="bg-[hsl(175,84%,13%)] px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-content/15 text-primary-content">
+              <BarChart3 className="h-5 w-5" />
+            </span>
+            <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-teal-300">
+              Conciliação bancária inteligente
+            </p>
+            <h3 className="mt-3 text-2xl font-bold leading-tight text-primary-content sm:text-3xl">
+              Pronto pra organizar seu fluxo de caixa?
+            </h3>
+            <p className="mt-3 max-w-md text-sm text-primary-content/70">
+              Importe seu primeiro extrato e veja os lançamentos classificados na hora.
+            </p>
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="btn mt-6 gap-2 rounded-full border-none bg-base-100 px-6 text-base-content hover:bg-base-100/90"
+            >
+              {ctaLabel}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-primary-content/10 bg-primary-content/5 p-6">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary-content/60">
+                Este mês
+              </p>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-content/15 text-primary-content">
+                <Check className="h-4 w-4" />
+              </span>
+            </div>
+            <p className="mt-2 text-2xl font-bold text-primary-content">128 lançamentos importados</p>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-primary-content/10 p-3">
+                <p className="text-[11px] text-primary-content/60">Ritmo mensal</p>
+                <p className="mt-1 text-sm font-semibold text-primary-content">Em dia</p>
+              </div>
+              <div className="rounded-xl bg-primary-content/10 p-3">
+                <p className="text-[11px] text-primary-content/60">Duplicados ignorados</p>
+                <p className="mt-1 text-sm font-semibold text-primary-content">4</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <footer className="bg-base-100 px-4 py-8 text-center text-xs text-muted-foreground sm:px-6">
