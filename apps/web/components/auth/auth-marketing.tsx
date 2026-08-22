@@ -13,6 +13,36 @@ import {
   Landmark,
 } from 'lucide-react';
 
+const HERO_HEADLINES: [string, string][] = [
+  ['Visualize o fluxo de', 'caixa da sua empresa.'],
+  ['Controle suas', 'entradas e saídas.'],
+  ['Automatize a classificação', 'dos lançamentos.'],
+  ['Tome decisões com', 'relatórios prontos.'],
+];
+
+function RotatingHeadline() {
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % HERO_HEADLINES.length);
+    }, 8000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const [line1, line2] = HERO_HEADLINES[index];
+
+  return (
+    <h1
+      key={index}
+      className="hero-headline-slide text-4xl font-extrabold leading-[1.05] tracking-tight text-primary-content sm:text-6xl"
+    >
+      {line1}
+      <br className="hidden sm:block" /> {line2}
+    </h1>
+  );
+}
+
 const HIGHLIGHTS = [
   {
     icon: ShieldCheck,
@@ -33,7 +63,7 @@ const HIGHLIGHTS = [
 
 const ROADMAP = [
   'IA de sugestão por similaridade',
-  'Import de OFC e XLSX',
+  'Import de XLSX',
   'RBAC completo por empresa',
   'Auditoria e versionamento',
   'Centro de custo e projeto',
@@ -272,10 +302,10 @@ function CadastrosMockup() {
         </div>
         <div className="ml-5 space-y-1.5 border-l border-base-300 pl-3">
           <div className="flex items-center gap-2 text-base-content/80">
-            <Landmark className="h-3.5 w-3.5 text-secondary" /> Banco do Brasil · CC 12345-6
+            <Landmark className="h-3.5 w-3.5 text-secondary" /> Banco XXX · CC 12345-6
           </div>
           <div className="flex items-center gap-2 text-base-content/80">
-            <Landmark className="h-3.5 w-3.5 text-secondary" /> Itaú · CC 98765-4
+            <Landmark className="h-3.5 w-3.5 text-secondary" /> Banco YYY · CC 98765-4
           </div>
         </div>
         <div className="ml-5 flex flex-wrap gap-1.5 border-l border-base-300 pl-3">
@@ -388,6 +418,43 @@ function RoadmapSection() {
   );
 }
 
+function HeroVideo() {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      video.pause();
+      return;
+    }
+    video.playbackRate = 0.7;
+    video.play().catch(() => {});
+  }, []);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      <video
+        ref={videoRef}
+        className="h-full w-full scale-105 object-cover opacity-40 blur-[3px]"
+        src="/videos/moedas.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, rgba(13,148,136,0.94) 0%, rgba(13,148,136,0.6) 45%, rgba(13,148,136,0.2) 100%)',
+        }}
+      />
+      <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-accent/30 blur-[100px] mix-blend-screen" />
+    </div>
+  );
+}
+
 export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
   const pathname = usePathname();
   const isRegister = pathname === '/register';
@@ -396,16 +463,11 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
   return (
     <main>
       <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-primary px-4 py-16 sm:py-20">
-        <div className="absolute inset-0 bg-grid" />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/10 to-primary/60" />
-        <div className="animate-blob-a pointer-events-none absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-accent/40 blur-[110px]" />
-        <div className="animate-blob-b pointer-events-none absolute -bottom-40 -right-24 h-[460px] w-[460px] rounded-full bg-secondary/50 blur-[120px]" />
+        <HeroVideo />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/5 to-primary/80" />
 
         <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-primary-content sm:text-6xl">
-            Descubra quando seu
-            <br className="hidden sm:block" /> caixa fica no azul.
-          </h1>
+          <RotatingHeadline />
           <p className="mx-auto mt-5 max-w-xl text-base text-primary-content/80">
             Importe extratos, classifique automaticamente e acompanhe a DFC da sua empresa — tudo em
             um só lugar.
@@ -421,7 +483,7 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
             </button>
             <a
               href="#funcionalidades"
-              className="btn btn-ghost gap-2 rounded-full px-6 text-primary-content hover:bg-primary-content/10"
+              className="btn btn-outline gap-2 rounded-full border-primary-content/40 bg-primary-content/10 px-6 text-primary-content hover:border-primary-content hover:bg-primary-content/20"
             >
               Ver funcionalidades
             </a>
@@ -465,7 +527,7 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
         <FeatureSection
           id="classificacao"
           eyebrow="Classificação"
-          title="Regras que aprendem sua rotina financeira"
+          title="Regras que classificam sua rotina financeira"
           description="Regras classificam cada lançamento sozinhas."
           bullets={[
             'Prioridade configurável entre regras',
@@ -538,7 +600,7 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
           Pronto pra organizar seu fluxo de caixa?
         </h3>
         <p className="mx-auto mt-2 max-w-md text-sm text-primary-content/80">
-          Leva menos de 2 minutos pra importar seu primeiro extrato.
+          Importe seu primeiro extrato e veja os lançamentos classificados na hora.
         </p>
         <button type="button" onClick={onOpenAuth} className="btn btn-accent mt-6 gap-2 rounded-full px-6">
           {ctaLabel}

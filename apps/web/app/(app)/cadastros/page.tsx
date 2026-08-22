@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const SECTIONS = [
   { href: '/cadastros/empresas', title: 'Empresas', description: 'Empresas cadastradas e vínculo com seu usuário' },
-  { href: '/cadastros/contas', title: 'Contas Bancárias', description: 'Bancos, agências e contas da empresa atual' },
+  { href: '/cadastros/contas', title: 'Contas bancárias', description: 'Bancos, agências e contas da empresa atual' },
   { href: '/cadastros/categorias', title: 'Categorias', description: 'Plano de categorias e mapeamento com o DFC' },
-  { href: '/cadastros/fornecedores', title: 'Fornecedores e Clientes', description: 'Cadastro de favorecidos' },
+  { href: '/cadastros/fornecedores', title: 'Fornecedores e clientes', description: 'Cadastro de favorecidos' },
 ];
 
 export default function CadastrosPage() {

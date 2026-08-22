@@ -43,7 +43,7 @@ export default function ContasPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Contas Bancárias</h1>
+        <h1 className="text-xl font-semibold">Contas bancárias</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>Nova conta</Button>

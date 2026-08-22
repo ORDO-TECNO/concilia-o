@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { HelpCircle, LogOut } from 'lucide-react';
+import { HelpCircle, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
@@ -25,24 +25,33 @@ export function Topbar({ onHelp }: { onHelp?: () => void }) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-base-300 bg-base-100 px-5">
-      <div className="w-60">
-        {user && user.companies.length > 0 ? (
-          <Select value={currentCompanyId ?? undefined} onValueChange={setCurrentCompanyId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione a empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              {user.companies.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <span className="text-sm text-muted-foreground">Nenhuma empresa vinculada</span>
-        )}
+    <header className="flex h-16 items-center justify-between gap-3 border-b border-base-300 bg-base-100 px-4 sm:px-5">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:w-60 sm:flex-none">
+        <label
+          htmlFor="app-drawer"
+          aria-label="Abrir menu"
+          className="btn btn-ghost btn-circle btn-sm shrink-0 md:hidden"
+        >
+          <Menu className="h-4 w-4" />
+        </label>
+        <div className="min-w-0 flex-1">
+          {user && user.companies.length > 0 ? (
+            <Select value={currentCompanyId ?? undefined} onValueChange={setCurrentCompanyId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                {user.companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="text-sm text-muted-foreground">Nenhuma empresa vinculada</span>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-1.5">
         <button

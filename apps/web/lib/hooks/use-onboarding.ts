@@ -39,7 +39,7 @@ export const ONBOARDING_STEPS: TourStep[] = [
   {
     id: 'dashboard',
     target: 'nav-dashboard',
-    title: 'Indicadores em tempo real',
+    title: 'Seu caixa em números',
     description: 'O Dashboard resume receitas, despesas e saldo com gráficos atualizados a cada importação.',
   },
   {

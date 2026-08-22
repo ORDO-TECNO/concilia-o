@@ -30,7 +30,7 @@ export default function DfcPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-base-content">Demonstração do Fluxo de Caixa</h1>
+          <h1 className="text-xl font-semibold text-base-content">Demonstração do fluxo de caixa</h1>
           <p className="text-sm text-muted-foreground">DFC consolidada por mês e categoria</p>
         </div>
         <div className="flex items-center gap-2">

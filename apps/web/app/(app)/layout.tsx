@@ -28,11 +28,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex flex-1 flex-col">
+    <div className="drawer min-h-screen md:drawer-open">
+      <input id="app-drawer" type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content flex min-h-screen flex-col">
         <Topbar onHelp={onboarding.start} />
         <main className="flex-1 overflow-x-auto bg-base-200/60 p-6">{children}</main>
+      </div>
+      <div className="drawer-side z-40">
+        <label htmlFor="app-drawer" aria-label="Fechar menu" className="drawer-overlay" />
+        <Sidebar />
       </div>
       <OnboardingTour steps={ONBOARDING_STEPS} open={onboarding.open} onClose={onboarding.close} />
     </div>

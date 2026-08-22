@@ -76,7 +76,7 @@ export default function ImportarPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Importar Extrato</h1>
+      <h1 className="text-xl font-semibold">Importar extrato</h1>
 
       <Card>
         <CardHeader>

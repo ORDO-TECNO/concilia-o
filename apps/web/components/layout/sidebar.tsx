@@ -22,11 +22,16 @@ const NAV_ITEMS = [
   { href: '/cadastros', label: 'Cadastros', icon: Settings, tour: 'nav-cadastros' },
 ];
 
+function closeMobileDrawer() {
+  const toggle = document.getElementById('app-drawer');
+  if (toggle instanceof HTMLInputElement) toggle.checked = false;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-60 shrink-0 border-r border-base-300 bg-base-100 md:flex md:flex-col">
+    <aside className="flex h-full w-60 flex-col border-r border-base-300 bg-base-100">
       <div className="flex items-center gap-2 px-5 py-5">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-content shadow-md shadow-primary/30">
           <TrendingUp className="h-4 w-4" />
@@ -45,8 +50,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               data-tour={item.tour}
+              onClick={closeMobileDrawer}
               className={cn(
-                'group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-base-200 hover:text-base-content',
+                'group relative flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-base-200 hover:text-base-content',
                 active && 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary',
               )}
             >

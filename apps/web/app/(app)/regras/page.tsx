@@ -79,7 +79,7 @@ export default function RegrasPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Regras de Classificação</h1>
+        <h1 className="text-xl font-semibold">Regras de classificação</h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleApply} disabled={applyRules.isPending}>
             {applyRules.isPending ? 'Aplicando...' : 'Reaplicar em pendentes'}

@@ -111,7 +111,7 @@ fornecedores/clientes.
 
 - Motor de IA de sugestão por similaridade (descrição/CNPJ/PIX/valor
   parecidos) — schema já preparado (`categorySource`, `appliedRuleId`)
-- Import de OFC e XLSX
+- Import de XLSX
 - Auditoria completa (quem alterou o quê, quando) + versionamento de regras
   e categorias
 - Multiempresa com perfis de permissão granulares (RBAC completo,

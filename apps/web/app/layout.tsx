@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { AppQueryProvider } from '@/lib/query-client';
 import { AuthProvider } from '@/lib/auth/auth-context';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Ordo — Conciliação Bancária Inteligente',
@@ -11,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="concilia">
+    <html lang="pt-BR" data-theme="concilia" className={plusJakartaSans.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
