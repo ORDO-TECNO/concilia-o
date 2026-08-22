@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { TrendingUp, ChevronDown } from 'lucide-react';
 import { AuthMarketing } from '@/components/auth/auth-marketing';
+import { applyDomOnlyTheme, getPreferredTheme } from '@/lib/theme';
 
 const NAV_LINKS = [
   { href: '#funcionalidades', label: 'Funcionalidades' },
@@ -19,6 +20,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   React.useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // A tela de login/registro sempre usa o tema claro, mesmo se o modo
+  // noturno estiver ativo dentro do app — ao sair, restaura a preferência.
+  React.useEffect(() => {
+    applyDomOnlyTheme('light');
+    return () => {
+      applyDomOnlyTheme(getPreferredTheme());
+    };
+  }, []);
 
   React.useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {

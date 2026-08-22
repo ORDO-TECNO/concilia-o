@@ -395,7 +395,7 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
 
   return (
     <main>
-      <section className="relative overflow-hidden bg-primary px-4 py-20 sm:py-28">
+      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-primary px-4 py-16 sm:py-20">
         <div className="absolute inset-0 bg-grid" />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/10 to-primary/60" />
         <div className="animate-blob-a pointer-events-none absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-accent/40 blur-[110px]" />
