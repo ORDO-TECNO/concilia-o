@@ -1,0 +1,12 @@
+/* Design-system stylesheet input: the app's globals plus the brand fonts.
+   The Next.js app loads Plus Jakarta Sans / Playfair Display via next/font and
+   exposes them as --font-sans / --font-serif on <html>. The bundle has no
+   next/font, so we source the same families from Google Fonts and define the
+   variables here — otherwise every design falls back to the browser serif. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&family=Playfair+Display:wght@400..900&display=swap');
+@import '../app/globals.css';
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
+}
