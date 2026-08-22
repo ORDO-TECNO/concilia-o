@@ -98,6 +98,36 @@ corrompe o `.next` do dev server (sintoma: 404 em `_next/static/*`). Pare o
 dev server, rode o build, e se for continuar em dev, apague `apps/web/.next`
 e reinicie o `npm run dev`.
 
+## README como documento de regras de negócio
+
+O `README.md` deve funcionar como o documento de regras de negócio do
+projeto. Ele precisa conter:
+
+1. **O que o app faz** — em linguagem simples, sem jargão técnico.
+2. **Definição das entidades** — cada entidade, seus campos, e quais são
+   armazenados vs. derivados/calculados.
+
+Mantenha o README atualizado conforme as regras de negócio evoluem. Se
+código e README divergirem, o README está errado — corrija-o.
+
+## Disciplina de commits
+
+- Siga a metodologia de **commits pequenos** — uma mudança lógica por
+  commit. Não agrupe mudanças não relacionadas.
+- Commits acontecem **depois** do passo de refactor, quando os testes estão
+  verdes e o código está limpo.
+- Padrão da mensagem de commit: `type(module): descrição breve`
+  - `type` deve ser um de: `feat`, `fix`, `chore`
+  - `module` é o módulo Nest/área afetada: `auth`, `companies`,
+    `bank-accounts`, `categories`, `parties`, `imports`, `transactions`,
+    `classification-rules`, `dfc`, `dashboard`, `shared`, `web`, `app`
+  - Exemplos:
+    - `feat(imports): adiciona suporte a XLSX no parser`
+    - `fix(dfc): exclui lançamentos duplicados do saldo acumulado`
+    - `chore(app): adiciona migration inicial do schema`
+- Nunca commite um teste falhando, a menos que seja explicitamente um WIP
+  spike (e a mensagem do commit diga isso).
+
 ## Roadmap de fases
 
 ### Fase 1 — MVP (concluída)
