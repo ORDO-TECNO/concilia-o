@@ -246,7 +246,12 @@ export class AuthService {
     return { accessToken, refreshToken, refreshExpiresAt, refreshTokenId: jti };
   }
 
-  private toPublicUser(user: { id: string; name: string; email: string }) {
-    return { id: user.id, name: user.name, email: user.email };
+  private toPublicUser(user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string | null;
+  }) {
+    return { id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl ?? null };
   }
 }
