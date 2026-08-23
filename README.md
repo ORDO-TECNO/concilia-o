@@ -179,6 +179,46 @@ npm --workspace=apps/api run test            # testes unitários (parsers, motor
 `_next/static/...`). Se acontecer, pare o dev server, apague `apps/web/.next`
 e rode `npm run dev` de novo.
 
+## Deploy (Railway + Vercel)
+
+### API — Railway
+
+Configure um serviço Railway apontando para este repositório (`apps/api` como
+root). **Passo de release** (Railway → Settings → Deploy): `npm run prisma:deploy`.
+
+Variáveis de ambiente obrigatórias no serviço Railway:
+
+| Variável | Descrição |
+|---|---|
+| `DATABASE_URL` | Connection string PostgreSQL (Railway Postgres plugin) |
+| `JWT_ACCESS_SECRET` | Secret do access token (gere com `openssl rand -hex 32`) |
+| `JWT_REFRESH_SECRET` | Secret do refresh token (gere com `openssl rand -hex 32`) |
+| `CORS_ORIGIN` | URL do app Vercel (ex: `https://ordo.vercel.app`) |
+| `NODE_ENV` | `production` |
+| `GOOGLE_CLIENT_ID` | Client ID do Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | Client Secret do Google Cloud Console |
+| `GOOGLE_CALLBACK_URL` | `https://<railway-domain>/auth/google/callback` |
+| `WEB_APP_URL` | URL do app Vercel (para redirect pós-OAuth) |
+
+`API_PORT` é opcional — Railway injeta a porta via `$PORT` automaticamente;
+defina apenas se precisar substituir.
+
+### Web — Vercel
+
+Conecte o repositório ao Vercel. Configure:
+
+- **Root Directory**: `apps/web`
+- **Framework Preset**: Next.js
+
+Variável de ambiente:
+
+| Variável | Descrição |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | URL pública da API Railway (ex: `https://api.railway.app`) |
+
+O domínio do Vercel precisa estar registrado no Google Cloud Console como
+`Authorized redirect URI` do OAuth client.
+
 ## Estrutura do monorepo
 
 ```
