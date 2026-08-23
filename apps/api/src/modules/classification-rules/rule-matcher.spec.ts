@@ -1,7 +1,7 @@
 import { ruleMatches } from './rule-matcher';
-import { RuleField, RuleMatchType } from '@prisma/client';
+import { ClassificationRule, RuleField, RuleMatchType } from '@prisma/client';
 
-function makeRule(overrides: Partial<Parameters<typeof ruleMatches>[0]> = {}) {
+function makeRule(overrides: Partial<ClassificationRule> = {}): ClassificationRule {
   return {
     id: 'rule-1',
     companyId: 'company-1',
@@ -16,7 +16,7 @@ function makeRule(overrides: Partial<Parameters<typeof ruleMatches>[0]> = {}) {
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
-  } as any;
+  };
 }
 
 describe('ruleMatches', () => {

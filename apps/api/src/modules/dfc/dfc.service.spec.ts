@@ -1,7 +1,19 @@
 import { DfcService } from './dfc.service';
 import { DFCLine } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
 
-function buildPrismaMock(groupedResult: any[], categories: any[]) {
+interface GroupByRow {
+  categoryId: string | null;
+  competenceMonth: number;
+  _sum: { amount: number | null };
+}
+
+interface CategoryRow {
+  id: string;
+  dfcLine: DFCLine | null;
+}
+
+function buildPrismaMock(groupedResult: GroupByRow[], categories: CategoryRow[]): PrismaService {
   return {
     transaction: {
       groupBy: jest.fn().mockResolvedValue(groupedResult),
@@ -9,7 +21,7 @@ function buildPrismaMock(groupedResult: any[], categories: any[]) {
     category: {
       findMany: jest.fn().mockResolvedValue(categories),
     },
-  } as any;
+  } as unknown as PrismaService;
 }
 
 describe('DfcService', () => {

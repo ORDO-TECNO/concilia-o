@@ -2,6 +2,47 @@ import { XMLParser } from 'fast-xml-parser';
 import { BadRequestException } from '@nestjs/common';
 import { ParsedStatement, ParsedTransaction } from './statement-parser.types';
 
+/** Shapes returned by fast-xml-parser for OFX files — all fields are opaque strings or nested objects. */
+interface OfxRawTransaction {
+  DTPOSTED?: string;
+  TRNAMT?: string;
+  NAME?: string;
+  MEMO?: string;
+  PAYEE?: string;
+  CHECKNUM?: string;
+  FITID?: string;
+}
+
+interface OfxRawBankAcct {
+  BANKID?: string;
+  BRANCHID?: string;
+  ACCTID?: string;
+}
+
+interface OfxRawBankTranList {
+  DTSTART?: string;
+  DTEND?: string;
+  STMTTRN?: OfxRawTransaction | OfxRawTransaction[];
+}
+
+interface OfxRawLedgerBal {
+  BALAMT?: string;
+}
+
+interface OfxRawStmtrs {
+  BANKACCTFROM?: OfxRawBankAcct;
+  CCACCTFROM?: OfxRawBankAcct;
+  BANKTRANLIST?: OfxRawBankTranList;
+  LEDGERBAL?: OfxRawLedgerBal;
+}
+
+interface OfxRawDoc {
+  OFX?: {
+    BANKMSGSRSV1?: { STMTTRNRS?: { STMTRS?: OfxRawStmtrs } };
+    CREDITCARDMSGSRSV1?: { CCSTMTTRNRS?: { CCSTMTRS?: OfxRawStmtrs } };
+  };
+}
+
 function toArray<T>(value: T | T[] | undefined): T[] {
   if (value === undefined) return [];
   return Array.isArray(value) ? value : [value];
@@ -61,9 +102,9 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
     trimValues: true,
   });
 
-  let doc: any;
+  let doc: OfxRawDoc;
   try {
-    doc = parser.parse(normalized);
+    doc = parser.parse(normalized) as OfxRawDoc;
   } catch (err) {
     throw new BadRequestException('Falha ao interpretar o arquivo OFX');
   }
@@ -87,7 +128,7 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
   const rawTransactions = toArray(bankTranList.STMTTRN);
 
   const transactions: ParsedTransaction[] = rawTransactions
-    .map((t: any): ParsedTransaction | null => {
+    .map((t: OfxRawTransaction): ParsedTransaction | null => {
       const date = parseOfxDate(t.DTPOSTED);
       const amount = parseOfxAmount(t.TRNAMT);
       if (!date || amount === undefined) return null;
