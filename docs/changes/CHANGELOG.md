@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-08-23 — chore(app): testing coverage — auth unit, guards, e2e, web tests → [doc](2026-08-23-app-testing-coverage.md)
 - 2026-08-23 — feat(auth): login com Google (OAuth) com vínculo de conta → [doc](2026-08-23-auth-oauth-google.md)
 - 2026-08-23 — feat(auth): rate limiting em rotas de autenticação → [doc](2026-08-23-auth-rate-limiting.md)
 - 2026-08-23 — chore(app): configura ESLint em todos os workspaces → [doc](2026-08-23-app-eslint-config.md)
