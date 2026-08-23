@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-08-23 — feat(auth): rate limiting em rotas de autenticação → [doc](2026-08-23-auth-rate-limiting.md)
 - 2026-08-23 — chore(app): configura ESLint em todos os workspaces → [doc](2026-08-23-app-eslint-config.md)
 - 2026-08-22 — chore(app): CI skeleton com lint, typecheck e testes → [doc](2026-08-22-app-ci-skeleton.md)
 - 2026-08-22 — chore(app): deploy blockers — env validation, cookie, health check → [doc](2026-08-22-app-deploy-blockers.md)

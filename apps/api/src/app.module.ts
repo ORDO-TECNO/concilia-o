@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
@@ -38,6 +40,9 @@ function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
       envFilePath: ['../../.env', '.env'],
       validate: validateEnv,
     }),
+    // Global rate limit: 100 requests per 60 seconds per IP.
+    // Auth mutation routes override this with a tighter limit (see AuthController).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     PrismaModule,
     AuthModule,
     CompaniesModule,
@@ -51,5 +56,9 @@ function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
     DashboardModule,
   ],
   controllers: [AppController],
+  providers: [
+    // Apply ThrottlerGuard globally so every route is protected by default.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
