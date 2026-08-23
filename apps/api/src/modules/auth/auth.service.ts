@@ -4,6 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -25,6 +26,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -71,7 +73,7 @@ export class AuthService {
     let payload: { sub: string; jti: string };
     try {
       payload = this.jwt.verify(rawRefreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       });
     } catch {
       throw new UnauthorizedException('Refresh token inválido ou expirado');
@@ -115,7 +117,7 @@ export class AuthService {
     if (!rawRefreshToken) return;
     try {
       const payload = this.jwt.verify<{ jti: string }>(rawRefreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       });
       await this.prisma.refreshToken.updateMany({
         where: { id: payload.jti, revokedAt: null },
@@ -152,17 +154,17 @@ export class AuthService {
     const accessToken = this.jwt.sign(
       { sub: userId, email },
       {
-        secret: process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-change-me',
-        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ?? '15m',
       },
     );
 
     const jti = randomUUID();
-    const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN ?? '30d';
+    const expiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '30d';
     const refreshToken = this.jwt.sign(
       { sub: userId, jti },
       {
-        secret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
         expiresIn,
       },
     );

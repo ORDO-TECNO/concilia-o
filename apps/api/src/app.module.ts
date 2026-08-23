@@ -13,9 +13,31 @@ import { ClassificationRulesModule } from './modules/classification-rules/classi
 import { DfcModule } from './modules/dfc/dfc.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 
+const REQUIRED_ENV_VARS = [
+  'JWT_ACCESS_SECRET',
+  'JWT_REFRESH_SECRET',
+  'DATABASE_URL',
+  'CORS_ORIGIN',
+] as const;
+
+function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
+  const missing = REQUIRED_ENV_VARS.filter((key) => !config[key]);
+  if (missing.length > 0) {
+    throw new Error(
+      `API cannot start — missing required environment variables: ${missing.join(', ')}. ` +
+        'Check your .env file or deployment environment.',
+    );
+  }
+  return config;
+}
+
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../../.env', '.env'] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['../../.env', '.env'],
+      validate: validateEnv,
+    }),
     PrismaModule,
     AuthModule,
     CompaniesModule,
