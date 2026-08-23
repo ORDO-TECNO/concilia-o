@@ -3,12 +3,19 @@ import { getAccessToken, setAccessToken } from './auth/token-store';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 const HTTP_NO_CONTENT = 204;
 
+function extractMessage(body: unknown): string {
+  if (typeof body === 'object' && body !== null && 'message' in body) {
+    return String((body as Record<string, unknown>).message);
+  }
+  return 'Erro na API';
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
     public body: unknown,
   ) {
-    super(typeof body === 'object' && body && 'message' in body ? String((body as any).message) : 'Erro na API');
+    super(extractMessage(body));
   }
 }
 

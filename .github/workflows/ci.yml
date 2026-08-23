@@ -11,20 +11,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  lint-typecheck:
+    name: Lint & typecheck
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: postgresql://user:pass@localhost:5432/conciliacao
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
           node-version: 20
           cache: npm
 
       - run: npm ci
 
-      - run: npm run build
+      - run: npm run build --workspace=packages/shared
+
+      - run: npm run lint
+
+      - name: Typecheck API
+        run: npm --workspace=apps/api run build
+
+      - name: Typecheck web
+        run: npm --workspace=apps/web run build
+
+  test:
+    name: API tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: conciliacao
+          POSTGRES_PASSWORD: conciliacao
+          POSTGRES_DB: conciliacao
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U conciliacao"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://conciliacao:conciliacao@localhost:5432/conciliacao
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build --workspace=packages/shared
 
       - run: npm --workspace=apps/api run test

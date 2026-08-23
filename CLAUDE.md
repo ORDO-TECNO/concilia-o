@@ -23,7 +23,8 @@ apps/api/src/modules/         Um módulo Nest por domínio:
   auth/                       register, login, refresh, logout, me
   companies/                  empresas do usuário
   bank-accounts/               contas bancárias
-  categories/                  árvore de categorias, cada folha mapeada a uma DFCLine
+  categories/                  árvore de categorias, cada folha mapeada a uma DFCL
+  ine
   parties/                     fornecedores/clientes
   imports/                     upload CSV/OFX, parsers, dedupe, split por competência
   transactions/                 grid (list/bulk/update/export)
@@ -109,6 +110,14 @@ projeto. Ele precisa conter:
 
 Mantenha o README atualizado conforme as regras de negócio evoluem. Se
 código e README divergirem, o README está errado — corrija-o.
+
+## Changelog de mudanças
+
+Toda mudança média-ou-maior gera um doc curto (um resumo, não um ensaio) em
+`docs/changes/` — veja o template em `docs/changes/TEMPLATE.md` e o índice em
+`docs/changes/CHANGELOG.md`. É a *história* do projeto; o `README.md` é a
+*verdade atual*. A convenção completa e o roadmap de fases estão em
+`docs/dev-phases.md`.
 
 ## Disciplina de commits
 

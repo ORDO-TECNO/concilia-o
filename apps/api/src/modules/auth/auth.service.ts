@@ -4,6 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -25,6 +26,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -47,7 +49,9 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user) {
+    // Usuário só-Google não tem passwordHash — cai no mesmo erro genérico, sem
+    // passar null para o bcrypt.compare (que lançaria).
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('E-mail ou senha inválidos');
     }
 
@@ -63,6 +67,66 @@ export class AuthService {
     return { user: this.toPublicUser(user), ...tokens };
   }
 
+  /**
+   * Resolve o usuário de um login Google, aplicando a regra de vínculo de conta.
+   *
+   * Ordem:
+   *   1. Usuário com este `googleId` já existe → retorna (login recorrente).
+   *   2. Só se o e-mail Google for verificado, procura por e-mail. Se existir,
+   *      vincula o `googleId` (e preenche `avatarUrl` se estiver vazio) e retorna.
+   *   3. Caso contrário, cria um novo usuário sem senha (`passwordHash: null`).
+   *
+   * Nunca vincula em e-mail Google não verificado — evita tomada de conta.
+   */
+  async validateGoogleUser(profile: {
+    googleId: string;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    avatarUrl?: string;
+  }) {
+    const existingByGoogle = await this.prisma.user.findUnique({
+      where: { googleId: profile.googleId },
+    });
+    if (existingByGoogle) {
+      return existingByGoogle;
+    }
+
+    if (profile.emailVerified) {
+      const existingByEmail = await this.prisma.user.findUnique({
+        where: { email: profile.email },
+      });
+      if (existingByEmail) {
+        return this.prisma.user.update({
+          where: { id: existingByEmail.id },
+          data: {
+            googleId: profile.googleId,
+            avatarUrl: existingByEmail.avatarUrl ?? profile.avatarUrl ?? null,
+          },
+        });
+      }
+    }
+
+    return this.prisma.user.create({
+      data: {
+        name: profile.name,
+        email: profile.email,
+        googleId: profile.googleId,
+        avatarUrl: profile.avatarUrl ?? null,
+        passwordHash: null,
+      },
+    });
+  }
+
+  /** Emite access + refresh para um usuário já resolvido (ex.: callback OAuth). */
+  async issueSessionForUser(user: { id: string; name: string; email: string }) {
+    const { refreshTokenId: _refreshTokenId, ...tokens } = await this.issueTokens(
+      user.id,
+      user.email,
+    );
+    return { user: this.toPublicUser(user), ...tokens };
+  }
+
   async refresh(rawRefreshToken: string | undefined) {
     if (!rawRefreshToken) {
       throw new UnauthorizedException('Refresh token ausente');
@@ -71,7 +135,7 @@ export class AuthService {
     let payload: { sub: string; jti: string };
     try {
       payload = this.jwt.verify(rawRefreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       });
     } catch {
       throw new UnauthorizedException('Refresh token inválido ou expirado');
@@ -115,7 +179,7 @@ export class AuthService {
     if (!rawRefreshToken) return;
     try {
       const payload = this.jwt.verify<{ jti: string }>(rawRefreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       });
       await this.prisma.refreshToken.updateMany({
         where: { id: payload.jti, revokedAt: null },
@@ -152,17 +216,17 @@ export class AuthService {
     const accessToken = this.jwt.sign(
       { sub: userId, email },
       {
-        secret: process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-change-me',
-        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ?? '15m',
       },
     );
 
     const jti = randomUUID();
-    const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN ?? '30d';
+    const expiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '30d';
     const refreshToken = this.jwt.sign(
       { sub: userId, jti },
       {
-        secret: process.env.JWT_REFRESH_SECRET ?? 'dev-refresh-secret-change-me',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
         expiresIn,
       },
     );

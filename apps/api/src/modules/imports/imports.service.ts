@@ -241,7 +241,7 @@ export class ImportsService {
     return this.toSummary(batch);
   }
 
-  private toSummary(batch: any) {
+  private toSummary(batch: Prisma.ImportBatchGetPayload<{ include: { periods: true } }>) {
     return {
       importBatchId: batch.id,
       source: batch.source,
@@ -255,7 +255,7 @@ export class ImportsService {
       statementEndDate: batch.statementEndDate,
       statementStartBalance: batch.statementStartBalance,
       statementEndBalance: batch.statementEndBalance,
-      periods: batch.periods?.map((p: any) => ({
+      periods: batch.periods?.map((p) => ({
         year: p.year,
         month: p.month,
         recordCount: p.recordCount,

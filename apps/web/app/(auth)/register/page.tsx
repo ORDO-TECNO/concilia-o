@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPlus } from 'lucide-react';
 import { useAuth, extractErrorMessage } from '@/lib/auth/auth-context';
+import { GoogleButton } from '@/components/auth/google-button';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -98,6 +99,14 @@ export default function RegisterPage() {
             {submitting ? 'Criando...' : 'Criar conta'}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3 text-xs text-neutral-content/40">
+          <span className="h-px flex-1 bg-white/10" />
+          ou
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <GoogleButton label="Cadastrar com Google" />
 
         <p className="mt-6 text-center text-sm text-neutral-content/60">
           Já tem conta?{' '}
