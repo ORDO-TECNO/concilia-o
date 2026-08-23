@@ -28,6 +28,9 @@ jobs:
 
       - run: npm run build --workspace=packages/shared
 
+      - name: Generate Prisma Client
+        run: npm --workspace=apps/api run prisma:generate
+
       - run: npm run lint
 
       - name: Typecheck API
@@ -68,5 +71,8 @@ jobs:
       - run: npm ci
 
       - run: npm run build --workspace=packages/shared
+
+      - name: Generate Prisma Client
+        run: npm --workspace=apps/api run prisma:generate
 
       - run: npm --workspace=apps/api run test

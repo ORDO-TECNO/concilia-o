@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-08-23 — fix(app): gera Prisma Client no CI (destrava os dois pipelines) → [doc](2026-08-23-app-ci-prisma-generate.md)
 - 2026-08-23 — feat(auth): avatar do Google exibido no usuário/topbar → [doc](2026-08-23-auth-avatar-google.md)
 - 2026-08-23 — chore(app): design cleanup — ConfigService, typed api-client, error logging, deploy runbook → [doc](2026-08-23-app-design-cleanup.md)
 - 2026-08-23 — chore(app): testing coverage — auth unit, guards, e2e, web tests → [doc](2026-08-23-app-testing-coverage.md)
