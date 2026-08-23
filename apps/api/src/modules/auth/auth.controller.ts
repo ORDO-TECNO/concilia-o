@@ -103,7 +103,7 @@ export class AuthController {
   }
 
   private setRefreshCookie(res: Response, token: string, expiresAt: Date) {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = this.config.get<string>('NODE_ENV') === 'production';
     res.cookie(REFRESH_COOKIE, token, {
       httpOnly: true,
       // In production (Vercel web → Railway API), the request is cross-site,
