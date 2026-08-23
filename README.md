@@ -46,9 +46,13 @@ a exatamente uma empresa.
 
 ### Usuário e vínculo com empresa (`User`, `UserCompany`)
 Um usuário pode acessar várias empresas. `UserCompany.role` é hoje um texto
-livre (`"ADMIN"`); vira controle de permissões completo na Fase 2.
-- **Armazenados**: nome, e-mail, senha (com hash), e por vínculo: papel na
-  empresa.
+livre (`"ADMIN"`); vira controle de permissões completo na Fase 2. O login pode
+ser por e-mail/senha ou por Google; a mesma pessoa pode ter os dois (a senha
+fica nula em contas criadas só via Google). Um login Google com e-mail
+verificado que já existe é vinculado à conta existente.
+- **Armazenados**: nome, e-mail, senha com hash (opcional — nula em contas
+  só-Google), `googleId` (opcional, único), avatar (opcional), e por vínculo:
+  papel na empresa.
 
 ### Conta bancária (`BankAccount`)
 Uma conta bancária da empresa, para a qual os extratos são importados.
@@ -127,7 +131,7 @@ fora do escopo do MVP). Isso é indicado explicitamente na tela.
 - **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS + shadcn/ui + TanStack Table/Query + Recharts
 - **Backend**: NestJS + TypeScript + Prisma
 - **Banco**: PostgreSQL (via Docker Compose)
-- **Auth**: JWT (access token em memória) + Refresh Token (cookie httpOnly, rotacionado)
+- **Auth**: e-mail/senha ou Google (OAuth); JWT (access token em memória) + Refresh Token (cookie httpOnly, rotacionado)
 
 ## Setup local
 
