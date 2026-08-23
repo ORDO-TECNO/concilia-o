@@ -1,17 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { LogIn } from 'lucide-react';
 import { useAuth, extractErrorMessage } from '@/lib/auth/auth-context';
+import { GoogleButton } from '@/components/auth/google-button';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(
+    searchParams.get('error') === 'oauth'
+      ? 'Não foi possível entrar com o Google. Tente novamente.'
+      : null,
+  );
   const [submitting, setSubmitting] = React.useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -79,6 +85,14 @@ export default function LoginPage() {
             {submitting ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3 text-xs text-neutral-content/40">
+          <span className="h-px flex-1 bg-white/10" />
+          ou
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <GoogleButton label="Continuar com Google" />
 
         <p className="mt-6 text-center text-sm text-neutral-content/60">
           Não tem conta?{' '}
