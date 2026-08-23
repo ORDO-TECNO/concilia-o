@@ -92,7 +92,10 @@ model User {
   id            String         @id @default(uuid())
   name          String
   email         String         @unique
-  passwordHash  String
+  // Nulo para usuários que se cadastraram apenas via Google (sem senha local).
+  passwordHash  String?
+  googleId      String?        @unique
+  avatarUrl     String?
   companies     UserCompany[]
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
