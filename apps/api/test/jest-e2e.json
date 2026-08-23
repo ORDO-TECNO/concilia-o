@@ -1,0 +1,15 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "..",
+  "testMatch": ["<rootDir>/test/**/*.e2e-spec.ts"],
+  "transform": {
+    "^.+\\.ts$": ["ts-jest", {
+      "tsconfig": "<rootDir>/tsconfig.json"
+    }]
+  },
+  "setupFiles": ["<rootDir>/test/jest-e2e-setup.ts"],
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^@conciliacao/shared(.*)$": "<rootDir>/../../packages/shared/src$1"
+  }
+}
