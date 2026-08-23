@@ -49,7 +49,9 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user) {
+    // Usuário só-Google não tem passwordHash — cai no mesmo erro genérico, sem
+    // passar null para o bcrypt.compare (que lançaria).
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('E-mail ou senha inválidos');
     }
 
@@ -58,6 +60,66 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou senha inválidos');
     }
 
+    const { refreshTokenId: _refreshTokenId, ...tokens } = await this.issueTokens(
+      user.id,
+      user.email,
+    );
+    return { user: this.toPublicUser(user), ...tokens };
+  }
+
+  /**
+   * Resolve o usuário de um login Google, aplicando a regra de vínculo de conta.
+   *
+   * Ordem:
+   *   1. Usuário com este `googleId` já existe → retorna (login recorrente).
+   *   2. Só se o e-mail Google for verificado, procura por e-mail. Se existir,
+   *      vincula o `googleId` (e preenche `avatarUrl` se estiver vazio) e retorna.
+   *   3. Caso contrário, cria um novo usuário sem senha (`passwordHash: null`).
+   *
+   * Nunca vincula em e-mail Google não verificado — evita tomada de conta.
+   */
+  async validateGoogleUser(profile: {
+    googleId: string;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    avatarUrl?: string;
+  }) {
+    const existingByGoogle = await this.prisma.user.findUnique({
+      where: { googleId: profile.googleId },
+    });
+    if (existingByGoogle) {
+      return existingByGoogle;
+    }
+
+    if (profile.emailVerified) {
+      const existingByEmail = await this.prisma.user.findUnique({
+        where: { email: profile.email },
+      });
+      if (existingByEmail) {
+        return this.prisma.user.update({
+          where: { id: existingByEmail.id },
+          data: {
+            googleId: profile.googleId,
+            avatarUrl: existingByEmail.avatarUrl ?? profile.avatarUrl ?? null,
+          },
+        });
+      }
+    }
+
+    return this.prisma.user.create({
+      data: {
+        name: profile.name,
+        email: profile.email,
+        googleId: profile.googleId,
+        avatarUrl: profile.avatarUrl ?? null,
+        passwordHash: null,
+      },
+    });
+  }
+
+  /** Emite access + refresh para um usuário já resolvido (ex.: callback OAuth). */
+  async issueSessionForUser(user: { id: string; name: string; email: string }) {
     const { refreshTokenId: _refreshTokenId, ...tokens } = await this.issueTokens(
       user.id,
       user.email,
