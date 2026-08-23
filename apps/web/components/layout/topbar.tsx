@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { HelpCircle, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -68,9 +69,20 @@ export function Topbar({ onHelp }: { onHelp?: () => void }) {
         <div className="mx-2 h-6 w-px bg-base-300" />
 
         <div className="flex items-center gap-2 pr-1">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-content">
-            {user ? initials(user.name) : ''}
-          </span>
+          {user?.avatarUrl ? (
+            <Image
+              src={user.avatarUrl}
+              alt={user.name}
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-content">
+              {user ? initials(user.name) : ''}
+            </span>
+          )}
           <span className="hidden text-sm text-muted-foreground sm:inline">{user?.name}</span>
         </div>
 
