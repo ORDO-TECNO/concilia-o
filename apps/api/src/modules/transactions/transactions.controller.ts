@@ -27,12 +27,7 @@ export class TransactionsController {
     @Query() query: ExportTransactionsQueryDto,
     @Res() res: Response,
   ) {
-    const { buffer, filename, contentType } = await this.transactionsService.export(companyId, query);
-    res.set({
-      'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename="${filename}"`,
-    });
-    res.send(buffer);
+    await this.transactionsService.streamExport(companyId, query, res);
   }
 
   @UseGuards(CompanyAccessGuard)

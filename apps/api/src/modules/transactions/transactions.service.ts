@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CategorySource, Prisma, ReconciliationStatus } from '@prisma/client';
+import type { Response } from 'express';
+import { Writable } from 'stream';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
 import { ListTransactionsQueryDto } from './dto/list-transactions.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { BulkTransactionsDto } from './dto/bulk-transactions.dto';
 import { ExportTransactionsQueryDto } from './dto/export-transactions.dto';
-import { buildCsvBuffer, buildXlsxBuffer } from '../../common/export/table-export';
+import { streamCsvExport, streamXlsxExport, type ExportRow } from '../../common/export/table-export';
 import { formatDateBR } from '@conciliacao/shared';
 
 @Injectable()
@@ -61,32 +63,28 @@ export class TransactionsService {
     };
   }
 
-  async export(companyId: string, query: ExportTransactionsQueryDto): Promise<{ buffer: Buffer; filename: string; contentType: string }> {
-    const where = this.buildWhere(companyId, query);
-    const sortBy = query.sortBy ?? 'date';
-    const sortDir = query.sortDir ?? 'desc';
+  /** Column headers — preserved exactly as before */
+  static readonly EXPORT_HEADERS = [
+    'Data',
+    'Descrição',
+    'Histórico',
+    'Documento',
+    'Valor',
+    'Tipo',
+    'Categoria',
+    'Fornecedor/Cliente',
+    'Status',
+    'Conta',
+    'Competência',
+  ] as const;
 
-    const items = await this.prisma.transaction.findMany({
-      where,
-      include: { category: true, party: true, bankAccount: true },
-      orderBy: { [sortBy]: sortDir },
-    });
+  private static readonly EXPORT_BATCH_SIZE = 1000;
 
-    const headers = [
-      'Data',
-      'Descrição',
-      'Histórico',
-      'Documento',
-      'Valor',
-      'Tipo',
-      'Categoria',
-      'Fornecedor/Cliente',
-      'Status',
-      'Conta',
-      'Competência',
-    ];
-
-    const rows = items.map((t) => [
+  /** Maps a DB row to the export column order. */
+  static toExportRow(
+    t: Prisma.TransactionGetPayload<{ include: { category: true; party: true; bankAccount: true } }>,
+  ): ExportRow {
+    return [
       formatDateBR(t.date.toISOString().slice(0, 10)),
       t.description,
       t.historico ?? '',
@@ -98,20 +96,70 @@ export class TransactionsService {
       t.status,
       t.bankAccount.apelido ?? t.bankAccount.conta,
       `${String(t.competenceMonth).padStart(2, '0')}/${t.competenceYear}`,
-    ]);
+    ];
+  }
 
+  /**
+   * Async generator that fetches rows in cursor-paginated batches (keyset on id)
+   * and yields each batch as an ExportRow[]. Never materialises the full result set.
+   */
+  private async *fetchExportBatches(
+    where: Prisma.TransactionWhereInput,
+    sortBy: string,
+    sortDir: 'asc' | 'desc',
+  ): AsyncIterable<ExportRow[]> {
+    let cursor: string | undefined;
+
+    while (true) {
+      const items = await this.prisma.transaction.findMany({
+        where: {
+          ...where,
+          ...(cursor ? { id: { gt: cursor } } : {}),
+        },
+        include: { category: true, party: true, bankAccount: true },
+        // Primary sort by the requested field; id is the tiebreaker for stable keyset pagination.
+        orderBy: [{ [sortBy]: sortDir }, { id: 'asc' }],
+        take: TransactionsService.EXPORT_BATCH_SIZE,
+      });
+
+      if (items.length === 0) break;
+
+      yield items.map((t) => TransactionsService.toExportRow(t));
+
+      if (items.length < TransactionsService.EXPORT_BATCH_SIZE) break;
+      cursor = items[items.length - 1]!.id;
+    }
+  }
+
+  /**
+   * Streams the export directly into the Express Response.
+   * Sets Content-Type and Content-Disposition, then writes rows in batches.
+   */
+  async streamExport(companyId: string, query: ExportTransactionsQueryDto, res: Response): Promise<void> {
+    const where = this.buildWhere(companyId, query);
+    const sortBy = query.sortBy ?? 'date';
+    const sortDir = query.sortDir ?? 'desc';
     const format = query.format ?? 'csv';
+    const filename = `lancamentos-${Date.now()}.${format}`;
+
+    const batches = this.fetchExportBatches(where, sortBy, sortDir);
+
     if (format === 'xlsx') {
-      const buffer = await buildXlsxBuffer(headers, rows, 'Lançamentos');
-      return {
-        buffer,
-        filename: `lancamentos-${Date.now()}.xlsx`,
-        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      };
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      });
+      // Express Response extends http.ServerResponse which extends Writable
+      await streamXlsxExport(res as unknown as Writable, [...TransactionsService.EXPORT_HEADERS], 'Lançamentos', batches);
+    } else {
+      res.set({
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+      });
+      await streamCsvExport(res as unknown as Writable, [...TransactionsService.EXPORT_HEADERS], batches);
     }
 
-    const buffer = await buildCsvBuffer(headers, rows);
-    return { buffer, filename: `lancamentos-${Date.now()}.csv`, contentType: 'text/csv; charset=utf-8' };
+    res.end();
   }
 
   async update(userId: string, id: string, dto: UpdateTransactionDto) {
