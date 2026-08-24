@@ -133,36 +133,112 @@ fora do escopo do MVP). Isso é indicado explicitamente na tela.
 - **Banco**: PostgreSQL (via Docker Compose)
 - **Auth**: e-mail/senha ou Google (OAuth); JWT (access token em memória) + Refresh Token (cookie httpOnly, rotacionado)
 
-## Setup local
+## Como rodar a aplicação (passo a passo)
 
-Pré-requisitos: Node 20+, Docker Desktop.
+### Pré-requisitos
+
+- **Node 20 ou superior** — confira com `node -v`. (Recomendado instalar via
+  [nvm](https://github.com/nvm-sh/nvm).)
+- **Docker Desktop** instalado e **aberto/rodando** (é ele que sobe o banco de
+  dados). Confira com `docker ps`.
+- **Git** para clonar o repositório.
+
+### Passo 1 — Clonar e instalar as dependências
+
+Na raiz do projeto (o monorepo tem `apps/api`, `apps/web` e `packages/shared`):
 
 ```bash
-# 1. Instalar dependências (na raiz do monorepo)
 npm install
+```
 
-# 2. Subir o Postgres (porta 55432, para não conflitar com um Postgres nativo na 5432)
+Isso instala tudo de uma vez (um único `node_modules` na raiz).
+
+### Passo 2 — Subir o banco de dados
+
+```bash
 npm run docker:up
+```
 
-# 3. Configurar variáveis de ambiente
+Sobe um PostgreSQL num container, na porta **55432** (proposital, para não
+conflitar com um Postgres nativo na 5432). Aguarde alguns segundos até ficar
+saudável — confira com `docker ps` (deve aparecer `conciliacao-postgres`).
+
+### Passo 3 — Configurar as variáveis de ambiente
+
+```bash
+# API: copia o exemplo com todos os segredos e a URL do banco
 cp .env.example apps/api/.env
+
+# Web: diz ao front onde a API está
 echo "NEXT_PUBLIC_API_URL=http://localhost:3001" > apps/web/.env.local
+```
 
-# 4. Rodar a migração e o seed (empresa demo + árvore de categorias)
-npm run prisma:migrate
-npm run prisma:seed
+O `.env.example` já vem com valores de desenvolvimento que funcionam localmente.
+> A API **recusa subir** se faltar `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`,
+> `DATABASE_URL` ou `CORS_ORIGIN` — por isso não pule este passo.
 
-# 5. Subir API + Web em modo dev
+### Passo 4 — Criar as tabelas e os dados de exemplo
+
+```bash
+npm run prisma:migrate   # cria as tabelas no banco
+npm run prisma:seed      # cria a empresa demo + árvore de categorias do DFC
+```
+
+### Passo 5 — Subir a aplicação (API + Web juntos)
+
+```bash
 npm run dev
 ```
 
-- API: http://localhost:3001 (health check em `/health`)
-- Web: http://localhost:3000
-- pgAdmin: http://localhost:5050 (login `admin@conciliacao.dev` / `admin`)
+Isso sobe, em paralelo: o build do `packages/shared` em modo watch, a **API**
+(porta 3001) e o **Web** (porta 3000). Deixe esse terminal aberto.
 
-Usuário demo (criado pelo seed): `demo@conciliacao.dev` / `demo12345`, já vinculado
-à "Empresa Demo Ltda" com uma conta bancária e o plano de categorias padrão
-mapeado ao DFC.
+### Passo 6 — Acessar e entrar
+
+1. Abra **http://localhost:3000** no navegador.
+2. Faça login com o usuário demo criado pelo seed:
+   - **E-mail**: `demo@conciliacao.dev`
+   - **Senha**: `demo12345`
+
+Esse usuário já vem vinculado à "Empresa Demo Ltda", com uma conta bancária e o
+plano de categorias padrão mapeado ao DFC — então dá para importar um extrato e
+ver a DFC/dashboard funcionando na hora.
+
+### Conferindo que está tudo no ar
+
+| Serviço | URL | Observação |
+|---|---|---|
+| Web (app) | http://localhost:3000 | onde você usa o sistema |
+| API | http://localhost:3001/health | deve responder `{ "status": "ok" }` |
+| pgAdmin | http://localhost:5050 | banco pelo navegador (`admin@conciliacao.dev` / `admin`) |
+
+### (Opcional) Habilitar login com Google localmente
+
+O login por e-mail/senha funciona sem nenhuma configuração extra. Para testar o
+**"Continuar com Google"** localmente, preencha no `apps/api/.env`:
+
+```
+GOOGLE_CLIENT_ID="..."         # do Google Cloud Console
+GOOGLE_CLIENT_SECRET="..."
+GOOGLE_CALLBACK_URL="http://localhost:3001/auth/google/callback"
+WEB_APP_URL="http://localhost:3000"
+```
+
+No Google Cloud Console, cadastre `http://localhost:3001/auth/google/callback`
+como **Authorized redirect URI**. Depois de mexer no `.env`, **reinicie o
+`npm run dev`** (a API só lê as variáveis no boot).
+
+### Problemas comuns
+
+- **`docker ps` não funciona / banco não sobe** → o Docker Desktop não está
+  aberto. Abra-o e rode `npm run docker:up` de novo.
+- **API não sobe com erro de variável faltando** → você pulou o Passo 3
+  (`cp .env.example apps/api/.env`).
+- **Porta 3000 ou 3001 ocupada** → feche o processo antigo (outra instância do
+  `npm run dev`) antes de subir de novo.
+- **404 em `_next/static/...` no front** → o `.next` do dev foi corrompido por um
+  build de produção rodado junto. Pare o dev, apague `apps/web/.next` e rode
+  `npm run dev` de novo (ver o aviso em "Comandos úteis").
 
 ## Comandos úteis
 
