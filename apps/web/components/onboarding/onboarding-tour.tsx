@@ -1,11 +1,14 @@
 'use client';
 
 import * as React from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { X, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
 
 export interface TourStep {
   id: string;
   target?: string;
+  /** Rota para a qual navegar antes de destacar o alvo (App Router). */
+  navigateTo?: string;
   title: string;
   description: string;
 }
@@ -24,6 +27,8 @@ interface Rect {
 }
 
 export function OnboardingTour({ steps, open, onClose }: OnboardingTourProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [index, setIndex] = React.useState(0);
   const [rect, setRect] = React.useState<Rect | null>(null);
 
@@ -33,33 +38,69 @@ export function OnboardingTour({ steps, open, onClose }: OnboardingTourProps) {
 
   const step = steps[index];
 
-  const measure = React.useCallback(() => {
-    if (!step?.target) {
-      setRect(null);
-      return;
-    }
-    const el = document.querySelector(`[data-tour="${step.target}"]`);
-    if (!el) {
-      setRect(null);
-      return;
-    }
-    const r = el.getBoundingClientRect();
-    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-  }, [step]);
-
+  // Navega para a rota do passo (se houver) e localiza o alvo. Como a página do
+  // App Router renderiza de forma assíncrona após navegar, o alvo é buscado por
+  // polling até aparecer (ou desiste e cai no card central).
   React.useEffect(() => {
-    if (!open) return;
-    measure();
-    const timer = window.setTimeout(measure, 220);
-    window.addEventListener('resize', measure);
-    window.addEventListener('scroll', measure, true);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener('resize', measure);
-      window.removeEventListener('scroll', measure, true);
+    if (!open || !step) return;
+
+    const needsNavigation = Boolean(step.navigateTo) && pathname !== step.navigateTo;
+    if (needsNavigation && step.navigateTo) {
+      router.push(step.navigateTo);
+    }
+
+    if (!step.target) {
+      setRect(null);
+      return;
+    }
+
+    const selector = `[data-tour="${step.target}"]`;
+    let cancelled = false;
+    let attempts = 0;
+    let timer: number | undefined;
+    const MAX_ATTEMPTS = 30; // ~3s a 100ms
+
+    const locate = (): Element | null => document.querySelector(selector);
+
+    const apply = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
     };
-  }, [open, measure]);
+
+    const poll = () => {
+      if (cancelled) return;
+      const el = locate();
+      if (el) {
+        apply(el);
+        return;
+      }
+      attempts += 1;
+      if (attempts < MAX_ATTEMPTS) {
+        timer = window.setTimeout(poll, 100);
+      } else {
+        setRect(null);
+      }
+    };
+
+    // Enquanto (re)localiza, mostra o card central em vez de um spotlight velho.
+    setRect(null);
+    poll();
+
+    const onReflow = () => {
+      const el = locate();
+      if (el) apply(el);
+    };
+    window.addEventListener('resize', onReflow);
+    window.addEventListener('scroll', onReflow, true);
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener('resize', onReflow);
+      window.removeEventListener('scroll', onReflow, true);
+    };
+  }, [open, step, pathname, router]);
 
   if (!open || !step) return null;
 

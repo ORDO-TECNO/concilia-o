@@ -86,7 +86,7 @@ export default function RegrasPage() {
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button>Nova regra</Button>
+              <Button data-tour="regras-nova">Nova regra</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

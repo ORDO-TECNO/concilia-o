@@ -78,7 +78,7 @@ export default function ImportarPage() {
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Importar extrato</h1>
 
-      <Card>
+      <Card data-tour="importar-upload">
         <CardHeader>
           <CardTitle>Novo arquivo</CardTitle>
         </CardHeader>
