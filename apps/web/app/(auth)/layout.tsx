@@ -3,8 +3,9 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { TrendingUp, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { AuthMarketing } from '@/components/auth/auth-marketing';
+import { Logo } from '@/components/ui/logo';
 import { applyDomOnlyTheme, getPreferredTheme } from '@/lib/theme';
 
 const NAV_LINKS = [
@@ -42,14 +43,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-base-100">
       <header className="sticky top-0 z-50 border-b border-base-300 bg-base-100">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-content shadow-md shadow-primary/30">
-              <TrendingUp className="h-4 w-4" />
-            </span>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold text-base-content">Ordo</p>
-              <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
-            </div>
+          <div className="flex flex-col gap-0.5">
+            <Logo size={26} title="Ordo" />
+            <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
           </div>
 
           <nav className="hidden items-center gap-6 md:flex">

@@ -9,9 +9,9 @@ import {
   TableProperties,
   Wand2,
   Settings,
-  TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/ui/logo';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, tour: 'nav-dashboard' },
@@ -32,14 +32,9 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-60 flex-col border-r border-base-300 bg-base-100">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-content shadow-md shadow-primary/30">
-          <TrendingUp className="h-4 w-4" />
-        </span>
-        <div className="leading-tight">
-          <p className="text-sm font-semibold text-base-content">Ordo</p>
-          <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
-        </div>
+      <div className="flex flex-col gap-1 px-5 py-5">
+        <Logo size={24} title="Ordo" />
+        <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
       </div>
       <nav className="flex-1 space-y-1 px-3">
         {NAV_ITEMS.map((item) => {

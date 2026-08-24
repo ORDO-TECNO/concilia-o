@@ -15,6 +15,7 @@ import {
   ArrowUpRight,
   BarChart3,
 } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 const HERO_HEADLINES: [string, string][] = [
   ['Visualize o fluxo de', 'caixa da sua empresa.'],
@@ -688,8 +689,9 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
         </div>
       </section>
 
-      <footer className="bg-base-100 px-4 py-8 text-center text-xs text-muted-foreground sm:px-6">
-        Ordo · Conciliação Bancária Inteligente · Fase 1 — MVP
+      <footer className="flex flex-col items-center gap-2 bg-base-100 px-4 py-8 text-center text-xs text-muted-foreground sm:px-6">
+        <Logo size={22} title="Ordo" />
+        <span>Conciliação Bancária Inteligente · Fase 1 — MVP</span>
       </footer>
     </main>
   );
