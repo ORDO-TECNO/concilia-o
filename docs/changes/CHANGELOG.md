@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-08-23 — feat(transactions): streaming export for CSV and XLSX (NFR-1) → [doc](2026-08-23-transactions-export-streaming.md)
 - 2026-08-23 — chore(app): documenta requisitos não-funcionais e plano de escala → [doc](2026-08-23-app-nfr-doc.md)
 - 2026-08-23 — feat(web): tour de onboarding com navegação entre páginas → [doc](2026-08-23-web-tour-navigation.md)
 - 2026-08-23 — feat(web): logo Ordo no design system e na aplicação → [doc](2026-08-23-web-logo-ordo.md)
