@@ -18,7 +18,7 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'Ordo — Conciliação Bancária Inteligente',
+  title: 'Ordo — Conciliação',
   description: 'Plataforma de conciliação bancária, classificação e DFC',
   icons: {
     icon: '/brand/ordo-icon-navy.svg',

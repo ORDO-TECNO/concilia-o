@@ -691,7 +691,7 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
 
       <footer className="flex flex-col items-center gap-2 bg-base-100 px-4 py-8 text-center text-xs text-muted-foreground sm:px-6">
         <Logo size={22} title="Ordo" />
-        <span>Conciliação Bancária Inteligente · Fase 1 — MVP</span>
+        <span>Conciliação · Fase 1 — MVP</span>
       </footer>
     </main>
   );

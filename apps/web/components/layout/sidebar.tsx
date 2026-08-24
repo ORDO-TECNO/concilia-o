@@ -32,9 +32,8 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-60 flex-col border-r border-base-300 bg-base-100">
-      <div className="flex flex-col gap-1 px-5 py-5">
+      <div className="flex items-center px-5 py-5">
         <Logo size={24} title="Ordo" />
-        <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
       </div>
       <nav className="flex-1 space-y-1 px-3">
         {NAV_ITEMS.map((item) => {

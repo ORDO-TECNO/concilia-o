@@ -43,9 +43,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-base-100">
       <header className="sticky top-0 z-50 border-b border-base-300 bg-base-100">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex flex-col gap-0.5">
+          <div className="flex items-center">
             <Logo size={26} title="Ordo" />
-            <p className="text-[11px] text-muted-foreground">Bancária Inteligente</p>
           </div>
 
           <nav className="hidden items-center gap-6 md:flex">
