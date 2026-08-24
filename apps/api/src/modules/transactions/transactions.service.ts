@@ -100,33 +100,42 @@ export class TransactionsService {
   }
 
   /**
-   * Async generator that fetches rows in cursor-paginated batches (keyset on id)
-   * and yields each batch as an ExportRow[]. Never materialises the full result set.
+   * Async generator that fetches rows in cursor-paginated batches.
+   *
+   * Uses Prisma's native cursor + skip:1, which continues from the cursor
+   * position within the established orderBy sequence. The id tiebreaker makes
+   * the order deterministic so the cursor always points to an unambiguous row.
+   *
+   * NOTE: `id > cursor` in WHERE would only be correct if id were the sole
+   * sort key. With any other primary sort (date, amount, description) it would
+   * skip and/or duplicate rows across page boundaries.
+   *
+   * @param batchSize - Rows per fetch. Defaults to EXPORT_BATCH_SIZE (1 000).
+   *                    Override in tests to force multiple page fetches with small datasets.
    */
-  private async *fetchExportBatches(
+  protected async *fetchExportBatches(
     where: Prisma.TransactionWhereInput,
     sortBy: string,
     sortDir: 'asc' | 'desc',
+    batchSize = TransactionsService.EXPORT_BATCH_SIZE,
   ): AsyncIterable<ExportRow[]> {
     let cursor: string | undefined;
 
     while (true) {
       const items = await this.prisma.transaction.findMany({
-        where: {
-          ...where,
-          ...(cursor ? { id: { gt: cursor } } : {}),
-        },
+        where,
         include: { category: true, party: true, bankAccount: true },
-        // Primary sort by the requested field; id is the tiebreaker for stable keyset pagination.
+        // id tiebreaker makes the sort deterministic so the cursor is unambiguous.
         orderBy: [{ [sortBy]: sortDir }, { id: 'asc' }],
-        take: TransactionsService.EXPORT_BATCH_SIZE,
+        take: batchSize,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       });
 
       if (items.length === 0) break;
 
       yield items.map((t) => TransactionsService.toExportRow(t));
 
-      if (items.length < TransactionsService.EXPORT_BATCH_SIZE) break;
+      if (items.length < batchSize) break;
       cursor = items[items.length - 1]!.id;
     }
   }
