@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-08-24 — chore(web): landing alinhada ao design system (Button + tokens de cor) → [doc](2026-08-24-web-landing-design-system.md)
 - 2026-08-23 — feat(transactions): streaming export for CSV and XLSX (NFR-1) → [doc](2026-08-23-transactions-export-streaming.md)
 - 2026-08-23 — chore(app): documenta requisitos não-funcionais e plano de escala → [doc](2026-08-23-app-nfr-doc.md)
 - 2026-08-23 — feat(web): tour de onboarding com navegação entre páginas → [doc](2026-08-23-web-tour-navigation.md)

@@ -16,6 +16,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
+import { Button } from '@/components/ui/button';
 
 const HERO_HEADLINES: [string, string][] = [
   ['Visualize o fluxo de', 'caixa da sua empresa.'],
@@ -521,14 +522,14 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-5">
-              <button
+              <Button
                 type="button"
                 onClick={onOpenAuth}
-                className="btn btn-primary gap-2 rounded-full px-6"
+                className="h-11 gap-2 rounded-full px-6 text-sm"
               >
                 {ctaLabel}
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
               <a
                 href="#funcionalidades"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-base-content hover:text-primary"
@@ -639,50 +640,50 @@ export function AuthMarketing({ onOpenAuth }: { onOpenAuth: () => void }) {
         </div>
       </section>
 
-      <section className="bg-[hsl(175,84%,13%)] px-4 py-16 sm:px-6 sm:py-20">
+      <section className="bg-neutral px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div>
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-content/15 text-primary-content">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-content/15 text-neutral-content">
               <BarChart3 className="h-5 w-5" />
             </span>
-            <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-teal-300">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-primary">
               Conciliação bancária inteligente
             </p>
-            <h3 className="mt-3 text-2xl font-bold leading-tight text-primary-content sm:text-3xl">
+            <h3 className="mt-3 text-2xl font-bold leading-tight text-neutral-content sm:text-3xl">
               Pronto pra organizar seu fluxo de caixa?
             </h3>
-            <p className="mt-3 max-w-md text-sm text-primary-content/70">
+            <p className="mt-3 max-w-md text-sm text-neutral-content/70">
               Importe seu primeiro extrato e veja os lançamentos classificados na hora.
             </p>
-            <button
+            <Button
               type="button"
               onClick={onOpenAuth}
-              className="btn mt-6 gap-2 rounded-full border-none bg-base-100 px-6 text-base-content hover:bg-base-100/90"
+              className="mt-6 h-11 gap-2 rounded-full bg-base-100 px-6 text-sm text-base-content hover:bg-base-100/90"
             >
               {ctaLabel}
               <ArrowRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
 
-          <div className="rounded-2xl border border-primary-content/10 bg-primary-content/5 p-6">
+          <div className="rounded-2xl border border-neutral-content/10 bg-neutral-content/5 p-6">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-primary-content/60">
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-content/60">
                 Este mês
               </p>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-content/15 text-primary-content">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-content/15 text-neutral-content">
                 <Check className="h-4 w-4" />
               </span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-primary-content">128 lançamentos importados</p>
+            <p className="mt-2 text-2xl font-bold text-neutral-content">128 lançamentos importados</p>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-primary-content/10 p-3">
-                <p className="text-[11px] text-primary-content/60">Ritmo mensal</p>
-                <p className="mt-1 text-sm font-semibold text-primary-content">Em dia</p>
+              <div className="rounded-xl bg-neutral-content/10 p-3">
+                <p className="text-[11px] text-neutral-content/60">Ritmo mensal</p>
+                <p className="mt-1 text-sm font-semibold text-neutral-content">Em dia</p>
               </div>
-              <div className="rounded-xl bg-primary-content/10 p-3">
-                <p className="text-[11px] text-primary-content/60">Duplicados ignorados</p>
-                <p className="mt-1 text-sm font-semibold text-primary-content">4</p>
+              <div className="rounded-xl bg-neutral-content/10 p-3">
+                <p className="text-[11px] text-neutral-content/60">Duplicados ignorados</p>
+                <p className="mt-1 text-sm font-semibold text-neutral-content">4</p>
               </div>
             </div>
           </div>
