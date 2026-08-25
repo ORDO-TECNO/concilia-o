@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'crypto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ImportSource, ImportStatus, Prisma, TransactionType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
@@ -27,6 +27,8 @@ function computeDedupeHash(bankAccountId: string, t: ParsedTransaction): string 
 
 @Injectable()
 export class ImportsService {
+  private readonly logger = new Logger(ImportsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly classificationRulesService: ClassificationRulesService,
@@ -77,25 +79,56 @@ export class ImportsService {
       },
     });
 
-    const { newRecords, duplicateRecords } = await this.insertTransactions(
-      companyId,
-      dto.bankAccountId,
-      importBatch.id,
-      dto.source as ImportSource,
-      parsed.transactions,
-    );
+    let insertedIds: string[];
+    let updated: Prisma.ImportBatchGetPayload<{ include: { periods: true } }>;
 
-    await this.createPeriods(importBatch.id, parsed.transactions);
+    try {
+      const result = await this.prisma.$transaction(
+        async (tx) => {
+          const { newRecords, duplicateRecords, insertedIds: ids } = await this.insertTransactions(
+            companyId,
+            dto.bankAccountId,
+            importBatch.id,
+            dto.source as ImportSource,
+            parsed.transactions,
+            tx,
+          );
 
-    const updated = await this.prisma.importBatch.update({
-      where: { id: importBatch.id },
-      data: {
-        status: ImportStatus.CONCLUIDO,
-        newRecords,
-        duplicateRecords,
-      },
-      include: { periods: true },
-    });
+          await this.createPeriods(importBatch.id, parsed.transactions, tx);
+
+          const batch = await tx.importBatch.update({
+            where: { id: importBatch.id },
+            data: {
+              status: ImportStatus.CONCLUIDO,
+              newRecords,
+              duplicateRecords,
+            },
+            include: { periods: true },
+          });
+
+          return { batch, ids };
+        },
+        { timeout: 30000 },
+      );
+
+      updated = result.batch;
+      insertedIds = result.ids;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Falha ao importar';
+      this.logger.error(`Import batch ${importBatch.id} failed: ${errorMessage}`);
+      await this.prisma.importBatch.update({
+        where: { id: importBatch.id },
+        data: { status: ImportStatus.FALHOU, errorMessage },
+      });
+      throw err;
+    }
+
+    // Rule application runs after the transaction commits — it is re-runnable
+    // ("Reaplicar em pendentes"), so keeping it outside avoids holding a long
+    // transaction and avoids pulling the rules service into the tx client.
+    if (insertedIds.length > 0) {
+      await this.classificationRulesService.applyToTransactions(companyId, insertedIds);
+    }
 
     return this.toSummary(updated);
   }
@@ -131,8 +164,9 @@ export class ImportsService {
     importBatchId: string,
     source: ImportSource,
     transactions: ParsedTransaction[],
+    tx: Prisma.TransactionClient,
   ) {
-    const existing = await this.prisma.transaction.findMany({
+    const existing = await tx.transaction.findMany({
       where: { bankAccountId },
       select: { fitId: true, dedupeHash: true },
     });
@@ -180,17 +214,21 @@ export class ImportsService {
     }
 
     if (toInsert.length > 0) {
-      await this.prisma.transaction.createMany({ data: toInsert, skipDuplicates: true });
-      await this.classificationRulesService.applyToTransactions(
-        companyId,
-        toInsert.map((t) => t.id as string),
-      );
+      await tx.transaction.createMany({ data: toInsert, skipDuplicates: true });
     }
 
-    return { newRecords: toInsert.length, duplicateRecords };
+    return {
+      newRecords: toInsert.length,
+      duplicateRecords,
+      insertedIds: toInsert.map((t) => t.id as string),
+    };
   }
 
-  private async createPeriods(importBatchId: string, transactions: ParsedTransaction[]) {
+  private async createPeriods(
+    importBatchId: string,
+    transactions: ParsedTransaction[],
+    tx: Prisma.TransactionClient,
+  ) {
     const byPeriod = new Map<string, ParsedTransaction[]>();
     for (const t of transactions) {
       const [year, month] = t.date.split('-');
@@ -206,7 +244,7 @@ export class ImportsService {
       const first = withBalance[0];
       const last = withBalance[withBalance.length - 1];
 
-      await this.prisma.importBatchPeriod.upsert({
+      await tx.importBatchPeriod.upsert({
         where: { importBatchId_year_month: { importBatchId, year, month } },
         create: {
           importBatchId,
