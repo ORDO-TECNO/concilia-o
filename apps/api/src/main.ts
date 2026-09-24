@@ -31,7 +31,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = config.get<number>('API_PORT') ?? 3001;
+  const port = config.get<number>('PORT') ?? config.get<number>('API_PORT') ?? 3001;
   await app.listen(port);
   // eslint-disable-next-line no-console
   console.log(`API rodando em http://localhost:${port}`);
