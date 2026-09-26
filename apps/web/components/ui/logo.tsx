@@ -16,8 +16,8 @@ const logoVariants = cva('shrink-0 select-none', {
   variants: {
     tone: {
       current: 'text-current',
-      navy: 'text-secondary',
-      teal: 'text-primary',
+      navy: 'text-primary',
+      teal: 'text-accent',
       white: 'text-white',
     },
   },

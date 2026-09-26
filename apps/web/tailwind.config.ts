@@ -61,12 +61,12 @@ const config: Config = {
     themes: [
       {
         concilia: {
-          primary: '#0D9488',
-          'primary-content': '#EFFDFB',
-          secondary: '#1E3A5F',
-          'secondary-content': '#E7EEF6',
-          accent: '#F59E0B',
-          'accent-content': '#1C1305',
+          primary: '#1E3A5F',
+          'primary-content': '#E7EEF6',
+          secondary: '#334155',
+          'secondary-content': '#E2E8F0',
+          accent: '#0D9488',
+          'accent-content': '#EFFDFB',
           neutral: '#1E293B',
           'neutral-content': '#E2E8F0',
           'base-100': '#FFFFFF',
@@ -84,12 +84,12 @@ const config: Config = {
       },
       {
         concilianight: {
-          primary: '#2DD4BF',
-          'primary-content': '#04211D',
-          secondary: '#3B82C4',
-          'secondary-content': '#04141F',
-          accent: '#FBBF24',
-          'accent-content': '#1C1305',
+          primary: '#4A7DB5',
+          'primary-content': '#06121F',
+          secondary: '#64748B',
+          'secondary-content': '#E2E8F0',
+          accent: '#2DD4BF',
+          'accent-content': '#04211D',
           neutral: '#1E293B',
           'neutral-content': '#E2E8F0',
           'base-100': '#0B1220',
