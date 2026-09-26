@@ -3,10 +3,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 /**
- * Logo — marca Ordo.
+ * Logo — marca Ledger.
  *
  * `variant="wordmark"` (padrão) desenha a palavra inteira.
- * `variant="icon"` desenha só o "o", para ícone de app, favicon e avatar.
+ * `variant="icon"` desenha só o "e", para ícone de app, favicon e avatar.
  *
  * A cor vem de `tone`; `tone="current"` herda `currentColor`, o que permite
  * usar o logotipo dentro de qualquer superfície já colorida.
@@ -25,8 +25,8 @@ const logoVariants = cva('shrink-0 select-none', {
 });
 
 const GEOMETRY = {
-  wordmark: { viewBox: '0 0 250 100', ratio: 2.5, transform: 'translate(16 0) skewX(-11)' },
-  icon: { viewBox: '0 0 69 44', ratio: 69 / 44, transform: 'translate(16 -38) skewX(-11)' },
+  wordmark: { viewBox: '0 0 348 124', ratio: 348 / 124, transform: 'translate(22 0) skewX(-11)' },
+  icon: { viewBox: '0 0 64 64', ratio: 1, transform: 'translate(14.7 -28) skewX(-11)' },
 } as const;
 
 export interface LogoProps
@@ -41,7 +41,7 @@ export interface LogoProps
 }
 
 const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
-  ({ className, variant = 'wordmark', tone, size = 32, title = 'ordo', ...props }, ref) => {
+  ({ className, variant = 'wordmark', tone, size = 32, title = 'ledger', ...props }, ref) => {
     const g = GEOMETRY[variant];
     return (
       <svg
@@ -57,13 +57,18 @@ const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
       >
         {title ? <title>{title}</title> : null}
         <g transform={g.transform} stroke="currentColor" strokeWidth={16} strokeLinecap="butt">
-          <circle cx="30" cy="60" r="22" />
-          {variant === 'wordmark' && (
+          {variant === 'icon' ? (
+            <path d="M8 60H52A22 22 0 1 0 44.14 76.85" />
+          ) : (
             <>
-              <path d="M76 90V54c0-12 10-18 23-18" />
-              <circle cx="133" cy="60" r="22" />
-              <path d="M155 8v82" />
-              <circle cx="201" cy="60" r="22" />
+              <path d="M8 8V90" />
+              <path d="M32 60H76A22 22 0 1 0 68.14 76.85" />
+              <circle cx="122" cy="60" r="22" />
+              <path d="M144 8V90" />
+              <circle cx="190" cy="60" r="22" />
+              <path d="M212 30V86A22 22 0 0 1 170.06 95.3" />
+              <path d="M236 60H280A22 22 0 1 0 272.14 76.85" />
+              <path d="M304 90V54c0-12 10-18 23-18" />
             </>
           )}
         </g>
