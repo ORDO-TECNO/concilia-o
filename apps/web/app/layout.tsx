@@ -18,11 +18,11 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'Ordo — Conciliação',
+  title: 'Ledger — Conciliação',
   description: 'Plataforma de conciliação bancária, classificação e DFC',
   icons: {
-    icon: '/brand/ordo-icon-navy.svg',
-    apple: '/brand/ordo-appicon-512.svg',
+    icon: '/brand/ledger-icon-navy.svg',
+    apple: '/brand/ledger-appicon-512.svg',
   },
 };
 

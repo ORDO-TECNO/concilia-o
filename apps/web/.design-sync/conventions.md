@@ -1,6 +1,6 @@
-# Ordo UI — how to build with this library
+# Ledger UI — how to build with this library
 
-Ordo UI is the component set for **Ordo**, a Brazilian bank-reconciliation
+Ledger UI is the component set for **Ledger**, a Brazilian bank-reconciliation
 platform (conciliação bancária, classificação de lançamentos, DFC). Components
 are shadcn/ui-style React primitives built on Radix, styled with Tailwind
 utility classes plus CSS-variable design tokens. Copy for this product is in

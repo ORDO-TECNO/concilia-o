@@ -1,4 +1,4 @@
-# Ordo — Requisitos não-funcionais (NFRs) e plano
+# Ledger — Requisitos não-funcionais (NFRs) e plano
 
 ## Contexto
 

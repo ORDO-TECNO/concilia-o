@@ -1,6 +1,6 @@
 {
   "pkg": "@conciliacao/web",
-  "globalName": "OrdoUI",
+  "globalName": "LedgerUI",
   "shape": "package",
   "projectId": "3bfec093-30e4-4993-9b1f-cc076e87a2d8",
   "tsconfig": "./tsconfig.json",

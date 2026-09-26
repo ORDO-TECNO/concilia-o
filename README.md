@@ -1,8 +1,8 @@
-# Conciliação Bancária Inteligente (Ordo)
+# Conciliação Bancária Inteligente (Ledger)
 
 ## O que o app faz
 
-O Ordo ajuda uma empresa a entender para onde vai e de onde vem o seu
+O Ledger ajuda uma empresa a entender para onde vai e de onde vem o seu
 dinheiro, a partir dos extratos bancários que ela já tem.
 
 1. **Importar extratos**: o usuário envia um arquivo CSV ou OFX de uma conta
@@ -269,7 +269,7 @@ Variáveis de ambiente obrigatórias no serviço Railway:
 | `DATABASE_URL` | Connection string PostgreSQL (Railway Postgres plugin) |
 | `JWT_ACCESS_SECRET` | Secret do access token (gere com `openssl rand -hex 32`) |
 | `JWT_REFRESH_SECRET` | Secret do refresh token (gere com `openssl rand -hex 32`) |
-| `CORS_ORIGIN` | URL do app Vercel (ex: `https://ordo.vercel.app`) |
+| `CORS_ORIGIN` | URL do app Vercel (ex: `https://ledger.vercel.app`) |
 | `NODE_ENV` | `production` |
 | `GOOGLE_CLIENT_ID` | Client ID do Google Cloud Console |
 | `GOOGLE_CLIENT_SECRET` | Client Secret do Google Cloud Console |
