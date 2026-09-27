@@ -8,12 +8,13 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-09-26 — chore(web): rebrand de Ordo para Ledger → [doc](2026-09-26-web-rebrand-ledger.md)
 - 2026-08-24 — fix(imports): wrap data writes in $transaction for all-or-nothing import (NFR-2 atomicity) → [doc](2026-08-24-imports-atomic.md)
 - 2026-08-24 — chore(web): landing alinhada ao design system (Button + tokens de cor) → [doc](2026-08-24-web-landing-design-system.md)
 - 2026-08-23 — feat(transactions): streaming export for CSV and XLSX (NFR-1) → [doc](2026-08-23-transactions-export-streaming.md)
 - 2026-08-23 — chore(app): documenta requisitos não-funcionais e plano de escala → [doc](2026-08-23-app-nfr-doc.md)
 - 2026-08-23 — feat(web): tour de onboarding com navegação entre páginas → [doc](2026-08-23-web-tour-navigation.md)
-- 2026-08-23 — feat(web): logo Ordo no design system e na aplicação → [doc](2026-08-23-web-logo-ordo.md)
+- 2026-08-23 — feat(web): logo Ledger no design system e na aplicação → [doc](2026-08-23-web-logo-ordo.md)
 - 2026-08-23 — fix(app): gera Prisma Client no CI (destrava os dois pipelines) → [doc](2026-08-23-app-ci-prisma-generate.md)
 - 2026-08-23 — feat(auth): avatar do Google exibido no usuário/topbar → [doc](2026-08-23-auth-avatar-google.md)
 - 2026-08-23 — chore(app): design cleanup — ConfigService, typed api-client, error logging, deploy runbook → [doc](2026-08-23-app-design-cleanup.md)

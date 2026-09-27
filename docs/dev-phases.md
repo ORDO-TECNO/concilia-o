@@ -1,8 +1,8 @@
-# Ordo — Review & Development Phases
+# Ledger — Review & Development Phases
 
 ## Context
 
-Ordo is a vibe-coded bank-reconciliation / DFC platform (NestJS + Prisma API,
+Ledger is a vibe-coded bank-reconciliation / DFC platform (NestJS + Prisma API,
 Next.js 14 web, `packages/shared` for DTOs and the DFC structure). The domain
 logic is strong; the goal now is to get it to a **smooth, reliable deploy on
 Railway (API) + Vercel (web)** and raise the engineering floor before the team

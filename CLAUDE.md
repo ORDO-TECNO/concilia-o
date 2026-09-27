@@ -1,6 +1,6 @@
-# Ordo — guia do projeto
+# Ledger — guia do projeto
 
-Ordo é uma plataforma de conciliação bancária, classificação automática de
+Ledger é uma plataforma de conciliação bancária, classificação automática de
 movimentações e geração de DFC (Demonstração do Fluxo de Caixa), com
 integração futura a Power BI. Este arquivo documenta a arquitetura e o
 roadmap de fases para orientar trabalho futuro no projeto.

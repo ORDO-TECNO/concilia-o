@@ -1,6 +1,6 @@
-# Ordo UI — how to build with this library
+# Ledger UI — how to build with this library
 
-Ordo UI is the component set for **Ordo**, a Brazilian bank-reconciliation
+Ledger UI is the component set for **Ledger**, a Brazilian bank-reconciliation
 platform (conciliação bancária, classificação de lançamentos, DFC). Components
 are shadcn/ui-style React primitives built on Radix, styled with Tailwind
 utility classes plus CSS-variable design tokens. Copy for this product is in
@@ -30,9 +30,9 @@ styling (layout wrappers, one-off accents), match the library by referencing the
 
 | Token variable | Role |
 |---|---|
-| `--primary` / `--primary-foreground` | teal brand action (buttons, active states) |
-| `--secondary` / `--secondary-foreground` | deep navy, secondary actions |
-| `--accent` / `--accent-foreground` | amber highlight (hover, selected menu item) |
+| `--primary` / `--primary-foreground` | deep navy brand action (buttons, active states) |
+| `--secondary` / `--secondary-foreground` | slate, secondary actions |
+| `--accent` / `--accent-foreground` | teal highlight (hover, selected menu item, brand pop) |
 | `--success` / `--success-foreground` | green (status "Conciliado") |
 | `--destructive` / `--destructive-foreground` | red (delete, "Duplicado") |
 | `--muted` / `--muted-foreground` | subtle surfaces and secondary text |
