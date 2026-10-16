@@ -111,4 +111,22 @@ describe('DfcService', () => {
     expect(report.netFlow[0]).toBe(0.3);
     expect(report.closingBalance[11]).toBe(0.3);
   });
+
+  it('separa o fluxo não classificado sem misturá-lo aos grupos nem aos saldos', async () => {
+    const prisma = buildPrismaMock(
+      [
+        { categoryId: null, competenceMonth: 3, _sum: { amount: -80 } },
+        { categoryId: 'cat-grupo', competenceMonth: 3, _sum: { amount: 20 } },
+        { categoryId: 'cat-receita', competenceMonth: 3, _sum: { amount: 100 } },
+      ],
+      [
+        { id: 'cat-grupo', dfcLine: null },
+        { id: 'cat-receita', dfcLine: DFCLine.RECEBIMENTOS_CLIENTES },
+      ],
+    );
+    const report = await new DfcService(prisma).getReport('company-1', 2026);
+    expect(report.unclassified[2]).toBe(-60);
+    expect(report.netFlow[2]).toBe(100);
+    expect(report.closingBalance[11]).toBe(100);
+  });
 });

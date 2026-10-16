@@ -35,7 +35,6 @@ export class DfcService {
       where: {
         companyId,
         competenceYear: year,
-        categoryId: { not: null },
         status: { notIn: [...CASHFLOW_EXCLUDED_STATUSES] },
       },
       _sum: { amount: true },
@@ -46,9 +45,16 @@ export class DfcService {
     const categoryDfcLine = new Map(categories.map((c) => [c.id, c.dfcLine]));
 
     const lineTotals = new Map<string, number[]>();
+    // Movimentação sem categoria (ou numa categoria sem linha da DFC) não entra
+    // nos grupos, mas é exibida à parte para o usuário saber o que falta
+    // classificar — sem isso a DFC parece completa quando não está.
+    const unclassified = emptyMonths();
     for (const g of grouped) {
       const dfcLine = g.categoryId ? categoryDfcLine.get(g.categoryId) : null;
-      if (!dfcLine) continue;
+      if (!dfcLine) {
+        unclassified[g.competenceMonth - 1] = round2(unclassified[g.competenceMonth - 1] + Number(g._sum.amount ?? 0));
+        continue;
+      }
       if (!lineTotals.has(dfcLine)) lineTotals.set(dfcLine, emptyMonths());
       const monthly = lineTotals.get(dfcLine)!;
       monthly[g.competenceMonth - 1] = round2(monthly[g.competenceMonth - 1] + Number(g._sum.amount ?? 0));
@@ -95,6 +101,7 @@ export class DfcService {
       openingBalance,
       closingBalance,
       netFlow,
+      unclassified,
     };
   }
 
