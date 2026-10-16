@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-10-16 — feat(web): global error toast, cache invalidation and registry actions → [doc](2026-10-16-web-feedback-and-cache.md)
 - 2026-10-16 — chore(app): run e2e and web tests in CI → [doc](2026-10-16-app-ci-e2e.md)
 - 2026-09-26 — chore(web): rebrand de Ordo para Ledger → [doc](2026-09-26-web-rebrand-ledger.md)
 - 2026-08-24 — fix(imports): wrap data writes in $transaction for all-or-nothing import (NFR-2 atomicity) → [doc](2026-08-24-imports-atomic.md)
