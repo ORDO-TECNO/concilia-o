@@ -1,10 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BankAccountsService } from './bank-accounts.service';
 import { BankAccountDto, UpdateBankAccountDto } from './dto/bank-account.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 
+@ApiTags('bank-accounts')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class BankAccountsController {
