@@ -95,4 +95,18 @@ describe('parseCsvStatement', () => {
     expect(result.transactions).toHaveLength(1);
     expect(result.transactions[0].description).toBe('Linha válida');
   });
+
+  it.each([
+    ['R$ -1.234,56', -1234.56],
+    ['-R$ 1.234,56', -1234.56],
+    ['(1.234,56)', -1234.56],
+    ['1.234,56-', -1234.56],
+    ['1.234,56 D', -1234.56],
+    ['1.234,56 C', 1234.56],
+    ['+50,00', 50],
+  ])('interpreta o valor %s como %d', (raw, expected) => {
+    const csv = `Data;Historico;Valor\n01/07/2026;Lançamento;${raw}\n`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
+    expect(result.transactions[0].amount).toBe(expected);
+  });
 });

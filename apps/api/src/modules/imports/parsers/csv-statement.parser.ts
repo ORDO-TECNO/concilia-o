@@ -89,13 +89,36 @@ function parseDate(raw: string | undefined, format: CsvColumnMapping['dateFormat
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 }
 
+/**
+ * Aceita os formatos de valor mais comuns em extratos brasileiros:
+ * "-1.234,56", "R$ -1.234,56", "(1.234,56)", "1.234,56-" e "1.234,56 D"/"C".
+ */
 function parseAmount(raw: string | undefined, decimalSeparator: ',' | '.'): number | undefined {
   if (raw === undefined || raw === null) return undefined;
-  let s = String(raw).trim();
+  let s = String(raw).replace(/R\$/gi, '').replace(/\s+/g, ' ').trim();
   if (!s) return undefined;
 
-  const negative = /^\(.*\)$/.test(s) || s.trim().startsWith('-');
-  s = s.replace(/[()]/g, '').replace(/^-/, '').replace(/R\$/gi, '').trim();
+  let negative = false;
+  const dcSuffix = s.match(/\s*([DC])$/i);
+  if (dcSuffix) {
+    negative = dcSuffix[1].toUpperCase() === 'D';
+    s = s.slice(0, s.length - dcSuffix[0].length).trim();
+  }
+  if (/^\(.*\)$/.test(s)) {
+    negative = true;
+    s = s.slice(1, -1).trim();
+  }
+  if (s.startsWith('-')) {
+    negative = true;
+    s = s.slice(1).trim();
+  } else if (s.startsWith('+')) {
+    s = s.slice(1).trim();
+  }
+  if (s.endsWith('-')) {
+    negative = true;
+    s = s.slice(0, -1).trim();
+  }
+  if (!/^[\d.,]+$/.test(s)) return undefined;
 
   s = decimalSeparator === ',' ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
 
