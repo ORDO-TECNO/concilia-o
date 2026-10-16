@@ -208,4 +208,15 @@ describe('Imports — atomicity success path', () => {
     expect(res.body.newRecords).toBe(1);
     expect(res.body.duplicateRecords).toBe(2);
   });
+
+  it('counts balance lines as ignored instead of importing them', async () => {
+    const csv = ['Data;Descricao;Valor', '28/02/2026;SALDO ANTERIOR;1000,00', '28/02/2026;PIX RECEBIDO;50,00'].join('\n');
+
+    const res = await importCsv(csv);
+    expect(res.status).toBe(201);
+    expect(res.body.totalRecords).toBe(2);
+    expect(res.body.newRecords).toBe(1);
+    expect(res.body.ignoredRecords).toBe(1);
+    expect(res.body.duplicateRecords).toBe(0);
+  });
 });

@@ -65,7 +65,8 @@ export class ImportsService {
         statementEndDate: parsed.endDate ? new Date(parsed.endDate) : null,
         statementStartBalance: parsed.startBalance ?? null,
         statementEndBalance: parsed.endBalance ?? null,
-        totalRecords: parsed.transactions.length,
+        totalRecords: parsed.transactions.length + parsed.ignoredCount,
+        ignoredRecords: parsed.ignoredCount,
       },
     });
 
