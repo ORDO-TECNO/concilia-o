@@ -35,6 +35,10 @@ Multiempresa: um usuário pode ter acesso a mais de uma empresa, e todos os
 dados (contas, categorias, lançamentos, regras) pertencem a uma empresa
 específica.
 
+> Manual técnico interativo (arquitetura, diagramas, simuladores de
+> importação, regras e DFC, referência da API): abra
+> [`docs/manual/index.html`](docs/manual/index.html) no navegador.
+
 ## Definição das entidades
 
 Campos técnicos internos (ids, timestamps de auditoria `createdAt`/
