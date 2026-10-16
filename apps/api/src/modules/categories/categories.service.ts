@@ -40,12 +40,30 @@ export class CategoriesService {
     }
   }
 
+  /**
+   * Só folhas recebem lançamentos e só folhas têm linha da DFC. Uma folha que
+   * ganha a primeira subcategoria vira agrupadora: não pode ter lançamentos
+   * nem regras apontando para ela, e perde a linha da DFC.
+   */
   private async assertValidParent(companyId: string, parentId: string) {
     const parent = await this.prisma.category.findUnique({ where: { id: parentId } });
     if (!parent || parent.companyId !== companyId) {
       throw new BadRequestException('Categoria pai inválida');
     }
+    const [transactionCount, ruleCount] = await Promise.all([
+      this.prisma.transaction.count({ where: { categoryId: parentId } }),
+      this.prisma.classificationRule.count({ where: { categoryId: parentId } }),
+    ]);
+    if (transactionCount > 0 || ruleCount > 0) {
+      throw new BadRequestException(
+        `"${parent.name}" já tem lançamentos ou regras — reclassifique-os antes de criar subcategorias nela`,
+      );
+    }
     return parent;
+  }
+
+  private async demoteToGroup(parentId: string) {
+    await this.prisma.category.update({ where: { id: parentId }, data: { dfcLine: null } });
   }
 
   /**
@@ -73,6 +91,7 @@ export class CategoriesService {
     this.assertKindMatchesLine(dto.kind, dto.dfcLine);
     if (dto.parentId) {
       await this.assertValidParent(companyId, dto.parentId);
+      await this.demoteToGroup(dto.parentId);
     }
     return this.prisma.category.create({
       data: {
@@ -100,6 +119,7 @@ export class CategoriesService {
     if (dto.parentId) {
       await this.assertValidParent(category.companyId, dto.parentId);
       await this.assertNotDescendant(id, dto.parentId);
+      await this.demoteToGroup(dto.parentId);
     }
 
     return this.prisma.category.update({

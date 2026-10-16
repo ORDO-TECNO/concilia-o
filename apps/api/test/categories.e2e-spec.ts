@@ -64,4 +64,36 @@ describe('Categories', () => {
     const changedKind = await api(ctx.app, tenant.token).patch(`/categories/${ok.body.id}`).send({ kind: 'DESPESA' });
     expect(changedKind.status).toBe(400);
   });
+
+  it('folha que ganha subcategoria vira agrupadora (perde a linha da DFC)', async () => {
+    const folha = await create({ name: 'Marketing', kind: 'DESPESA', dfcLine: 'COMERCIAL' });
+    const filha = await create({ name: 'Anúncios', kind: 'DESPESA', dfcLine: 'COMERCIAL', parentId: folha.body.id });
+    expect(filha.status).toBe(201);
+
+    const pai = await ctx.prisma.category.findUnique({ where: { id: folha.body.id } });
+    expect(pai?.dfcLine).toBeNull();
+  });
+
+  it('não cria subcategoria em categoria que já tem lançamentos', async () => {
+    const folha = await create({ name: 'Frete', kind: 'DESPESA', dfcLine: 'COMERCIAL' });
+    const ba = await ctx.prisma.bankAccount.create({ data: { companyId: tenant.companyId, conta: `cat-${Date.now()}` } });
+    await ctx.prisma.transaction.create({
+      data: {
+        companyId: tenant.companyId,
+        bankAccountId: ba.id,
+        date: new Date('2026-01-01'),
+        description: 'FRETE',
+        amount: -10,
+        type: 'DEBITO',
+        competenceYear: 2026,
+        competenceMonth: 1,
+        origin: 'CSV',
+        dedupeHash: `cat-${Date.now()}`,
+        categoryId: folha.body.id,
+      },
+    });
+
+    const res = await create({ name: 'Frete urgente', kind: 'DESPESA', dfcLine: 'COMERCIAL', parentId: folha.body.id });
+    expect(res.status).toBe(400);
+  });
 });
