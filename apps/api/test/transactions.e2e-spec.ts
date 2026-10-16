@@ -88,4 +88,21 @@ describe('Transactions', () => {
       expect(res.status).toBe(400);
     });
   });
+
+  describe('POST bulk', () => {
+    const bulk = (body: Record<string, unknown>) =>
+      api(ctx.app, tenant.token).post(`/companies/${tenant.companyId}/transactions/bulk`).send(body);
+
+    it('CATEGORIZAR rejeita categoria de outra empresa', async () => {
+      const t = await newTransaction();
+      const res = await bulk({ ids: [t.id], action: 'CATEGORIZAR', categoryId: foreignCategoryId });
+      expect(res.status).toBe(400);
+    });
+
+    it('CATEGORIZAR rejeita categoria agrupadora', async () => {
+      const t = await newTransaction();
+      const res = await bulk({ ids: [t.id], action: 'CATEGORIZAR', categoryId: groupId });
+      expect(res.status).toBe(400);
+    });
+  });
 });

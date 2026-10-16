@@ -232,6 +232,7 @@ export class TransactionsService {
         if (!dto.categoryId) {
           throw new BadRequestException('categoryId é obrigatório para a ação CATEGORIZAR');
         }
+        await assertAssignableCategory(this.prisma, companyId, dto.categoryId);
         await this.prisma.transaction.updateMany({
           where: { id: { in: dto.ids } },
           data: {
