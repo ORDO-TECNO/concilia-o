@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Gerado a partir do artefato publicado; mantenha os dois em sincronia. -->
+</head>
+<body>
+<title>Manual do Ledger</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: índice fixo à esquerda (vira faixa de atalhos no celular) + coluna de leitura com laboratórios interativos */
+:root {
+  --bg: #f5f8fc;
+  --surface: #ffffff;
+  --surface-2: #eef3f9;
+  --ink: #0f1b2d;
+  --muted: #586a80;
+  --line: #dbe3ee;
+  --navy: #1f3d61;
+  --navy-soft: #e4ecf6;
+  --teal: #0b7f76;
+  --teal-soft: #dff3f0;
+  --pos: #15803d;
+  --neg: #b42318;
+  --warn: #a55a06;
+  --warn-soft: #fbefdc;
+  --neg-soft: #fbe5e2;
+  --pos-soft: #e1f3e6;
+  --code-bg: #0f1b2d;
+  --code-ink: #dfe8f3;
+  --f-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --f-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a111e; --surface: #101a2b; --surface-2: #152238; --ink: #e5ecf5; --muted: #93a4ba;
+    --line: #22324c; --navy: #8fb3e0; --navy-soft: #172a45; --teal: #3fc9b9; --teal-soft: #0e2f2d;
+    --pos: #4fd07f; --neg: #f58a80; --warn: #f2b95a; --warn-soft: #33260f; --neg-soft: #3a1a18; --pos-soft: #10301c;
+    --code-bg: #060b14; --code-ink: #d6e2f0; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a111e; --surface: #101a2b; --surface-2: #152238; --ink: #e5ecf5; --muted: #93a4ba;
+  --line: #22324c; --navy: #8fb3e0; --navy-soft: #172a45; --teal: #3fc9b9; --teal-soft: #0e2f2d;
+  --pos: #4fd07f; --neg: #f58a80; --warn: #f2b95a; --warn-soft: #33260f; --neg-soft: #3a1a18; --pos-soft: #10301c;
+  --code-bg: #060b14; --code-ink: #d6e2f0; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+a { color: var(--teal); }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 4px; }
+code, kbd, .mono { font-family: var(--f-mono); font-size: .86em; }
+:not(pre) > code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
+
+.shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: 1320px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); gap: 40px; }
+nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; height: 100vh; overflow-y: auto; padding-block: 28px; }
+.brand { display: flex; align-items: baseline; gap: 8px; margin-bottom: 22px; }
+.brand b { font: 700 28px/1 var(--f-display); color: var(--navy); font-style: italic; letter-spacing: -.01em; }
+.brand span { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: toc; }
+.toc li a { display: grid; grid-template-columns: 26px 1fr; gap: 4px; padding: 6px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+.toc li a::before { counter-increment: toc; content: counter(toc, decimal-leading-zero); font: 500 11px/1.9 var(--f-mono); color: var(--line); }
+.toc li a:hover { background: var(--surface-2); color: var(--ink); }
+.toc li a.on { background: var(--navy-soft); color: var(--navy); font-weight: 600; }
+.toc li a.on::before { color: var(--teal); }
+.toc .meta { margin-top: 24px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 4px; }
+
+main { padding-block: 28px 80px; min-width: 0; }
+section { padding-block: 34px 10px; border-top: 1px solid var(--line); scroll-margin-top: 12px; }
+section:first-of-type { border-top: 0; padding-top: 0; }
+.eyebrow { font: 600 11px/1 var(--f-body); text-transform: uppercase; letter-spacing: .14em; color: var(--teal); margin: 0 0 10px; }
+h1 { font: 700 clamp(34px, 5vw, 52px)/1.05 var(--f-display); margin: 0 0 14px; color: var(--navy); text-wrap: balance; letter-spacing: -.015em; }
+h2 { font: 700 30px/1.15 var(--f-display); margin: 0 0 12px; color: var(--ink); text-wrap: balance; }
+h3 { font: 600 17px/1.3 var(--f-body); margin: 26px 0 8px; }
+p { margin: 0 0 12px; max-width: 70ch; }
+.lead { font-size: 17px; color: var(--muted); max-width: 64ch; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 32px; align-items: end; padding-bottom: 26px; }
+.ledger-strip { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; font: 13px/1.5 var(--f-mono); }
+.ledger-strip .row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 96px; gap: 10px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
+.ledger-strip .row:last-child { border-bottom: 0; }
+.ledger-strip .row span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.ledger-strip .tag { font-size: 10px; padding: 1px 6px; border-radius: 99px; margin-left: 6px; font-family: var(--f-body); font-weight: 600; }
+.neg { color: var(--neg); } .pos { color: var(--pos); }
+.stack-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.pill.teal { background: var(--teal-soft); color: var(--teal); border-color: transparent; }
+.pill.navy { background: var(--navy-soft); color: var(--navy); border-color: transparent; }
+.pill.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.pill.neg { background: var(--neg-soft); color: var(--neg); border-color: transparent; }
+.pill.pos { background: var(--pos-soft); color: var(--pos); border-color: transparent; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; }
+.lab { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); margin: 18px 0; overflow: hidden; }
+.lab-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.lab-head strong { font-size: 14px; }
+.lab-head .kind { font: 600 10px/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin-right: 8px; }
+.lab-body { padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+svg text { font-family: var(--f-body); }
+.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: stroke .15s, fill .15s; }
+.node { cursor: pointer; }
+.node:hover rect, .node:focus rect { stroke: var(--teal); }
+.node.sel rect { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 2; }
+.node .t { fill: var(--ink); font-weight: 700; font-size: 14px; }
+.node .s { fill: var(--muted); font-size: 11px; }
+.node .hd { fill: var(--navy); }
+.edge { stroke: var(--line); stroke-width: 1.6; fill: none; transition: stroke .15s, opacity .15s; }
+.edge.hot { stroke: var(--teal); stroke-width: 2.4; }
+.edge.dash { stroke-dasharray: 5 4; }
+.elabel { fill: var(--muted); font-size: 10.5px; }
+.elabel.hot { fill: var(--teal); font-weight: 600; }
+.diagram.dim .edge:not(.hot) { opacity: .35; }
+
+.detail { border-left: 3px solid var(--teal); padding: 4px 0 4px 14px; min-height: 64px; }
+.detail h4 { margin: 0 0 6px; font-size: 16px; }
+.fields { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fields th, .fields td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.fields th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.fields td:first-child { font-family: var(--f-mono); font-size: 12px; white-space: nowrap; }
+.ft { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; letter-spacing: .04em; }
+.ft.S { background: var(--navy-soft); color: var(--navy); }
+.ft.D { background: var(--teal-soft); color: var(--teal); }
+.ft.R { background: var(--surface-2); color: var(--muted); }
+
+.steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.step { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 12px; cursor: pointer; font: inherit; color: inherit; display: grid; gap: 4px; position: relative; }
+.step .n { font: 500 11px var(--f-mono); color: var(--muted); }
+.step b { font-size: 14px; }
+.step small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.step[aria-pressed="true"] { border-color: var(--teal); background: var(--teal-soft); }
+.step[aria-pressed="true"] .n { color: var(--teal); }
+
+button.btn, .seg button { font: 600 13px var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+button.btn:hover { border-color: var(--teal); }
+button.btn.primary { background: var(--navy); border-color: var(--navy); color: var(--surface); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; flex-wrap: wrap; }
+.seg button { border: 0; border-radius: 0; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--navy); color: var(--surface); }
+label.ctl { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+select, input[type="text"], input[type="search"], input[type="number"], textarea { font: 14px var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; width: 100%; min-width: 0; }
+textarea { font: 12.5px/1.55 var(--f-mono); resize: vertical; }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+
+.counters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.counter { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; background: var(--surface); }
+.counter span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.counter b { font: 600 24px/1.2 var(--f-mono); font-variant-numeric: tabular-nums; }
+.counter.pos b { color: var(--pos); } .counter.warn b { color: var(--warn); } .counter.ign b { color: var(--muted); }
+
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data th, table.data td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+table.data th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; background: var(--surface-2); position: sticky; top: 0; }
+table.data td.num, table.data th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data tr.out td { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+table.data tr.sum td { font-weight: 700; background: var(--surface-2); }
+table.data tr.grp td { font-weight: 600; color: var(--navy); }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.b-new { background: var(--pos-soft); color: var(--pos); }
+.b-dup { background: var(--warn-soft); color: var(--warn); }
+.b-ign { background: var(--surface-2); color: var(--muted); }
+.b-err { background: var(--neg-soft); color: var(--neg); }
+
+.method { font: 700 11px var(--f-mono); padding: 2px 7px; border-radius: 5px; display: inline-block; min-width: 54px; text-align: center; }
+.m-GET { background: var(--teal-soft); color: var(--teal); }
+.m-POST { background: var(--navy-soft); color: var(--navy); }
+.m-PATCH { background: var(--warn-soft); color: var(--warn); }
+.m-DELETE { background: var(--neg-soft); color: var(--neg); }
+.path { font-family: var(--f-mono); font-size: 12.5px; word-break: break-all; }
+
+.trace { display: grid; gap: 6px; }
+.trace .r { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+.trace .r.hit { border-color: var(--teal); background: var(--teal-soft); }
+.trace .r.off { opacity: .5; }
+.trace .r .p { font: 600 12px var(--f-mono); color: var(--muted); text-align: center; }
+.result { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.result div { border: 1px dashed var(--line); border-radius: 8px; padding: 10px; }
+.result span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+.result b { font-size: 15px; }
+
+.dfc-tree { display: grid; gap: 10px; }
+.dfc-group { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; }
+.dfc-group h5 { margin: 0 0 6px; font-size: 13px; color: var(--navy); text-transform: uppercase; letter-spacing: .08em; }
+.dfc-sec { font-size: 12px; color: var(--muted); margin: 6px 0 4px; font-weight: 600; }
+.dfc-lines { display: flex; flex-wrap: wrap; gap: 6px; }
+.dfc-line { font-size: 12px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); transition: all .15s; }
+.dfc-line.ok { background: var(--teal-soft); color: var(--teal); border-color: var(--teal); font-weight: 600; }
+
+pre.code { background: var(--code-bg); color: var(--code-ink); border-radius: 9px; padding: 12px 14px; margin: 0; overflow-x: auto; font: 12.5px/1.6 var(--f-mono); }
+.cmd { position: relative; }
+.cmd button { position: absolute; top: 8px; right: 8px; font: 600 11px var(--f-body); background: transparent; color: var(--code-ink); border: 1px solid #ffffff33; border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+pre.mermaid { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; overflow-x: auto; margin: 0; }
+
+.rules-list { display: grid; gap: 8px; }
+.rule-item { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.rule-item .ent { font-size: 12px; font-weight: 700; color: var(--navy); }
+.rule-item p { margin: 0; font-size: 14px; }
+.rule-item .src { font: 11px var(--f-mono); color: var(--muted); margin-top: 3px; word-break: break-all; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { font: 600 12px var(--f-body); padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--surface); }
+
+.sev { display: inline-block; font: 700 10px var(--f-mono); padding: 2px 6px; border-radius: 4px; }
+.sev.S1 { background: var(--neg-soft); color: var(--neg); }
+.sev.S2 { background: var(--warn-soft); color: var(--warn); }
+.sev.S3 { background: var(--surface-2); color: var(--muted); }
+.road { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.phase { border: 1px solid var(--line); border-radius: 9px; padding: 12px; background: var(--surface); }
+.phase h5 { margin: 0 0 6px; font-size: 13px; }
+.phase ul { margin: 0; padding-left: 16px; font-size: 13px; color: var(--muted); display: grid; gap: 3px; }
+.phase.done { border-color: var(--teal); }
+.gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; margin: 0; }
+.gloss div { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.gloss dt { font-weight: 700; font-size: 14px; }
+.gloss dd { margin: 2px 0 0; font-size: 13.5px; color: var(--muted); }
+.note { font-size: 13px; padding: 10px 12px; border-radius: 8px; background: var(--warn-soft); color: var(--ink); border-left: 3px solid var(--warn); }
+.note.info { background: var(--teal-soft); border-left-color: var(--teal); }
+
+@media (max-width: 980px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); height: auto; z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); }
+  .brand, .toc .meta { display: none; }
+  .toc ol { display: flex; overflow-x: auto; gap: 4px; scrollbar-width: none; }
+  .toc li a { white-space: nowrap; grid-template-columns: auto 1fr; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  .hero { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols, .cols3, .result, .gloss { grid-template-columns: minmax(0, 1fr); }
+  .counters, .road { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rule-item { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Seções do manual">
+    <div class="brand"><b>Ledger</b><span>manual técnico</span></div>
+    <ol id="toc">
+      <li><a href="#visao">Visão geral</a></li>
+      <li><a href="#fluxo">Fluxo do usuário</a></li>
+      <li><a href="#arquitetura">Arquitetura</a></li>
+      <li><a href="#dados">Modelo de dados</a></li>
+      <li><a href="#importacao">Importação</a></li>
+      <li><a href="#regras">Regras de classificação</a></li>
+      <li><a href="#dfc">DFC</a></li>
+      <li><a href="#auth">Autenticação</a></li>
+      <li><a href="#api">Referência da API</a></li>
+      <li><a href="#negocio">Regras de negócio</a></li>
+      <li><a href="#operacao">Setup e operação</a></li>
+      <li><a href="#qualidade">Testes e CI</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#glossario">Glossário</a></li>
+    </ol>
+    <div class="meta">
+      <span>Branch <code>claude-scan-impl</code></span>
+      <span>Atualizado em 16/10/2026</span>
+      <span>Monorepo <code>concilia-o</code></span>
+    </div>
+  </nav>
+
+  <main>
+    <!-- 01 VISÃO -->
+    <section id="visao">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">Conciliação bancária · Classificação · DFC</p>
+          <h1>Do extrato bancário à Demonstração do Fluxo de Caixa</h1>
+          <p class="lead">O Ledger lê os extratos CSV e OFX que a empresa já recebe do banco, descarta o que já foi importado, classifica cada lançamento por regras e monta a DFC do ano mês a mês, separada em Operacional, Investimento e Financiamento.</p>
+          <div class="stack-pills">
+            <span class="pill navy">Next.js 14 · App Router</span>
+            <span class="pill navy">NestJS 10 + Prisma 5</span>
+            <span class="pill navy">PostgreSQL 16</span>
+            <span class="pill teal">packages/shared</span>
+            <span class="pill">Vercel + Railway</span>
+          </div>
+        </div>
+        <div class="ledger-strip" aria-label="Exemplo de lançamentos">
+          <div class="row muted"><span>Data</span><span>Descrição</span><span>Valor</span></div>
+          <div class="row"><span>02/03</span><span>PIX RECEBIDO CLIENTE ABC<span class="tag pill pos">Recebimentos</span></span><span class="pos">2.200,50</span></div>
+          <div class="row"><span>05/03</span><span>PAG ENERGISA MT<span class="tag pill navy">Desp. fixas</span></span><span class="neg">−318,90</span></div>
+          <div class="row"><span>05/03</span><span>TARIFA PIX<span class="tag pill">Administrativo</span></span><span class="neg">−2,50</span></div>
+          <div class="row"><span>05/03</span><span>TARIFA PIX<span class="tag pill">Administrativo</span></span><span class="neg">−2,50</span></div>
+          <div class="row muted"><span>05/03</span><span>SALDO DO DIA<span class="tag pill">ignorado</span></span><span>7.164,60</span></div>
+        </div>
+      </div>
+      <div class="cols3">
+        <div class="panel"><p class="eyebrow">Para quem</p><p class="small" style="margin:0">Times financeiros de PMEs, com 10 a 15 usuários e dezenas de milhares de lançamentos por conta ao longo dos anos.</p></div>
+        <div class="panel"><p class="eyebrow">O que entrega</p><p class="small" style="margin:0">Uma grade de lançamentos conciliável, regras automáticas, a DFC anual em tabela dinâmica, um dashboard e exportação para CSV e Excel.</p></div>
+        <div class="panel"><p class="eyebrow">O que não é</p><p class="small" style="margin:0">Um sistema contábil. O saldo da DFC é o fluxo classificado acumulado no ano, começando de zero, e não o saldo real do banco.</p></div>
+      </div>
+    </section>
+
+    <!-- 02 FLUXO -->
+    <section id="fluxo">
+      <p class="eyebrow">Jornada</p>
+      <h2>Fluxo do usuário</h2>
+      <p>Cinco etapas, cada uma com uma tela no front e um módulo na API. Clique numa etapa para ver o que acontece por baixo.</p>
+      <div class="steps" id="steps" role="group" aria-label="Etapas do fluxo"></div>
+      <div class="lab"><div class="lab-body"><div class="detail" id="step-detail"></div></div></div>
+    </section>
+
+    <!-- 03 ARQUITETURA -->
+    <section id="arquitetura">
+      <p class="eyebrow">Sistema</p>
+      <h2>Arquitetura</h2>
+      <p>Monorepo npm com três workspaces. A web e a API compartilham enums, a hierarquia da DFC, DTOs e validações por meio de <code>packages/shared</code>, que precisa ser buildado antes dos apps (<code>npm run dev</code> já faz isso em modo watch).</p>
+      <div class="lab">
+        <div class="lab-head"><div><span class="kind">Diagrama</span><strong>Componentes e implantação</strong></div><span class="small muted">clique num bloco</span></div>
+        <div class="lab-body">
+          <div class="scroll-x diagram" id="arch-wrap"></div>
+          <div class="detail" id="arch-detail"></div>
+        </div>
+      </div>
+      <h3>Módulos da API</h3>
+      <p class="small muted">Um módulo Nest por domínio, em <code>apps/api/src/modules</code>. Passe o mouse ou foque um módulo para ver de quem ele depende.</p>
+      <div class="lab"><div class="lab-body">
+        <div class="scroll-x diagram" id="mod-wrap"></div>
+        <div class="detail" id="mod-detail"></div>
+      </div></div>
+      <h3>Estrutura de pastas</h3>
+      <pre class="code">apps/api/src/
+  common/      guards (JwtAuth, CompanyAccess), filtro de erros, domain/ (atribuíveis),
+               dto/ (YearQuery), validation/ (CPF/CNPJ), export/ (CSV/XLSX em stream)
+  modules/     auth · companies · bank-accounts · categories · parties · imports
+               transactions · classification-rules · dfc · dashboard
+apps/api/prisma/   schema.prisma, migrations/, seed.ts
+apps/api/test/     e2e (supertest + Postgres real) + helpers.ts
+apps/web/
+  app/(auth)/  login, register          app/(app)/  dashboard, lancamentos, importar,
+  components/  ui, transactions, dfc,                dfc, regras, cadastros/*
+               imports, dashboard, layout
+  lib/         api-client.ts (refresh deduplicado), hooks/*, toast.ts, categories.ts
+packages/shared/src/
+  dfc-structure.ts   fonte única da hierarquia da DFC + tipo de categoria → linhas
+  enums.ts · document.ts (CPF/CNPJ) · money.ts · date.ts · dto/* · validation/schemas.ts</pre>
+    </section>
+
+    <!-- 04 DADOS -->
+    <section id="dados">
+      <p class="eyebrow">Prisma · PostgreSQL</p>
+      <h2>Modelo de dados</h2>
+      <p>Toda entidade transacional carrega <code>companyId</code> diretamente: o isolamento entre empresas é feito no schema, e o RBAC completo fica para a Fase 2. Selecione uma entidade para ver os campos e as regras dela. As etiquetas marcam se o campo é <span class="ft S">ARMAZENADO</span>, <span class="ft D">DERIVADO</span> ou uma <span class="ft R">RELAÇÃO</span>.</p>
+      <div class="lab">
+        <div class="lab-head"><div><span class="kind">Diagrama ER</span><strong>Entidades e relações</strong></div>
+          <label class="check"><input type="checkbox" id="er-company"> mostrar vínculos com Empresa</label></div>
+        <div class="lab-body">
+          <div class="scroll-x diagram" id="er-wrap"></div>
+          <div id="er-detail"></div>
+        </div>
+      </div>
+      <h3>Ciclo de vida do status de conciliação</h3>
+      <p class="small muted">Todo lançamento nasce <code>PENDENTE</code>. O usuário pode mudar o status em qualquer direção, pela grade ou em lote. <code>IGNORADO</code> e <code>DUPLICADO</code> tiram o lançamento da DFC e do dashboard (<code>CASHFLOW_EXCLUDED_STATUSES</code>).</p>
+      <pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> PENDENTE: importado
+  PENDENTE --> CONCILIADO: conciliar
+  PENDENTE --> IGNORADO: ignorar
+  PENDENTE --> DUPLICADO: marcar duplicado
+  CONCILIADO --> PENDENTE: reabrir
+  IGNORADO --> PENDENTE: reabrir
+  DUPLICADO --> PENDENTE: reabrir
+  note right of IGNORADO: fora da DFC e do dashboard
+  note right of DUPLICADO: fora da DFC e do dashboard
+      </pre>
+    </section>
+
+    <!-- 05 IMPORTAÇÃO -->
+    <section id="importacao">
+      <p class="eyebrow">Módulo imports</p>
+      <h2>Pipeline de importação</h2>
+      <p>O arquivo é decodificado (UTF-8, com fallback para Windows-1252), interpretado, filtrado e deduplicado. Os lançamentos novos são gravados numa única transação, com tudo ou nada, e as regras rodam logo depois do commit.</p>
+      <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as Tela Importar
+  participant C as ImportsController
+  participant S as ImportsService
+  participant P as Parser CSV/OFX
+  participant D as Postgres
+  participant R as ClassificationRules
+  U->>C: POST /companies/:id/imports (multipart)
+  C->>S: import(companyId, dto, file)
+  S->>D: conta existe, é da empresa e está ativa?
+  S->>P: decodeFileBuffer + parse
+  P-->>S: lançamentos + ignoredCount (saldos, valor 0)
+  S->>S: OFX é da conta escolhida?
+  S->>D: cria ImportBatch (PROCESSANDO)
+  rect rgba(15,127,118,0.08)
+  Note over S,D: $transaction (30 s)
+  S->>D: hashes existentes no intervalo de datas + fitIds
+  S->>D: createManyAndReturn (skipDuplicates)
+  S->>D: ImportBatchPeriod por ano/mês
+  S->>D: batch CONCLUIDO + contagens
+  end
+  S->>R: applyToTransactions(ids inseridos)
+  Note over S,R: uma falha aqui só é logada e o import continua OK
+  S-->>U: resumo (total, novos, duplicados, ignorados, períodos)
+      </pre>
+
+      <div class="lab" id="sim">
+        <div class="lab-head"><div><span class="kind">Simulador</span><strong>Importe um extrato CSV</strong></div>
+          <div class="seg" role="group" aria-label="Versão da lógica">
+            <button type="button" data-ver="now" aria-pressed="true">Lógica atual</button>
+            <button type="button" data-ver="old" aria-pressed="false">Antes da varredura</button>
+          </div>
+        </div>
+        <div class="lab-body">
+          <div class="cols">
+            <label class="ctl" for="sim-csv">Arquivo (delimitador <code>;</code>, colunas Data;Descricao;Valor;Saldo)
+              <textarea id="sim-csv" rows="11" spellcheck="false"></textarea>
+            </label>
+            <div style="display:grid;gap:12px;align-content:start">
+              <label class="ctl" for="sim-db">O que já está no banco para esta conta
+                <select id="sim-db">
+                  <option value="empty">Nada (primeira importação)</option>
+                  <option value="same">Este mesmo arquivo, importado antes</option>
+                  <option value="partial">Um extrato anterior, até 05/03/2026</option>
+                </select>
+              </label>
+              <div class="counters" id="sim-counters"></div>
+              <div class="result" id="sim-balances"></div>
+              <p class="small muted" style="margin:0" id="sim-explain"></p>
+              <div><button class="btn" type="button" id="sim-reset">Restaurar exemplo</button></div>
+            </div>
+          </div>
+          <div class="scroll-x"><table class="data" id="sim-table"></table></div>
+        </div>
+      </div>
+      <h3>Status do lote</h3>
+      <pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> PROCESSANDO: batch criado
+  PROCESSANDO --> CONCLUIDO: transação commitada
+  PROCESSANDO --> FALHOU: erro dentro da transação
+  FALHOU --> [*]
+  CONCLUIDO --> [*]
+  note right of FALHOU: errorMessage gravado e nenhum lançamento parcial
+      </pre>
+      <p class="small muted">O enum ainda tem <code>PARCIAL</code>, mas como a importação é atômica ele não é usado hoje.</p>
+    </section>
+
+    <!-- 06 REGRAS -->
+    <section id="regras">
+      <p class="eyebrow">Módulo classification-rules</p>
+      <h2>Motor de regras de classificação</h2>
+      <p>As regras ativas são ordenadas por <code>priority desc, createdAt asc</code> e resolvidas campo a campo. A categoria vem da primeira regra que bate e que define categoria. O fornecedor/cliente vem da primeira regra que bate e que define um, e só é aplicado quando o lançamento ainda não tem fornecedor. O motor considera apenas lançamentos <code>PENDENTE</code> e sem categoria.</p>
+      <div class="lab" id="rules-lab">
+        <div class="lab-head"><div><span class="kind">Playground</span><strong>Teste uma descrição contra as regras</strong></div><span class="small muted">mesma lógica de <code>rule-matcher.ts</code></span></div>
+        <div class="lab-body">
+          <div class="cols">
+            <label class="ctl" for="rl-desc">Descrição do lançamento (como vem do banco)
+              <input type="text" id="rl-desc" value="PAG CONTA DE LUZ ENERGISA MT">
+            </label>
+            <div style="display:grid;gap:8px;align-content:end">
+              <label class="check"><input type="checkbox" id="rl-hasparty"> o lançamento já tem fornecedor escolhido à mão</label>
+              <div class="filters" id="rl-samples"></div>
+            </div>
+          </div>
+          <div class="trace" id="rl-trace"></div>
+          <div class="result" id="rl-result"></div>
+        </div>
+      </div>
+      <div class="note info">Os tipos <b>Contém</b> e <b>Igual a</b> comparam sem diferenciar maiúsculas, acentos e espaços repetidos, então "Energia Elétrica" bate com "ENERGIA  ELETRICA". O tipo <b>Regex</b> usa o texto original, sem diferenciar maiúsculas. Uma regex inválida é recusada ao salvar.</div>
+    </section>
+
+    <!-- 07 DFC -->
+    <section id="dfc">
+      <p class="eyebrow">Módulo dfc · packages/shared/dfc-structure.ts</p>
+      <h2>Demonstração do Fluxo de Caixa</h2>
+      <p>A DFC não é armazenada. Ela é calculada sob demanda: cada lançamento classificado soma o seu valor na linha mapeada pela categoria, e grupos, seções e resultados são somas dessas linhas. Os valores são positivos para crédito e negativos para débito, então todo subtotal é uma soma direta.</p>
+      <div class="lab">
+        <div class="lab-head"><div><span class="kind">Explorador</span><strong>Tipo de categoria → linhas permitidas</strong></div>
+          <div class="seg" role="group" aria-label="Tipo de categoria" id="kind-seg"></div></div>
+        <div class="lab-body"><div class="dfc-tree" id="dfc-tree"></div>
+          <p class="small muted" style="margin:0">Mesma regra de <code>dfcLinesForKind()</code>: a API recusa, por exemplo, uma categoria Receita mapeada em Dividendos, e o formulário só oferece as linhas compatíveis com o tipo.</p></div>
+      </div>
+      <div class="lab" id="agg-lab">
+        <div class="lab-head"><div><span class="kind">Simulador</span><strong>Agregação de um mês</strong></div><span class="small muted">mude a categoria ou o status</span></div>
+        <div class="lab-body">
+          <div class="scroll-x"><table class="data" id="agg-input"></table></div>
+          <div class="scroll-x"><table class="data" id="agg-output"></table></div>
+        </div>
+      </div>
+      <div class="note">O saldo inicial e o final são o acumulado do fluxo classificado dentro do ano, começando de zero, e não o saldo bancário real. O que ainda não foi classificado aparece na linha <b>Não classificado</b>, fora dos saldos, com link para a grade filtrada por <code>uncategorized=true</code>.</div>
+    </section>
+
+    <!-- 08 AUTH -->
+    <section id="auth">
+      <p class="eyebrow">Módulo auth</p>
+      <h2>Autenticação e sessão</h2>
+      <div class="cols">
+        <div class="panel small"><b>Access token</b><p class="small muted" style="margin:4px 0 0">JWT de 15 min, guardado só em memória no cliente (<code>token-store</code>) e enviado como <code>Bearer</code>.</p></div>
+        <div class="panel small"><b>Refresh token</b><p class="small muted" style="margin:4px 0 0">JWT de 30 dias em cookie httpOnly (<code>sameSite=none; secure</code> em produção). O hash fica em <code>refresh_tokens</code>, com rotação a cada uso.</p></div>
+      </div>
+      <h3>Rotação com detecção de reuso</h3>
+      <pre class="mermaid">
+sequenceDiagram
+  participant B as Componente React
+  participant W as api-client.ts
+  participant A as API /auth
+  participant D as refresh_tokens
+  B->>W: apiFetch(rota)
+  W->>A: rota com access expirado
+  A-->>W: 401
+  W->>W: refreshAccessToken() singleton
+  Note over W: chamadas concorrentes esperam a mesma promise
+  W->>A: POST /auth/refresh (cookie)
+  A->>D: busca pelo jti
+  alt token já revogado (reuso)
+    A->>D: revoga todos os tokens do usuário
+    A-->>W: 401 faça login de novo
+  else válido
+    A->>D: revoga o atual e grava replacedBy
+    A-->>W: novo access + novo cookie
+    W->>A: repete a rota original
+  end
+      </pre>
+      <div class="note">Nunca chame <code>/auth/refresh</code> direto de um efeito de componente. No <code>React.StrictMode</code> o efeito roda duas vezes, e o segundo refresh usa um token já rotacionado, o que dispara a detecção de reuso e derruba a sessão.</div>
+      <h3>Login com Google e vínculo de conta</h3>
+      <pre class="mermaid">
+flowchart LR
+  G[Callback do Google] --> A{googleId já existe?}
+  A -- sim --> L[login recorrente]
+  A -- não --> V{e-mail verificado?}
+  V -- não --> N[cria usuário novo sem senha]
+  V -- sim --> E{e-mail já cadastrado?}
+  E -- sim --> K[vincula googleId à conta existente]
+  E -- não --> N
+  L --> T[emite tokens e grava o cookie]
+  K --> T
+  N --> T
+  T --> R[redirect para WEB_APP_URL/auth/callback]
+      </pre>
+      <p class="small muted">Rate limit: 100 requisições por minuto por IP no geral e 10 por minuto em register, login e refresh. A API usa <code>trust proxy</code> para ler o IP real atrás do Railway.</p>
+    </section>
+
+    <!-- 09 API -->
+    <section id="api">
+      <p class="eyebrow">REST · JSON</p>
+      <h2>Referência da API</h2>
+      <p>Rotas com <code>:companyId</code> passam por <code>JwtAuthGuard</code> + <code>CompanyAccessGuard</code>. Rotas por <code>:id</code> carregam o recurso e verificam se o usuário pertence à empresa dele (<code>assertUserBelongsToCompany</code>). Os IDs citados no corpo da requisição são validados por <code>common/domain/assignable.ts</code>.</p>
+      <div class="lab">
+        <div class="lab-head">
+          <div class="filters" id="api-filters"></div>
+          <input type="search" id="api-q" placeholder="Filtrar por rota ou descrição" aria-label="Filtrar rotas" style="max-width:260px">
+        </div>
+        <div class="scroll-x"><table class="data" id="api-table"></table></div>
+      </div>
+      <h3>Erros</h3>
+      <table class="data">
+        <tr><th>Situação</th><th class="num">HTTP</th><th>Exemplo</th></tr>
+        <tr><td>Validação de DTO, regra de negócio</td><td class="num">400</td><td>"A linha da DFC escolhida não é compatível com o tipo da categoria"</td></tr>
+        <tr><td>Sem token ou token inválido</td><td class="num">401</td><td>"Refresh token já utilizado. Faça login novamente."</td></tr>
+        <tr><td>Usuário fora da empresa</td><td class="num">403</td><td>"Usuário não pertence a esta empresa"</td></tr>
+        <tr><td>Prisma P2025</td><td class="num">404</td><td>"Registro não encontrado"</td></tr>
+        <tr><td>Prisma P2002 / P2003</td><td class="num">409</td><td>"Já existe um registro com esses dados"</td></tr>
+        <tr><td>Rate limit</td><td class="num">429</td><td>ThrottlerException</td></tr>
+      </table>
+    </section>
+
+    <!-- 10 NEGÓCIO -->
+    <section id="negocio">
+      <p class="eyebrow">Fonte da verdade: README.md</p>
+      <h2>Regras de negócio consolidadas</h2>
+      <p>Cada regra abaixo é aplicada no backend. O front só espelha algumas delas para melhorar a experiência.</p>
+      <div class="filters" id="biz-filters" style="margin-bottom:12px"></div>
+      <div class="rules-list" id="biz-list"></div>
+    </section>
+
+    <!-- 11 OPERAÇÃO -->
+    <section id="operacao">
+      <p class="eyebrow">Local · Produção</p>
+      <h2>Setup e operação</h2>
+      <h3>Rodar localmente</h3>
+      <div class="cmd"><pre class="code" id="cmd-setup">npm install
+npm run docker:up                              # Postgres 16 na porta 55432
+npm run prisma:migrate --workspace=apps/api
+npm run prisma:seed --workspace=apps/api       # demo@conciliacao.dev / demo12345
+npm run dev                                    # shared (watch) + api :3001 + web :3000</pre><button type="button" data-copy="cmd-setup">Copiar</button></div>
+      <h3>Testes</h3>
+      <div class="cmd"><pre class="code" id="cmd-test">npm --workspace=apps/api run test        # unitários (parsers, motor de regras, DFC, guards…)
+npm --workspace=apps/api run test:e2e    # e2e contra Postgres real (DATABASE_URL)
+npm --workspace=apps/web run test        # api-client, token-store, toast, categorias
+npm run lint</pre><button type="button" data-copy="cmd-test">Copiar</button></div>
+      <div class="note">Nunca rode <code>next build</code> com o <code>next dev</code> ativo na mesma pasta, porque isso corrompe o <code>.next</code> (sintoma: 404 em <code>_next/static/*</code>). Pare o dev server, rode o build, apague <code>apps/web/.next</code> e reinicie.</div>
+      <h3>Variáveis de ambiente</h3>
+      <div class="scroll-x"><table class="data" id="env-table"></table></div>
+      <h3>Implantação</h3>
+      <pre class="mermaid">
+flowchart LR
+  subgraph GH[GitHub]
+    M[push em main]
+  end
+  M --> V[Vercel: npm ci, build do shared, next build de apps/web]
+  M --> RW[Railway: Dockerfile da API]
+  RW --> MG[prisma migrate deploy]
+  MG --> HC{"GET /health responde?"}
+  HC -- sim --> UP[API no ar]
+  HC -- não --> RB[reinicia, até 3 tentativas]
+  V --> WEB[web no ar com NEXT_PUBLIC_API_URL]
+      </pre>
+    </section>
+
+    <!-- 12 QUALIDADE -->
+    <section id="qualidade">
+      <p class="eyebrow">Jest · Supertest · GitHub Actions</p>
+      <h2>Testes e CI</h2>
+      <div class="counters" style="margin-bottom:14px">
+        <div class="counter"><span>Unitários API</span><b>129</b></div>
+        <div class="counter"><span>e2e API</span><b>41</b></div>
+        <div class="counter"><span>Unitários web</span><b>12</b></div>
+        <div class="counter"><span>Suítes e2e</span><b>8</b></div>
+      </div>
+      <pre class="mermaid">
+flowchart TB
+  PR[Pull request para main] --> J1 & J2
+  subgraph J1[Lint e typecheck]
+    a1[npm ci] --> a2[build do shared] --> a3[prisma generate] --> a4[eslint] --> a5[nest build] --> a6[next build] --> a7[jest web]
+  end
+  subgraph J2[Testes da API]
+    b0[(Postgres 16 service)] -.-> b4
+    b1[npm ci] --> b2[build do shared e prisma generate] --> b3[jest unitários] --> b4[prisma migrate deploy] --> b5[jest e2e]
+  end
+      </pre>
+      <p class="small muted">Os specs e2e usam <code>test/helpers.ts</code>: <code>bootApp()</code> sobe o app com a mesma configuração do <code>main.ts</code>, <code>createTenant()</code> cria um usuário e uma empresa isolados, e <code>destroyTenant()</code> limpa tudo. Os testes rodam em paralelo sem colidir porque cada spec usa tenants próprios.</p>
+    </section>
+
+    <!-- 13 ROADMAP -->
+    <section id="roadmap">
+      <p class="eyebrow">Fases · Pendências da varredura de out/2026</p>
+      <h2>Roadmap</h2>
+      <div class="road" id="road"></div>
+      <h3>Pendências abertas</h3>
+      <p class="small muted">Do relatório <code>docs/review-2026-10-scan.md</code>. Severidade: <span class="sev S1">S1</span> perda de dados ou vazamento entre empresas, <span class="sev S2">S2</span> número errado ou regra não aplicada, <span class="sev S3">S3</span> consistência, UX ou performance.</p>
+      <div class="scroll-x"><table class="data" id="open-table"></table></div>
+    </section>
+
+    <!-- 14 GLOSSÁRIO -->
+    <section id="glossario">
+      <p class="eyebrow">Termos</p>
+      <h2>Glossário</h2>
+      <dl class="gloss" id="gloss"></dl>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s, el) => (el || document).querySelector(s);
+  const h = (tag, attrs, html) => { const e = document.createElement(tag); if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]); if (html !== undefined) e.innerHTML = html; return e; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const BRL = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const money = (v) => (v < 0 ? '−' : '') + BRL.format(Math.abs(v));
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const sv = (tag, attrs, text) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+
+  /* ---------- TOC scrollspy ---------- */
+  const links = [...document.querySelectorAll('#toc a')];
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) { links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); } });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('main section').forEach((s) => spy.observe(s));
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => {
+    const pre = document.getElementById(b.dataset.copy);
+    const text = pre.textContent.split('\n').map((l) => l.replace(/\s+#.*$/, '')).join('\n');
+    const done = () => { b.textContent = 'Copiado'; setTimeout(() => (b.textContent = 'Copiar'), 1500); };
+    try { navigator.clipboard.writeText(text).then(done, () => selectPre(pre)); } catch (e) { selectPre(pre); }
+  }));
+  function selectPre(pre) { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+  /* ---------- 02 FLUXO ---------- */
+  const STEPS = [
+    { t: 'Importar', s: 'CSV ou OFX de uma conta', screen: '/importar', mod: 'imports', api: 'POST /companies/:id/imports',
+      d: 'O usuário escolhe uma conta ativa e envia o arquivo. No CSV, uma tela de mapeamento sugere as colunas a partir dos nomes do cabeçalho (data, histórico, valor, saldo, D/C). O sistema descarta linhas de saldo, deduplica por hash e por FITID e devolve um resumo com novos, duplicados e ignorados por período.' },
+    { t: 'Classificar', s: 'à mão, em lote ou por regra', screen: '/lancamentos · /regras', mod: 'transactions · classification-rules', api: 'PATCH /transactions/:id · POST …/rules/apply',
+      d: 'As regras rodam automaticamente logo após cada importação, só nos lançamentos novos. Na grade, o usuário escolhe uma categoria-folha (as agrupadoras aparecem desabilitadas) e o fornecedor/cliente. O botão "Reaplicar em pendentes" roda as regras de novo em tudo que ainda está pendente e sem categoria.' },
+    { t: 'Conciliar', s: 'status por lançamento', screen: '/lancamentos', mod: 'transactions', api: 'POST /companies/:id/transactions/bulk',
+      d: 'Cada lançamento fica pendente, conciliado, ignorado ou duplicado. As ações em lote são conciliar, ignorar, excluir e categorizar. O filtro "Sem categoria" vira a fila de trabalho do que falta classificar.' },
+    { t: 'Gerar a DFC', s: 'tabela dinâmica do ano', screen: '/dfc', mod: 'dfc', api: 'GET /companies/:id/dfc?year=',
+      d: 'Os lançamentos classificados viram linhas, seções e grupos (Operacional, Investimento e Financiamento) mês a mês, com fluxo líquido e saldo acumulado a partir de zero. O que não foi classificado aparece à parte. Exporta para CSV e XLSX.' },
+    { t: 'Acompanhar', s: 'dashboard anual', screen: '/dashboard', mod: 'dashboard', api: 'GET /companies/:id/dashboard/summary',
+      d: 'Entradas, saídas e saldo por mês, além das categorias com maior volume movimentado. Usa agregação no banco (groupBy) e a mesma exclusão de status da DFC.' },
+  ];
+  const stepsEl = $('#steps');
+  STEPS.forEach((st, i) => {
+    const b = h('button', { type: 'button', class: 'step', 'aria-pressed': i === 0 ? 'true' : 'false' },
+      `<span class="n">${String(i + 1).padStart(2, '0')}</span><b>${st.t}</b><small>${st.s}</small>`);
+    b.addEventListener('click', () => { stepsEl.querySelectorAll('.step').forEach((x) => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); showStep(i); });
+    stepsEl.appendChild(b);
+  });
+  function showStep(i) {
+    const st = STEPS[i];
+    $('#step-detail').innerHTML = `<h4>${st.t}</h4><p>${st.d}</p>
+      <div class="stack-pills"><span class="pill navy">Tela ${esc(st.screen)}</span><span class="pill teal">Módulo ${esc(st.mod)}</span><span class="pill"><code>${esc(st.api)}</code></span></div>`;
+  }
+  showStep(0);
+
+  /* ---------- generic SVG diagram ---------- */
+  function diagram(wrap, cfg, onSelect) {
+    const svg = sv('svg', { viewBox: cfg.viewBox, role: 'img', 'aria-label': cfg.label });
+    const gEdges = sv('g', {}); const gNodes = sv('g', {});
+    svg.append(gEdges, gNodes);
+    const nodes = {};
+    cfg.nodes.forEach((n) => { nodes[n.id] = n; });
+    const edgeEls = [];
+    function center(n) { return [n.x + n.w / 2, n.y + n.h / 2]; }
+    function anchor(a, b) {
+      const [ax, ay] = center(a), [bx, by] = center(b);
+      const dx = bx - ax, dy = by - ay;
+      const sx = Math.abs(dx) / (a.w / 2 + 0.01), sy = Math.abs(dy) / (a.h / 2 + 0.01);
+      const s = Math.max(sx, sy);
+      return [ax + dx / s, ay + dy / s];
+    }
+    cfg.edges.forEach((e) => {
+      const a = nodes[e.from], b = nodes[e.to];
+      let d;
+      if (e.from === e.to) { const x = a.x + a.w, y = a.y + 14; d = `M${x},${y} C${x + 46},${y - 26} ${x + 46},${y + 40} ${x},${y + 26}`; }
+      else { const [x1, y1] = anchor(a, b), [x2, y2] = anchor(b, a); d = `M${x1},${y1} L${x2},${y2}`; }
+      const p = sv('path', { d, class: 'edge' + (e.dash ? ' dash' : ''), 'marker-end': 'url(#arr-' + cfg.key + ')' });
+      gEdges.appendChild(p);
+      let t = null;
+      if (e.label) {
+        let mx, my;
+        if (e.from === e.to) { mx = a.x + a.w + 50; my = a.y + 30; }
+        else { const [x1, y1] = center(a), [x2, y2] = center(b); mx = (x1 + x2) / 2 + (e.dx || 0); my = (y1 + y2) / 2 - 5 + (e.dy || 0); }
+        t = sv('text', { x: mx, y: my, class: 'elabel', 'text-anchor': 'middle' }, e.label);
+        gEdges.appendChild(t);
+      }
+      edgeEls.push({ e, p, t });
+    });
+    const defs = sv('defs', {});
+    const mk = sv('marker', { id: 'arr-' + cfg.key, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' });
+    mk.appendChild(sv('path', { d: 'M0,0 L10,5 L0,10 z', fill: 'currentColor', style: 'color: var(--muted)' }));
+    defs.appendChild(mk); svg.prepend(defs);
+    const nodeEls = {};
+    cfg.nodes.forEach((n) => {
+      const g = sv('g', { class: 'node', tabindex: 0, role: 'button', 'aria-label': n.title });
+      g.appendChild(sv('rect', { x: n.x, y: n.y, width: n.w, height: n.h, rx: 9 }));
+      if (n.band) g.appendChild(sv('rect', { x: n.x, y: n.y, width: 5, height: n.h, rx: 2, class: 'hd', style: 'fill: var(--teal); stroke: none' }));
+      g.appendChild(sv('text', { x: n.x + 14, y: n.y + (n.sub ? n.h / 2 - 3 : n.h / 2 + 5), class: 't' }, n.title));
+      if (n.sub) g.appendChild(sv('text', { x: n.x + 14, y: n.y + n.h / 2 + 14, class: 's' }, n.sub));
+      const act = () => select(n.id);
+      g.addEventListener('click', act);
+      g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); act(); } });
+      if (cfg.hover) { g.addEventListener('mouseenter', act); g.addEventListener('focus', act); }
+      gNodes.appendChild(g); nodeEls[n.id] = g;
+    });
+    function select(id) {
+      Object.entries(nodeEls).forEach(([k, g]) => g.classList.toggle('sel', k === id));
+      wrap.classList.add('dim');
+      edgeEls.forEach(({ e, p, t }) => {
+        const hot = e.from === id || e.to === id;
+        p.classList.toggle('hot', hot); if (t) t.classList.toggle('hot', hot);
+        p.style.display = e.hidden && e.hidden() ? 'none' : ''; if (t) t.style.display = p.style.display;
+      });
+      onSelect(nodes[id]);
+    }
+    wrap.appendChild(svg);
+    return { select, refresh: () => edgeEls.forEach(({ e, p, t }) => { p.style.display = e.hidden && e.hidden() ? 'none' : ''; if (t) t.style.display = p.style.display; }) };
+  }
+
+  /* ---------- 03 ARQUITETURA ---------- */
+  const ARCH = {
+    key: 'arch', label: 'Diagrama de componentes', viewBox: '0 0 900 330',
+    nodes: [
+      { id: 'browser', x: 10, y: 140, w: 140, h: 58, title: 'Navegador', sub: 'usuário financeiro' },
+      { id: 'web', x: 210, y: 140, w: 190, h: 58, title: 'apps/web', sub: 'Next.js 14 · Vercel', band: 1 },
+      { id: 'shared', x: 360, y: 14, w: 190, h: 58, title: 'packages/shared', sub: 'DFC, enums, DTOs, zod', band: 1 },
+      { id: 'api', x: 470, y: 140, w: 190, h: 58, title: 'apps/api', sub: 'NestJS 10 · Railway', band: 1 },
+      { id: 'db', x: 730, y: 70, w: 160, h: 58, title: 'PostgreSQL 16', sub: 'Prisma · migrations' },
+      { id: 'google', x: 730, y: 230, w: 160, h: 58, title: 'Google OAuth', sub: 'passport-google' },
+    ],
+    edges: [
+      { from: 'browser', to: 'web', label: 'HTTPS' },
+      { from: 'web', to: 'api', label: 'REST + Bearer', dy: -4 },
+      { from: 'web', to: 'shared', label: 'importa', dash: 1, dx: -36 },
+      { from: 'api', to: 'shared', label: 'importa', dash: 1, dx: 36 },
+      { from: 'api', to: 'db', label: 'Prisma' },
+      { from: 'api', to: 'google', label: 'OAuth 2.0' },
+    ],
+  };
+  const ARCH_INFO = {
+    browser: ['Navegador', 'Guarda o access token só em memória. O refresh token vive num cookie httpOnly que o JavaScript não lê. Os pedidos cross-site (Vercel para Railway) usam <code>credentials: include</code>.'],
+    web: ['apps/web (Next.js 14)', 'App Router com grupos <code>(auth)</code> e <code>(app)</code>. Usa TanStack Query para cache e mutações, com <code>MutationCache.onError</code> que mostra os erros num toast. Tailwind + shadcn/ui + daisyUI, Recharts nos gráficos. <code>lib/api-client.ts</code> deduplica refreshes concorrentes.'],
+    shared: ['packages/shared', 'Fonte única de <code>DFC_STRUCTURE</code> (grupos, seções e linhas), <code>dfcLinesForKind</code>, <code>CASHFLOW_EXCLUDED_STATUSES</code>, validação de CPF/CNPJ, formatação BRL e datas, além de DTOs e schemas zod. É compilado com <code>tsc</code> para <code>dist/</code>, que é o que os apps consomem.'],
+    api: ['apps/api (NestJS 10)', '<code>ValidationPipe</code> global com whitelist e forbidNonWhitelisted, <code>HttpExceptionFilter</code> que mapeia erros do Prisma, Throttler global, env validada no boot (sem segredos padrão) e <code>GET /health</code> com <code>SELECT 1</code> para o Railway.'],
+    db: ['PostgreSQL 16', 'Um schema, com valores em <code>Decimal(14,2)</code> e datas como <code>@db.Date</code> (data pura, sem fuso). Unicidades de dedupe: <code>(bankAccountId, dedupeHash)</code> e <code>(bankAccountId, fitId)</code>. Local: Docker na porta 55432.'],
+    google: ['Google OAuth', 'Fluxo opcional, ativo quando <code>GOOGLE_CLIENT_ID</code> está definido. A conta só é vinculada quando o e-mail é verificado pelo Google. A passagem para o front é feita por redirect, sem token na URL: o cookie de refresh já vai setado.'],
+  };
+  diagram($('#arch-wrap'), ARCH, (n) => { const [t, d] = ARCH_INFO[n.id]; $('#arch-detail').innerHTML = `<h4>${t}</h4><p class="small">${d}</p>`; }).select('api');
+
+  const MODS = {
+    key: 'mod', label: 'Dependências dos módulos', viewBox: '0 0 900 250', hover: 1,
+    nodes: [
+      { id: 'auth', x: 10, y: 20, w: 150, h: 46, title: 'auth' },
+      { id: 'companies', x: 10, y: 100, w: 150, h: 46, title: 'companies' },
+      { id: 'bank', x: 10, y: 180, w: 150, h: 46, title: 'bank-accounts' },
+      { id: 'categories', x: 230, y: 20, w: 150, h: 46, title: 'categories' },
+      { id: 'parties', x: 230, y: 180, w: 150, h: 46, title: 'parties' },
+      { id: 'domain', x: 230, y: 100, w: 150, h: 46, title: 'common/domain', band: 1 },
+      { id: 'tx', x: 450, y: 20, w: 150, h: 46, title: 'transactions' },
+      { id: 'rules', x: 450, y: 100, w: 170, h: 46, title: 'classification-rules' },
+      { id: 'imports', x: 450, y: 180, w: 150, h: 46, title: 'imports' },
+      { id: 'dfc', x: 690, y: 20, w: 150, h: 46, title: 'dfc' },
+      { id: 'dash', x: 690, y: 100, w: 150, h: 46, title: 'dashboard' },
+      { id: 'sh', x: 690, y: 180, w: 150, h: 46, title: 'shared', band: 1 },
+    ],
+    edges: [
+      { from: 'tx', to: 'domain' }, { from: 'rules', to: 'domain' },
+      { from: 'imports', to: 'rules', label: 'aplica após import' },
+      { from: 'dfc', to: 'sh' }, { from: 'dash', to: 'sh' }, { from: 'categories', to: 'sh', dash: 1 },
+      { from: 'domain', to: 'categories', dash: 1 }, { from: 'domain', to: 'parties', dash: 1 },
+    ],
+  };
+  const MOD_INFO = {
+    auth: 'Register, login, refresh, logout, me e Google. Emite os tokens e cuida da rotação e da detecção de reuso.',
+    companies: 'Empresas do usuário. Quem cria a empresa vira ADMIN dela (UserCompany). O CNPJ é gravado só com dígitos e validado.',
+    bank: 'Contas da empresa. Uma conta com histórico não pode ser excluída, só desativada.',
+    categories: 'Árvore de categorias: ciclo proibido, tipo compatível com a linha da DFC, folha que ganha filha vira agrupadora.',
+    parties: 'Fornecedores e clientes. Documento único por empresa, só dígitos, com CPF/CNPJ validado.',
+    domain: '<code>assertAssignableCategory</code> e <code>assertPartyBelongsToCompany</code>: qualquer ID estrangeiro no corpo passa por aqui.',
+    tx: 'Grade paginada (com desempate por id), PATCH, bulk e export em stream (CSV/XLSX, paginação por cursor).',
+    rules: 'CRUD de regras e <code>applyToTransactions</code>, que usa <code>resolveClassification</code> e grava em <code>updateMany</code> agrupados.',
+    imports: 'Parsers CSV e OFX, filtro de linhas que não são movimentação, dedupe por ocorrência, conferência da conta, transação atômica e períodos.',
+    dfc: 'Faz <code>groupBy</code> por categoria e mês, mapeia para as linhas da DFC, monta subtotais, saldos e o não classificado, e exporta.',
+    dash: 'Usa quatro <code>groupBy</code> (créditos e débitos por mês e por categoria) e calcula o top de categorias.',
+    sh: '<code>packages/shared</code>: estrutura da DFC, enums, status excluídos do fluxo e documentos.',
+  };
+  diagram($('#mod-wrap'), MODS, (n) => { $('#mod-detail').innerHTML = `<h4><code>${n.title}</code></h4><p class="small">${MOD_INFO[n.id]}</p>`; }).select('imports');
+
+  /* ---------- 04 ER ---------- */
+  const ENT = {
+    User: { sub: 'usuário', f: [['name', 'S', 'nome'], ['email', 'S', 'único'], ['passwordHash', 'S', 'nulo em conta só-Google'], ['googleId', 'S', 'único, opcional'], ['avatarUrl', 'S', 'opcional']],
+      r: ['Login por senha ou Google; um e-mail Google verificado vincula a conta existente.'] },
+    RefreshToken: { sub: 'sessão', f: [['tokenHash', 'S', 'sha256 do JWT'], ['expiresAt', 'S', ''], ['revokedAt', 'S', 'preenchido na rotação/logout'], ['replacedBy', 'S', 'id do sucessor'], ['userId', 'R', 'User']],
+      r: ['Reuso de um token já revogado revoga todos os tokens ativos do usuário.'] },
+    UserCompany: { sub: 'vínculo', f: [['userId', 'R', 'User'], ['companyId', 'R', 'Company'], ['role', 'S', 'texto livre "ADMIN" (RBAC na Fase 2)']], r: ['Único por (userId, companyId). É a base do CompanyAccessGuard.'] },
+    Company: { sub: 'empresa / CNPJ', f: [['name', 'S', ''], ['cnpj', 'S', 'só dígitos, DV validado, único']], r: ['Todo dado transacional pertence a exatamente uma empresa.'] },
+    BankAccount: { sub: 'conta bancária', f: [['bankCode / bankName', 'S', ''], ['agencia', 'S', ''], ['conta + contaDigito', 'S', ''], ['apelido', 'S', ''], ['isActive', 'S', 'inativa não recebe import']],
+      r: ['Uma conta com extratos importados não pode ser excluída, porque a exclusão em cascata apagaria o histórico.', 'O OFX de outra conta é recusado.'] },
+    Category: { sub: 'árvore, folha → DFC', f: [['name', 'S', ''], ['kind', 'S', 'RECEITA, DESPESA, INVESTIMENTO, FINANCIAMENTO'], ['parentId', 'R', 'Category (auto-relação)'], ['dfcLine', 'S', 'só nas folhas; compatível com o tipo'], ['isActive', 'S', 'desativar em vez de excluir']],
+      r: ['Sem ciclos.', 'Uma folha que ganha filha vira agrupadora (perde a dfcLine); é bloqueado se ela tem lançamentos ou regras.', 'Não pode ser excluída com filhas, lançamentos ou regras.'] },
+    Party: { sub: 'fornecedor / cliente', f: [['name', 'S', ''], ['document', 'S', 'CPF/CNPJ, só dígitos, único por empresa'], ['kind', 'S', 'FORNECEDOR, CLIENTE, AMBOS']], r: ['Só pode ser atribuído a lançamentos e regras da mesma empresa.'] },
+    ImportBatch: { sub: 'upload de extrato', f: [['source', 'S', 'CSV, OFX'], ['originalFileName / rawContent', 'S', 'auditoria; fora da listagem'], ['parsed*', 'S', 'banco, agência e conta do arquivo'], ['statementStart/EndBalance', 'S', 'abertura = antes do 1º lançamento'], ['status', 'D', 'PROCESSANDO → CONCLUIDO/FALHOU'], ['total/new/duplicate/ignoredRecords', 'D', 'total = novos + dup. + ign.'], ['errorMessage', 'D', '']],
+      r: ['Atômico: um erro marca FALHOU e não deixa lançamento parcial.'] },
+    ImportBatchPeriod: { sub: 'resumo por mês', f: [['year / month', 'D', ''], ['recordCount', 'D', 'só os efetivamente inseridos'], ['opening / closingBalance', 'D', 'do extrato']], r: ['Único por (importBatchId, year, month).'] },
+    Transaction: { sub: 'lançamento', f: [['date / settlementDate', 'S', 'data pura'], ['description / historico / document', 'S', ''], ['amount', 'S', '+ crédito, − débito'], ['type', 'S', 'CREDITO, DEBITO'], ['balanceAfter', 'S', 'se o extrato informa'], ['fitId', 'S', 'OFX; único por conta'], ['competenceYear / Month', 'D', 'da data'], ['dedupeHash', 'D', 'conta|data|valor|descrição|#ocorrência'], ['status', 'S', 'PENDENTE, CONCILIADO, IGNORADO, DUPLICADO'], ['categoryId / partyId', 'R', 'atribuíveis da mesma empresa'], ['categorySource / appliedRuleId', 'S', 'MANUAL ou REGRA']],
+      r: ['A categoria precisa ser uma folha ativa com linha da DFC.', 'IGNORADO e DUPLICADO ficam fora da DFC e do dashboard.'] },
+    ClassificationRule: { sub: 'regra automática', f: [['name', 'S', ''], ['field', 'S', 'DESCRICAO, HISTORICO, DOCUMENTO'], ['matchType', 'S', 'CONTAINS, EQUALS, REGEX'], ['pattern', 'S', 'regex validada ao salvar'], ['categoryId / partyId', 'R', 'pelo menos um'], ['priority / isActive', 'S', '']],
+      r: ['Resolvida campo a campo, sem sobrescrever o fornecedor escolhido à mão.'] },
+  };
+  const ER = {
+    key: 'er', label: 'Diagrama entidade-relacionamento', viewBox: '0 0 900 520',
+    nodes: [
+      { id: 'User', x: 10, y: 30, w: 170, h: 52 }, { id: 'UserCompany', x: 240, y: 30, w: 170, h: 52 },
+      { id: 'Company', x: 470, y: 30, w: 170, h: 52, band: 1 }, { id: 'Category', x: 710, y: 30, w: 170, h: 52 },
+      { id: 'RefreshToken', x: 10, y: 190, w: 170, h: 52 }, { id: 'BankAccount', x: 240, y: 190, w: 170, h: 52 },
+      { id: 'Party', x: 710, y: 190, w: 170, h: 52 }, { id: 'Transaction', x: 470, y: 300, w: 170, h: 52, band: 1 },
+      { id: 'ImportBatchPeriod', x: 10, y: 430, w: 170, h: 52 }, { id: 'ImportBatch', x: 240, y: 430, w: 170, h: 52 },
+      { id: 'ClassificationRule', x: 710, y: 430, w: 170, h: 52 },
+    ].map((n) => Object.assign(n, { title: n.id, sub: ENT[n.id].sub })),
+    edges: [
+      { from: 'UserCompany', to: 'User', label: 'N:1' }, { from: 'UserCompany', to: 'Company', label: 'N:1' },
+      { from: 'RefreshToken', to: 'User', label: 'N:1' }, { from: 'Category', to: 'Category', label: 'pai' },
+      { from: 'Transaction', to: 'BankAccount', label: 'N:1' }, { from: 'Transaction', to: 'Category', label: 'N:0..1' },
+      { from: 'Transaction', to: 'Party', label: 'N:0..1' }, { from: 'Transaction', to: 'ImportBatch', label: 'N:0..1' },
+      { from: 'Transaction', to: 'ClassificationRule', label: 'appliedRule' }, { from: 'ImportBatch', to: 'BankAccount', label: 'N:1' },
+      { from: 'ImportBatchPeriod', to: 'ImportBatch', label: 'N:1' }, { from: 'ClassificationRule', to: 'Category', label: 'alvo', dx: 30 },
+      { from: 'ClassificationRule', to: 'Party', label: 'alvo' },
+      ...['BankAccount', 'Category', 'Party', 'Transaction', 'ClassificationRule', 'ImportBatch'].map((id) => ({ from: id, to: 'Company', dash: 1, hidden: () => !$('#er-company').checked })),
+    ],
+  };
+  const TAGN = { S: 'ARMAZENADO', D: 'DERIVADO', R: 'RELAÇÃO' };
+  const er = diagram($('#er-wrap'), ER, (n) => {
+    const e = ENT[n.id];
+    $('#er-detail').innerHTML = `<div class="detail"><h4><code>${n.id}</code> <span class="muted small">${e.sub}</span></h4>
+      <div class="scroll-x"><table class="fields"><tr><th>Campo</th><th>Tipo</th><th>Observação</th></tr>
+      ${e.f.map(([f, t, o]) => `<tr><td>${esc(f)}</td><td><span class="ft ${t}">${TAGN[t]}</span></td><td>${esc(o)}</td></tr>`).join('')}</table></div>
+      <ul class="small" style="margin:10px 0 0;padding-left:18px">${e.r.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  });
+  er.select('Transaction');
+  $('#er-company').addEventListener('change', er.refresh); er.refresh();
+
+  /* ---------- 05 SIMULADOR DE IMPORTAÇÃO (porta de csv-statement.parser.ts, non-movement.ts, dedupe.ts) ---------- */
+  const SAMPLE = [
+    'Data;Descricao;Valor;Saldo',
+    '10/03/2026;PIX RECEBIDO CLIENTE ABC;2.200,50;7.391,10',
+    '06/03/2026;SALDO DO DIA;5.190,60;5.190,60',
+    '06/03/2026;PAG ENERGISA MT;318,90 D;5.190,60',
+    '05/03/2026;TARIFA PIX;-2,50;5.509,50',
+    '05/03/2026;TARIFA PIX;-2,50;5.512,00',
+    '05/03/2026;BOLETO FORNECEDOR XYZ;450,00-;5.514,50',
+    '31/02/2026;LINHA COM DATA INEXISTENTE;10,00;',
+    '01/03/2026;SALDO ANTERIOR;5.964,50;5.964,50',
+  ].join('\n');
+  const csvEl = $('#sim-csv'); csvEl.value = SAMPLE;
+  let simVer = 'now';
+  function parseAmount(raw, oldLogic) {
+    if (raw == null) return undefined;
+    let s = String(raw);
+    if (oldLogic) {
+      s = s.trim(); if (!s) return undefined;
+      const neg = /^\(.*\)$/.test(s) || s.startsWith('-');
+      s = s.replace(/[()]/g, '').replace(/^-/, '').replace(/R\$/gi, '').trim().replace(/\./g, '').replace(',', '.');
+      const n = Number(s); if (!isFinite(n)) return undefined; return neg ? -Math.abs(n) : n;
+    }
+    s = s.replace(/R\$/gi, '').replace(/\s+/g, ' ').trim(); if (!s) return undefined;
+    let neg = false; const dc = s.match(/\s*([DC])$/i);
+    if (dc) { neg = dc[1].toUpperCase() === 'D'; s = s.slice(0, s.length - dc[0].length).trim(); }
+    if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1).trim(); }
+    if (s.startsWith('-')) { neg = true; s = s.slice(1).trim(); } else if (s.startsWith('+')) s = s.slice(1).trim();
+    if (s.endsWith('-')) { neg = true; s = s.slice(0, -1).trim(); }
+    if (!/^[\d.,]+$/.test(s)) return undefined;
+    const n = Number(s.replace(/\./g, '').replace(',', '.')); if (!isFinite(n)) return undefined;
+    return neg ? -Math.abs(n) : n;
+  }
+  function parseDate(raw, oldLogic) {
+    const m = String(raw || '').trim().match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})/); if (!m) return undefined;
+    const [, d, mo, y0] = m; const y = y0.length === 2 ? (Number(y0) > 50 ? '19' + y0 : '20' + y0) : y0;
+    if (!oldLogic) { const yy = +y, mm = +mo, dd = +d; if (mm < 1 || mm > 12 || dd < 1) return undefined; if (dd > new Date(Date.UTC(yy, mm, 0)).getUTCDate()) return 'INVALID'; }
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  const BALANCE_LINE = /^(SALDO|S A L D O)( (ANTERIOR|DO DIA|DIA|INICIAL|FINAL|ATUAL|TOTAL|DISPONIVEL|EM CONTA|EM C\/C|BLOQUEADO))?( [\d/.-]+)?$/;
+  const normTxt = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const isNonMovement = (t) => t.amount === 0 || BALANCE_LINE.test(normTxt(t.description));
+  function hashKeys(rows, oldLogic) {
+    const occ = new Map();
+    return rows.map((t) => { const key = `${t.date}|${t.amount.toFixed(2)}|${normTxt(t.description)}`; const n = occ.get(key) || 0; occ.set(key, n + 1); return oldLogic || n === 0 ? key : `${key}|#${n}`; });
+  }
+  function runParse(text, oldLogic) {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    const header = (lines.shift() || '').split(';').map((x) => x.trim());
+    const idx = (n) => header.findIndex((x) => normTxt(x).startsWith(n));
+    const iD = idx('DATA'), iDesc = idx('DESC'), iV = idx('VALOR'), iS = idx('SALDO');
+    const rows = [];
+    lines.forEach((line, li) => {
+      const c = line.split(';');
+      const date = parseDate(c[iD], oldLogic); const amount = parseAmount(c[iV], oldLogic);
+      const balance = iS >= 0 && c[iS] && c[iS].trim() ? parseAmount(c[iS], oldLogic) : undefined;
+      rows.push({ line: li + 2, raw: line, date, amount, description: (c[iDesc] || '').trim() || 'Sem descrição', balanceAfter: balance });
+    });
+    return rows;
+  }
+  function simulate() {
+    const old = simVer === 'old';
+    const all = runParse(csvEl.value, old);
+    const out = [];
+    let valid = all.filter((r) => { if (!r.date || r.date === 'INVALID' || r.amount === undefined) { out.push({ ...r, st: 'err', why: r.date === 'INVALID' ? 'data inexistente: linha descartada' : 'data ou valor ilegível' }); return false; } return true; });
+    const movements = old ? valid : valid.filter((r) => { if (isNonMovement(r)) { out.push({ ...r, st: 'ign', why: r.amount === 0 ? 'valor zero' : 'linha de saldo do banco' }); return false; } return true; });
+    if (!old && movements.length > 1 && movements[0].date > movements[movements.length - 1].date) movements.reverse();
+    const keys = hashKeys(movements, old);
+    const mode = $('#sim-db').value;
+    let existing = new Set();
+    if (mode === 'same') existing = new Set(keys);
+    if (mode === 'partial') { const prev = movements.filter((r) => r.date <= '2026-03-05'); existing = new Set(hashKeys(prev, old)); }
+    const seen = new Set();
+    movements.forEach((r, i) => {
+      const k = keys[i];
+      if (existing.has(k)) out.push({ ...r, k, st: 'dup', why: 'já existe no banco' });
+      else if (old && seen.has(k)) out.push({ ...r, k, st: 'dup', why: 'igual a outra linha do arquivo: descartada (bug corrigido)' });
+      else { seen.add(k); out.push({ ...r, k, st: 'new', why: k.includes('|#') ? 'ocorrência ' + (Number(k.split('|#')[1]) + 1) + ' do mesmo lançamento' : '' }); }
+    });
+    const counts = { new: 0, dup: 0, ign: 0, err: 0 };
+    out.forEach((r) => counts[r.st]++);
+    $('#sim-counters').innerHTML = `<div class="counter"><span>Total</span><b>${counts.new + counts.dup + counts.ign}</b></div>
+      <div class="counter pos"><span>Novos</span><b>${counts.new}</b></div><div class="counter warn"><span>Duplicados</span><b>${counts.dup}</b></div>
+      <div class="counter ign"><span>Ignorados</span><b>${old ? 0 : counts.ign}</b></div>`;
+    const withBal = (old ? valid : movements).filter((r) => r.balanceAfter !== undefined);
+    const first = withBal[0], last = withBal[withBal.length - 1];
+    const opening = first ? (old ? first.balanceAfter : Math.round((first.balanceAfter - first.amount) * 100) / 100) : null;
+    $('#sim-balances').innerHTML = `<div><span>Saldo de abertura</span><b class="mono">${opening == null ? '—' : money(opening)}</b></div>
+      <div><span>Saldo de fechamento</span><b class="mono">${last ? money(last.balanceAfter) : '—'}</b></div>
+      <div><span>Ordem do arquivo</span><b>${!old && valid.length > 1 && valid[0].date > valid[valid.length - 1].date ? 'decrescente, invertida' : 'como veio'}</b></div>`;
+    $('#sim-explain').textContent = old
+      ? 'Comportamento anterior: a 2ª "TARIFA PIX" some como duplicada, "SALDO ANTERIOR" e "SALDO DO DIA" entram como movimentação com o valor do saldo, "318,90 D" e "450,00-" são descartados como ilegíveis, e o saldo de abertura é o saldo após a 1ª linha do arquivo, sem reordenar. A data 31/02 passava pela validação e derrubaria o lote inteiro no banco.'
+      : 'Lógica atual: as tarifas repetidas recebem os hashes #0 e #1 e entram as duas. As linhas de saldo viram "ignorados", "D" e o menos no fim viram saída, o arquivo decrescente é reordenado e a abertura (5.964,50) bate com o "SALDO ANTERIOR" do banco.';
+    const BAD = { new: ['b-new', 'novo'], dup: ['b-dup', 'duplicado'], ign: ['b-ign', 'ignorado'], err: ['b-err', 'descartado'] };
+    out.sort((a, b) => a.line - b.line);
+    $('#sim-table').innerHTML = `<tr><th class="num">Linha</th><th>Data</th><th>Descrição</th><th class="num">Valor</th><th>Resultado</th><th>Por quê</th></tr>` +
+      out.map((r) => `<tr class="${r.st === 'new' ? '' : 'out'}"><td class="num">${r.line}</td><td class="mono">${r.date && r.date !== 'INVALID' ? r.date.split('-').reverse().join('/') : esc(String(r.raw.split(';')[0] || ''))}</td>
+        <td>${esc(r.description)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount === undefined ? '—' : money(r.amount)}</td>
+        <td><span class="badge ${BAD[r.st][0]}">${BAD[r.st][1]}</span></td><td class="small muted">${esc(r.why || '')}</td></tr>`).join('');
+  }
+  document.querySelectorAll('#sim [data-ver]').forEach((b) => b.addEventListener('click', () => {
+    simVer = b.dataset.ver; document.querySelectorAll('#sim [data-ver]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); simulate();
+  }));
+  csvEl.addEventListener('input', simulate); $('#sim-db').addEventListener('change', simulate);
+  $('#sim-reset').addEventListener('click', () => { csvEl.value = SAMPLE; simulate(); });
+  simulate();
+
+  /* ---------- 06 MOTOR DE REGRAS (porta de rule-matcher.ts) ---------- */
+  const RULES = [
+    { id: 'r1', name: 'Fornecedor Energisa', type: 'CONTAINS', pattern: 'energisa', cat: null, party: 'Energisa MT', pr: 50, on: true },
+    { id: 'r2', name: 'Conta de luz', type: 'CONTAINS', pattern: 'Conta de Luz', cat: 'Energia (Despesas Fixas)', party: null, pr: 10, on: true },
+    { id: 'r3', name: 'PIX recebido', type: 'REGEX', pattern: '^pix receb', cat: 'Recebimento de Clientes', party: null, pr: 5, on: true },
+    { id: 'r4', name: 'Tarifas', type: 'CONTAINS', pattern: 'tarifa', cat: 'Administrativo', party: 'Banco do Brasil', pr: 1, on: true },
+    { id: 'r5', name: 'Tarifa pacote (igual)', type: 'EQUALS', pattern: 'Tarifa Pacote Serviços', cat: 'Serviços de Terceiros', party: null, pr: 0, on: false },
+  ];
+  const ruleNorm = (v) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  function ruleMatches(r, value) {
+    if (r.type === 'EQUALS') return ruleNorm(value) === ruleNorm(r.pattern);
+    if (r.type === 'REGEX') { try { return new RegExp(r.pattern, 'i').test(value); } catch (e) { return false; } }
+    return ruleNorm(value).includes(ruleNorm(r.pattern));
+  }
+  function renderRules() {
+    const desc = $('#rl-desc').value; const hasParty = $('#rl-hasparty').checked;
+    const ordered = RULES.filter((r) => r.on).sort((a, b) => b.pr - a.pr);
+    let catR = null, partyR = null;
+    for (const r of ordered) { if (catR && (partyR || hasParty)) break; if (!ruleMatches(r, desc)) continue; if (!catR && r.cat) catR = r; if (!hasParty && !partyR && r.party) partyR = r; }
+    const TYPE = { CONTAINS: 'contém', EQUALS: 'igual a', REGEX: 'regex' };
+    $('#rl-trace').innerHTML = RULES.slice().sort((a, b) => b.pr - a.pr).map((r) => {
+      const hit = r.on && ruleMatches(r, desc);
+      const used = [catR === r ? 'define a categoria' : '', partyR === r ? 'define o fornecedor' : ''].filter(Boolean).join(' e ');
+      return `<div class="r ${hit ? 'hit' : ''} ${r.on ? '' : 'off'}"><span class="p" title="prioridade">${r.pr}</span>
+        <span><b>${esc(r.name)}</b> <span class="muted small">${TYPE[r.type]} <code>${esc(r.pattern)}</code> → ${esc(r.cat || '—')} / ${esc(r.party || '—')}</span>${used ? `<br><span class="small" style="color:var(--teal);font-weight:600">${used}</span>` : ''}</span>
+        <label class="check small"><input type="checkbox" data-rule="${r.id}" ${r.on ? 'checked' : ''}> ativa</label></div>`;
+    }).join('');
+    const ruleId = (catR || partyR || {}).name;
+    $('#rl-result').innerHTML = `<div><span>Categoria</span><b>${esc(catR ? catR.cat : 'fica sem categoria')}</b></div>
+      <div><span>Fornecedor/cliente</span><b>${esc(hasParty ? 'mantém o escolhido à mão' : partyR ? partyR.party : '—')}</b></div>
+      <div><span>appliedRuleId · categorySource</span><b>${ruleId ? esc(ruleId) + (catR ? ' · REGRA' : ' · (sem origem)') : 'nada aplicado'}</b></div>`;
+    $('#rl-trace').querySelectorAll('[data-rule]').forEach((cb) => cb.addEventListener('change', () => { RULES.find((r) => r.id === cb.dataset.rule).on = cb.checked; renderRules(); }));
+  }
+  ['PAG CONTA DE LUZ ENERGISA MT', 'ENERGISA   PARCELAMENTO', 'PIX RECEBIDO JOAO', 'TARIFA PACOTE SERVICOS', 'Conta de Luz Elétrica'].forEach((s) => {
+    const b = h('button', { type: 'button', class: 'chip' }, esc(s)); b.addEventListener('click', () => { $('#rl-desc').value = s; renderRules(); }); $('#rl-samples').appendChild(b);
+  });
+  $('#rl-desc').addEventListener('input', renderRules); $('#rl-hasparty').addEventListener('change', renderRules);
+  renderRules();
+
+  /* ---------- 07 DFC ---------- */
+  const DFC = [
+    { key: 'OPERACIONAL', label: 'Operacional', result: 'Resultado Operacional', sections: [
+      { key: 'ENTRADAS', label: 'Entradas', lines: [['RECEBIMENTOS_CLIENTES', 'Recebimentos de Clientes'], ['OUTRAS_RECEITAS', 'Outras Receitas']] },
+      { key: 'SAIDAS', label: 'Saídas', lines: [['MATERIA_PRIMA', 'Matéria-Prima'], ['FOLHA', 'Folha'], ['IMPOSTOS', 'Impostos'], ['SERVICOS', 'Serviços de Terceiros'], ['COMERCIAL', 'Comercial'], ['ADMINISTRATIVO', 'Administrativo'], ['DESPESAS_FIXAS', 'Despesas Fixas']] }] },
+    { key: 'INVESTIMENTO', label: 'Investimento', result: 'Resultado Investimento', sections: [
+      { key: 'MOVIMENTACOES', label: 'Movimentações', lines: [['APLICACOES', 'Aplicações'], ['COMPRA_MAQUINAS', 'Compra de Máquinas'], ['COMPRA_VEICULOS', 'Compra de Veículos'], ['IMOVEIS', 'Imóveis'], ['VENDA_ATIVOS', 'Venda de Ativos']] }] },
+    { key: 'FINANCIAMENTO', label: 'Financiamento', result: 'Resultado Financiamento', sections: [
+      { key: 'MOVIMENTACOES', label: 'Movimentações', lines: [['EMPRESTIMOS', 'Empréstimos'], ['PARCELAMENTOS', 'Parcelamentos'], ['CAPITAL', 'Capital'], ['DIVIDENDOS', 'Dividendos']] }] },
+  ];
+  const KIND_SCOPE = { RECEITA: ['OPERACIONAL', 'ENTRADAS'], DESPESA: ['OPERACIONAL', 'SAIDAS'], INVESTIMENTO: ['INVESTIMENTO'], FINANCIAMENTO: ['FINANCIAMENTO'] };
+  const KIND_LBL = { RECEITA: 'Receita', DESPESA: 'Despesa', INVESTIMENTO: 'Investimento', FINANCIAMENTO: 'Financiamento' };
+  let kind = 'RECEITA';
+  Object.keys(KIND_LBL).forEach((k) => { const b = h('button', { type: 'button', 'aria-pressed': String(k === kind) }, KIND_LBL[k]); b.addEventListener('click', () => { kind = k; document.querySelectorAll('#kind-seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderTree(); }); $('#kind-seg').appendChild(b); });
+  function renderTree() {
+    const [g, s] = KIND_SCOPE[kind];
+    $('#dfc-tree').innerHTML = DFC.map((grp) => `<div class="dfc-group"><h5>${grp.label}</h5>${grp.sections.map((sec) => `<div class="dfc-sec">${sec.label}</div><div class="dfc-lines">${sec.lines.map(([id, l]) => `<span class="dfc-line ${grp.key === g && (!s || sec.key === s) ? 'ok' : ''}" title="${id}">${l}</span>`).join('')}</div>`).join('')}</div>`).join('');
+  }
+  renderTree();
+
+  const CATS = [
+    { id: '', label: '(sem categoria)', line: null },
+    { id: 'grp', label: 'Despesas Operacionais (agrupadora)', line: null, group: true },
+    { id: 'rc', label: 'Recebimento de Clientes', line: 'RECEBIMENTOS_CLIENTES' },
+    { id: 'mp', label: 'Matéria-Prima', line: 'MATERIA_PRIMA' },
+    { id: 'fo', label: 'Folha de Pagamento', line: 'FOLHA' },
+    { id: 'en', label: 'Energia', line: 'DESPESAS_FIXAS' },
+    { id: 'ap', label: 'Aplicações Financeiras', line: 'APLICACOES' },
+    { id: 'em', label: 'Empréstimos / Antecipação', line: 'EMPRESTIMOS' },
+  ];
+  const TXS = [
+    { d: 'PIX RECEBIDO CLIENTE ABC', v: 12500, c: 'rc', s: 'CONCILIADO' },
+    { d: 'PIX RECEBIDO CLIENTE ABC', v: 12500, c: 'rc', s: 'DUPLICADO' },
+    { d: 'NF 1234 FORNECEDOR XYZ', v: -4300.1, c: 'mp', s: 'PENDENTE' },
+    { d: 'FOLHA MARCO', v: -6200, c: 'fo', s: 'CONCILIADO' },
+    { d: 'PAG ENERGISA MT', v: -318.9, c: 'en', s: 'PENDENTE' },
+    { d: 'APLICACAO CDB', v: -3000, c: 'ap', s: 'CONCILIADO' },
+    { d: 'ANTECIPACAO RECEBIVEIS', v: 5000, c: 'em', s: 'PENDENTE' },
+    { d: 'TED ENTRE CONTAS PROPRIAS', v: -2000, c: '', s: 'IGNORADO' },
+    { d: 'DEBITO NAO IDENTIFICADO', v: -150.55, c: '', s: 'PENDENTE' },
+  ];
+  const STATUSES = ['PENDENTE', 'CONCILIADO', 'IGNORADO', 'DUPLICADO'];
+  const r2 = (x) => Math.round(x * 100) / 100;
+  function renderAgg() {
+    $('#agg-input').innerHTML = `<tr><th>Lançamento</th><th class="num">Valor</th><th>Categoria</th><th>Status</th></tr>` + TXS.map((t, i) => {
+      const excluded = t.s === 'IGNORADO' || t.s === 'DUPLICADO';
+      return `<tr class="${excluded ? 'out' : ''}"><td>${esc(t.d)}</td><td class="num ${t.v < 0 ? 'neg' : 'pos'}">${money(t.v)}</td>
+      <td><select data-i="${i}" data-k="c" aria-label="Categoria">${CATS.map((c) => `<option value="${c.id}" ${c.id === t.c ? 'selected' : ''} ${c.group ? 'disabled' : ''}>${c.label}</option>`).join('')}</select></td>
+      <td><select data-i="${i}" data-k="s" aria-label="Status">${STATUSES.map((s) => `<option ${s === t.s ? 'selected' : ''}>${s}</option>`).join('')}</select></td></tr>`;
+    }).join('');
+    $('#agg-input').querySelectorAll('select').forEach((sel) => sel.addEventListener('change', () => { TXS[+sel.dataset.i][sel.dataset.k] = sel.value; renderAgg(); }));
+    const lineTot = {}; let unclassified = 0, excluded = 0;
+    TXS.forEach((t) => {
+      if (t.s === 'IGNORADO' || t.s === 'DUPLICADO') { excluded++; return; }
+      const cat = CATS.find((c) => c.id === t.c);
+      if (!cat || !cat.line) { unclassified = r2(unclassified + t.v); return; }
+      lineTot[cat.line] = r2((lineTot[cat.line] || 0) + t.v);
+    });
+    let rows = `<tr><th>Linha da DFC</th><th class="num">Março</th></tr><tr class="sum"><td>Saldo Inicial</td><td class="num">${money(0)}</td></tr>`;
+    let net = 0;
+    DFC.forEach((g) => {
+      let gt = 0; let inner = '';
+      g.sections.forEach((s) => { let st = 0; let li = ''; s.lines.forEach(([id, l]) => { const v = lineTot[id] || 0; st = r2(st + v); if (v) li += `<tr><td style="padding-left:34px">${l}</td><td class="num ${v < 0 ? 'neg' : 'pos'}">${money(v)}</td></tr>`; }); gt = r2(gt + st); inner += `<tr><td style="padding-left:20px" class="muted">${s.label}</td><td class="num muted">${money(st)}</td></tr>` + li; });
+      net = r2(net + gt);
+      rows += `<tr class="grp"><td>${g.label}</td><td class="num">${money(gt)}</td></tr>` + inner + `<tr><td><i>${g.result}</i></td><td class="num"><b>${money(gt)}</b></td></tr>`;
+    });
+    rows += `<tr class="sum"><td>Fluxo Líquido</td><td class="num">${money(net)}</td></tr><tr class="sum"><td>Saldo Final</td><td class="num">${money(net)}</td></tr>
+      <tr><td class="muted"><i>Não classificado (fora da DFC)</i></td><td class="num muted">${money(unclassified)}</td></tr>
+      <tr><td class="muted small" colspan="2">${excluded} lançamento(s) ignorado(s) ou duplicado(s) fora do cálculo</td></tr>`;
+    $('#agg-output').innerHTML = rows;
+  }
+  renderAgg();
+
+  /* ---------- 09 API ---------- */
+  const API = [
+    ['auth', 'POST', '/auth/register', 'Cria usuário e devolve access + cookie de refresh', 'público · 10/min'],
+    ['auth', 'POST', '/auth/login', 'Login por e-mail e senha (mensagem genérica em erro)', 'público · 10/min'],
+    ['auth', 'POST', '/auth/refresh', 'Rotaciona o refresh e detecta reuso', 'cookie · 10/min'],
+    ['auth', 'POST', '/auth/logout', 'Revoga o refresh atual e limpa o cookie', 'cookie'],
+    ['auth', 'GET', '/auth/google', 'Inicia o OAuth com Google', 'público'],
+    ['auth', 'GET', '/auth/google/callback', 'Resolve ou vincula a conta, grava o cookie e redireciona', 'público'],
+    ['auth', 'GET', '/auth/me', 'Usuário atual e as empresas dele', 'JWT'],
+    ['app', 'GET', '/health', 'Healthcheck com SELECT 1 (Railway)', 'público'],
+    ['companies', 'GET', '/companies', 'Empresas do usuário, com o papel', 'JWT'],
+    ['companies', 'POST', '/companies', 'Cria empresa; o criador vira ADMIN. CNPJ só dígitos, validado', 'JWT'],
+    ['companies', 'GET', '/companies/:companyId', 'Detalhe da empresa', 'JWT + empresa'],
+    ['companies', 'PATCH', '/companies/:companyId', 'Atualização parcial', 'JWT + empresa'],
+    ['bank-accounts', 'GET', '/companies/:companyId/bank-accounts', 'Lista as contas', 'JWT + empresa'],
+    ['bank-accounts', 'POST', '/companies/:companyId/bank-accounts', 'Cria conta', 'JWT + empresa'],
+    ['bank-accounts', 'PATCH', '/bank-accounts/:id', 'Atualização parcial (ex: isActive)', 'JWT + dono'],
+    ['bank-accounts', 'DELETE', '/bank-accounts/:id', 'Exclui só se não houver histórico; senão 400', 'JWT + dono'],
+    ['categories', 'GET', '/companies/:companyId/categories?flat=', 'Árvore (ou lista plana) das categorias ativas', 'JWT + empresa'],
+    ['categories', 'POST', '/companies/:companyId/categories', 'Cria, validando pai, tipo × linha e agrupadora', 'JWT + empresa'],
+    ['categories', 'PATCH', '/categories/:id', 'Parcial, com isActive; impede ciclos', 'JWT + dono'],
+    ['categories', 'DELETE', '/categories/:id', 'Bloqueado com filhas, lançamentos ou regras', 'JWT + dono'],
+    ['parties', 'GET', '/companies/:companyId/parties?search=', 'Lista e busca por nome', 'JWT + empresa'],
+    ['parties', 'POST', '/companies/:companyId/parties', 'Cria, com CPF/CNPJ só dígitos e validado', 'JWT + empresa'],
+    ['parties', 'PATCH', '/parties/:id', 'Atualização parcial', 'JWT + dono'],
+    ['parties', 'DELETE', '/parties/:id', 'Exclui (zera o vínculo nos lançamentos)', 'JWT + dono'],
+    ['imports', 'POST', '/companies/:companyId/imports/csv-preview', 'Cabeçalhos, amostra e mapeamento sugerido', 'JWT + empresa · 20 MB'],
+    ['imports', 'POST', '/companies/:companyId/imports', 'Importa CSV ou OFX (multipart) e devolve o resumo', 'JWT + empresa · 20 MB'],
+    ['imports', 'GET', '/companies/:companyId/imports', 'Histórico (sem rawContent)', 'JWT + empresa'],
+    ['imports', 'GET', '/imports/:id', 'Resumo de um lote', 'JWT + dono'],
+    ['transactions', 'GET', '/companies/:companyId/transactions', 'Grade com filtros: conta, ano, mês, categoria, uncategorized, status, busca', 'JWT + empresa'],
+    ['transactions', 'GET', '/companies/:companyId/transactions/export?format=', 'CSV ou XLSX em stream com os mesmos filtros', 'JWT + empresa'],
+    ['transactions', 'POST', '/companies/:companyId/transactions/bulk', 'CONCILIAR, IGNORAR, EXCLUIR ou CATEGORIZAR', 'JWT + empresa'],
+    ['transactions', 'PATCH', '/transactions/:id', 'Categoria (null remove), fornecedor, status', 'JWT + dono'],
+    ['classification-rules', 'GET', '/companies/:companyId/rules', 'Lista por prioridade', 'JWT + empresa'],
+    ['classification-rules', 'POST', '/companies/:companyId/rules', 'Cria, validando alvo, regex e atribuíveis', 'JWT + empresa'],
+    ['classification-rules', 'POST', '/companies/:companyId/rules/apply', 'Reaplica em pendentes sem categoria', 'JWT + empresa'],
+    ['classification-rules', 'PATCH', '/rules/:id', 'Atualização parcial (ex: ativar ou desativar)', 'JWT + dono'],
+    ['classification-rules', 'DELETE', '/rules/:id', 'Exclui a regra', 'JWT + dono'],
+    ['dfc', 'GET', '/companies/:companyId/dfc?year=', 'DFC do ano: grupos, saldos, unclassified', 'JWT + empresa'],
+    ['dfc', 'GET', '/companies/:companyId/dfc/export?year=&format=', 'DFC em CSV ou XLSX', 'JWT + empresa'],
+    ['dashboard', 'GET', '/companies/:companyId/dashboard/summary?year=', 'Entradas e saídas mensais e top categorias', 'JWT + empresa'],
+  ];
+  let apiMod = 'todos';
+  const mods = ['todos', ...new Set(API.map((a) => a[0]))];
+  mods.forEach((m) => { const b = h('button', { type: 'button', class: 'chip', 'aria-pressed': String(m === apiMod) }, m); b.addEventListener('click', () => { apiMod = m; document.querySelectorAll('#api-filters .chip').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderApi(); }); $('#api-filters').appendChild(b); });
+  function renderApi() {
+    const q = ruleNorm($('#api-q').value || '');
+    const rows = API.filter((a) => (apiMod === 'todos' || a[0] === apiMod) && (!q || ruleNorm(a.join(' ')).includes(q)));
+    $('#api-table').innerHTML = `<tr><th>Método</th><th>Rota</th><th>O que faz</th><th>Acesso</th></tr>` +
+      (rows.length ? rows.map((a) => `<tr><td><span class="method m-${a[1]}">${a[1]}</span></td><td class="path">${esc(a[2])}</td><td>${esc(a[3])}</td><td class="small muted">${esc(a[4])}</td></tr>`).join('')
+        : `<tr><td colspan="4" class="muted">Nenhuma rota com esse filtro. Limpe a busca ou escolha "todos".</td></tr>`);
+  }
+  $('#api-q').addEventListener('input', renderApi); renderApi();
+
+  /* ---------- 10 REGRAS DE NEGÓCIO ---------- */
+  const BIZ = [
+    ['Importação', 'Lançamentos idênticos no mesmo extrato entram todos; o hash carrega a ordem da ocorrência e a 1ª mantém o formato legado.', 'imports/dedupe.ts'],
+    ['Importação', 'Reimportar o mesmo extrato, ou um que se sobreponha a ele, não duplica nada: hash por conta + data + valor + descrição normalizada, e FITID no OFX.', 'imports/imports.service.ts'],
+    ['Importação', 'Linhas de saldo (SALDO ANTERIOR, DO DIA, FINAL…) e valores zero não são movimentação e contam como ignorados.', 'imports/parsers/non-movement.ts'],
+    ['Importação', 'Um OFX cuja conta claramente não é a conta escolhida é recusado; a comparação tolera máscara, zeros à esquerda e dígito.', 'imports/account-match.ts'],
+    ['Importação', 'Uma conta inativa não recebe importação.', 'imports/imports.service.ts'],
+    ['Importação', 'O saldo de abertura é o saldo antes do 1º lançamento; um CSV decrescente é reordenado antes de calcular.', 'parsers/csv-statement.parser.ts'],
+    ['Importação', 'A importação é atômica. Uma falha nas regras depois do commit só é logada e não vira erro da requisição.', 'imports/imports.service.ts'],
+    ['Lançamento', 'A categoria atribuída precisa ser uma folha ativa da mesma empresa, mapeada a uma linha da DFC.', 'common/domain/assignable.ts'],
+    ['Lançamento', 'O fornecedor/cliente precisa ser da mesma empresa.', 'common/domain/assignable.ts'],
+    ['Lançamento', 'Remover a categoria limpa também categorySource e appliedRuleId.', 'transactions.service.ts'],
+    ['Lançamento', 'IGNORADO e DUPLICADO ficam fora da DFC e do dashboard.', 'shared/enums.ts'],
+    ['Categoria', 'A linha da DFC precisa ser compatível com o tipo: Receita vai para as entradas operacionais, Despesa para as saídas, e Investimento e Financiamento para o próprio grupo.', 'shared/dfc-structure.ts'],
+    ['Categoria', 'Uma folha que ganha a 1ª subcategoria vira agrupadora e perde a linha; isso é bloqueado se ela tem lançamentos ou regras.', 'categories.service.ts'],
+    ['Categoria', 'O pai precisa ser da mesma empresa, e ciclos são recusados.', 'categories.service.ts'],
+    ['Categoria', 'Não pode ser excluída com filhas, lançamentos ou regras; nesses casos, desative.', 'categories.service.ts'],
+    ['Regra', 'É resolvida campo a campo, pela primeira regra que bate e define categoria e pela primeira que define fornecedor.', 'rule-matcher.ts'],
+    ['Regra', 'Nunca sobrescreve o fornecedor escolhido à mão e só considera lançamentos PENDENTE sem categoria.', 'classification-rules.service.ts'],
+    ['Regra', 'Precisa de pelo menos um alvo; a regex é validada ao salvar.', 'classification-rules.service.ts'],
+    ['Regra', 'Contém e Igual comparam sem acento, sem diferenciar maiúsculas e com espaços colapsados.', 'rule-matcher.ts'],
+    ['DFC', 'Os saldos são o acumulado do fluxo classificado no ano, começando de zero, e não o saldo bancário.', 'dfc.service.ts'],
+    ['DFC', 'O fluxo sem categoria ou em agrupadora aparece em "Não classificado", fora dos saldos.', 'dfc.service.ts'],
+    ['DFC', 'Os valores são arredondados ao centavo em cada soma.', 'dfc.service.ts'],
+    ['Conta', 'Uma conta com extratos importados não pode ser excluída, só desativada.', 'bank-accounts.service.ts'],
+    ['Cadastro', 'CNPJ da empresa e CPF/CNPJ do fornecedor são gravados só com dígitos, com dígito verificador validado.', 'common/validation/document.decorators.ts'],
+    ['Acesso', 'Toda rota de empresa exige pertencer a ela; toda rota por :id verifica a empresa do recurso.', 'common/guards, common/auth'],
+  ];
+  let bizEnt = 'Todas';
+  ['Todas', ...new Set(BIZ.map((b) => b[0]))].forEach((e) => { const b = h('button', { type: 'button', class: 'chip', 'aria-pressed': String(e === bizEnt) }, e); b.addEventListener('click', () => { bizEnt = e; document.querySelectorAll('#biz-filters .chip').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); renderBiz(); }); $('#biz-filters').appendChild(b); });
+  function renderBiz() { $('#biz-list').innerHTML = BIZ.filter((b) => bizEnt === 'Todas' || b[0] === bizEnt).map((b) => `<div class="rule-item"><span class="ent">${b[0]}</span><div><p>${esc(b[1])}</p><div class="src">${esc(b[2])}</div></div></div>`).join(''); }
+  renderBiz();
+
+  /* ---------- 11 ENV ---------- */
+  const ENV = [
+    ['DATABASE_URL', 'api', 'sim', 'Postgres (local: porta 55432)'],
+    ['JWT_ACCESS_SECRET', 'api', 'sim', 'sem padrão: a API não sobe sem ele'],
+    ['JWT_REFRESH_SECRET', 'api', 'sim', 'sem padrão: a API não sobe sem ele'],
+    ['JWT_ACCESS_EXPIRES_IN', 'api', 'não', 'padrão 15m'],
+    ['JWT_REFRESH_EXPIRES_IN', 'api', 'não', 'padrão 30d'],
+    ['CORS_ORIGIN', 'api', 'sim', 'domínio(s) da web, separados por vírgula'],
+    ['API_PORT / PORT', 'api', 'não', 'padrão 3001 (o Railway injeta PORT)'],
+    ['GOOGLE_CLIENT_ID / SECRET', 'api', 'não', 'ativa o "Continuar com Google"'],
+    ['GOOGLE_CALLBACK_URL', 'api', 'com Google', 'precisa estar registrada no Google Cloud'],
+    ['WEB_APP_URL', 'api', 'com Google', 'destino do redirect pós-OAuth'],
+    ['NEXT_PUBLIC_API_URL', 'web', 'sim', 'URL pública da API'],
+    ['NODE_ENV=production', 'api', 'prod', 'cookie de refresh sameSite=none; secure'],
+  ];
+  $('#env-table').innerHTML = `<tr><th>Variável</th><th>App</th><th>Obrigatória</th><th>Observação</th></tr>` + ENV.map((e) => `<tr><td class="path">${e[0]}</td><td>${e[1]}</td><td>${e[2]}</td><td class="small muted">${e[3]}</td></tr>`).join('');
+
+  /* ---------- 13 ROADMAP ---------- */
+  const PHASES = [
+    { t: 'Fase 1 · MVP', done: true, i: ['Import CSV/OFX', 'Grade, filtros e lote', 'Regras simples', 'DFC dinâmica', 'Dashboard e exportação', 'JWT + refresh, Google'] },
+    { t: 'Fase 2 · Inteligência e acesso', i: ['Sugestão por similaridade (IA)', 'Import XLSX', 'Auditoria e versionamento', 'RBAC por empresa', 'Centro de custo e projeto'] },
+    { t: 'Fase 3 · Colaboração', i: ['Anexos (NF, boleto)', 'Comentários', 'Tags', 'Alertas de atípicos', 'PDF', 'API pública com chaves'] },
+    { t: 'Fases 4–5 · BI e dashboards', i: ['Modelo estrela para Power BI', 'Waterfall e treemap', 'Saldo diário', 'Qualidade da conciliação', 'Busca global'] },
+  ];
+  $('#road').innerHTML = PHASES.map((p) => `<div class="phase ${p.done ? 'done' : ''}"><h5>${p.t} ${p.done ? '<span class="pill teal" style="font-size:10px">concluída</span>' : ''}</h5><ul>${p.i.map((x) => `<li>${x}</li>`).join('')}</ul></div>`).join('');
+  const OPEN = [
+    ['P1', 'S2', 'Transferências entre contas da mesma empresa inflam entradas e saídas no dashboard', 'Tipo/flag de transferência fora da DFC e sugestão automática de pares'],
+    ['P2', 'S2', 'Nada confere se abertura + lançamentos = fechamento do extrato', 'Endpoint de diferença por conta/mês e alerta no import'],
+    ['P3', 'S2', 'Dados legados anteriores às validações novas', 'Script: documentos só dígitos, agrupadoras sem linha, lançamentos em agrupadoras'],
+    ['P4', 'S2', 'Excluir lançamento apaga a memória do dedupe', 'Soft delete que continua participando do dedupe'],
+    ['P5', 'S3', 'Regex do usuário roda no servidor (risco de ReDoS)', 're2 ou rejeição de quantificadores aninhados'],
+    ['P6', 'S3', 'A competência usa a data do lançamento, não a de liquidação', 'Decisão de produto: regime de caixa'],
+    ['P7', 'S3', 'CNPJ da empresa é único globalmente', 'Convite para a empresa existente (RBAC)'],
+    ['P8', 'S3', 'Arquivo bruto no Postgres e import em memória', 'Object storage e inserção em lotes'],
+    ['P9', 'S3', 'O tipo da subcategoria não é comparado ao do pai', 'Exigir o mesmo tipo do pai'],
+    ['P10', 'S3', 'Cadastros sem edição na UI', 'Dialogs de edição reaproveitando os formulários'],
+    ['P11', 'S3', 'Pequenos: previewToken sem uso, anos fixos na DFC, exclusão de fornecedor', 'Ver o relatório'],
+  ];
+  $('#open-table').innerHTML = `<tr><th>#</th><th>Sev.</th><th>Problema</th><th>Plano</th></tr>` + OPEN.map((o) => `<tr><td class="mono">${o[0]}</td><td><span class="sev ${o[1]}">${o[1]}</span></td><td>${o[2]}</td><td class="small muted">${o[3]}</td></tr>`).join('');
+
+  /* ---------- 14 GLOSSÁRIO ---------- */
+  const GLOSS = [
+    ['DFC', 'Demonstração do Fluxo de Caixa: entradas e saídas agrupadas em atividades Operacionais, de Investimento e de Financiamento.'],
+    ['Conciliação', 'Conferir cada lançamento do extrato e marcar o status dele (conciliado, ignorado, duplicado).'],
+    ['Competência', 'Ano e mês a que o lançamento pertence. Hoje vêm da data do lançamento.'],
+    ['OFX', 'Open Financial Exchange, o formato de extrato dos bancos. A versão 1.x é SGML sem tags fechadas e a 2.x é XML.'],
+    ['FITID', 'Identificador único que o banco dá a cada transação no OFX. É único por conta.'],
+    ['Folha / agrupadora', 'Uma folha é a categoria sem filhas, que recebe lançamentos e tem linha da DFC. A agrupadora só organiza a árvore.'],
+    ['Dedupe hash', 'sha256 de conta, data, valor, descrição normalizada e ocorrência, que impede reinserir o mesmo lançamento.'],
+    ['Tenant', 'Uma empresa no sistema. Os dados de um tenant nunca podem referenciar os de outro.'],
+    ['Refresh rotation', 'A cada uso o refresh token é trocado por um novo; reutilizar um token antigo encerra todas as sessões.'],
+    ['Não classificado', 'Fluxo do mês que ainda não está numa linha da DFC. Aparece à parte, fora dos saldos.'],
+  ];
+  $('#gloss').innerHTML = GLOSS.map((g) => `<div><dt>${g[0]}</dt><dd>${g[1]}</dd></div>`).join('');
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true, theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "neutral" });</script>
+</body>
+</html>
