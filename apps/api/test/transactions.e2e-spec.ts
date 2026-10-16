@@ -143,4 +143,13 @@ describe('Transactions', () => {
       await destroyTenant(ctx.prisma, pagingTenant);
     }
   });
+
+  it('filtra só lançamentos sem categoria', async () => {
+    const t = await newTransaction();
+    await newTransaction({ categoryId: leafId });
+    const res = await api(ctx.app, tenant.token).get(`/companies/${tenant.companyId}/transactions?uncategorized=true&pageSize=500`);
+    expect(res.status).toBe(200);
+    expect(res.body.items.every((i: { categoryId: string | null }) => i.categoryId === null)).toBe(true);
+    expect(res.body.items.map((i: { id: string }) => i.id)).toContain(t.id);
+  });
 });

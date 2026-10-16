@@ -22,7 +22,7 @@ export class TransactionsService {
       ...(query.bankAccountId ? { bankAccountId: query.bankAccountId } : {}),
       ...(query.year ? { competenceYear: query.year } : {}),
       ...(query.month ? { competenceMonth: query.month } : {}),
-      ...(query.categoryId ? { categoryId: query.categoryId } : {}),
+      ...(query.uncategorized ? { categoryId: null } : query.categoryId ? { categoryId: query.categoryId } : {}),
       ...(query.partyId ? { partyId: query.partyId } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.search
