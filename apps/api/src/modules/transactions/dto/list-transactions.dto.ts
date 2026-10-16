@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { ReconciliationStatus } from '@prisma/client';
@@ -34,6 +35,7 @@ export class ListTransactionsQueryDto {
   partyId?: string;
 
   @IsOptional()
+  @ApiPropertyOptional({ enum: ReconciliationStatus })
   @IsEnum(ReconciliationStatus)
   status?: ReconciliationStatus;
 

@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { IsCpfOrCnpj, ToDigits } from '../../../common/validation/document.decorators';
 import { PartyKind } from '@prisma/client';
@@ -16,6 +16,7 @@ export class PartyDto {
   document?: string;
 
   @IsOptional()
+  @ApiPropertyOptional({ enum: PartyKind })
   @IsEnum(PartyKind)
   kind?: PartyKind;
 }
