@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { allDFCLines, CategoryKind, dfcLinesForKind } from '@conciliacao/shared';
+import { allDFCLines, CategoryKind, dfcLinesForKind, type DFCLine } from '@conciliacao/shared';
 
 const DFC_LINE_LABELS = new Map(allDFCLines().map((l) => [l.line, l.label]));
 
@@ -124,7 +124,7 @@ export default function CategoriasPage() {
     await createCategory.mutateAsync({
       name,
       kind: kind as CategoryKind,
-      dfcLine: dfcLine === 'none' ? undefined : (dfcLine as any),
+      dfcLine: dfcLine === 'none' ? undefined : (dfcLine as DFCLine),
       parentId: parentId === 'none' ? undefined : parentId,
     });
     setName('');
