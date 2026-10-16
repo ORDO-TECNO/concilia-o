@@ -96,4 +96,14 @@ describe('Categories', () => {
     const res = await create({ name: 'Frete urgente', kind: 'DESPESA', dfcLine: 'COMERCIAL', parentId: folha.body.id });
     expect(res.status).toBe(400);
   });
+
+  it('não exclui categoria usada por regra de classificação', async () => {
+    const cat = await create({ name: 'Tarifas', kind: 'DESPESA', dfcLine: 'ADMINISTRATIVO' });
+    await ctx.prisma.classificationRule.create({
+      data: { companyId: tenant.companyId, name: 'Tarifa', pattern: 'TARIFA', categoryId: cat.body.id },
+    });
+
+    const res = await api(ctx.app, tenant.token).delete(`/categories/${cat.body.id}`);
+    expect(res.status).toBe(400);
+  });
 });

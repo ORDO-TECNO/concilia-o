@@ -139,9 +139,10 @@ export class CategoriesService {
     if (!category) throw new NotFoundException('Categoria não encontrada');
     await assertUserBelongsToCompany(this.prisma, userId, category.companyId);
 
-    const [childCount, transactionCount] = await Promise.all([
+    const [childCount, transactionCount, ruleCount] = await Promise.all([
       this.prisma.category.count({ where: { parentId: id } }),
       this.prisma.transaction.count({ where: { categoryId: id } }),
+      this.prisma.classificationRule.count({ where: { categoryId: id } }),
     ]);
 
     if (childCount > 0) {
@@ -151,6 +152,9 @@ export class CategoriesService {
       throw new BadRequestException('Existem lançamentos usando esta categoria — desative-a em vez de excluir');
     }
 
+    if (ruleCount > 0) {
+      throw new BadRequestException('Existem regras de classificação usando esta categoria — ajuste-as antes de excluir');
+    }
     await this.prisma.category.delete({ where: { id } });
     return { success: true };
   }
