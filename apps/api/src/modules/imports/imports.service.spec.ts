@@ -56,7 +56,7 @@ function buildPrismaMock(overrides: Partial<Record<string, unknown>> = {}): Pris
 
   return {
     bankAccount: {
-      findUnique: jest.fn().mockResolvedValue({ id: 'ba-1', companyId: 'co-1', bankName: null, agencia: null, conta: '0001' }),
+      findUnique: jest.fn().mockResolvedValue({ id: 'ba-1', companyId: 'co-1', bankName: null, agencia: null, conta: '0001', isActive: true }),
     },
     importBatch: {
       create: jest.fn().mockResolvedValue({ id: batchId }),
@@ -141,5 +141,21 @@ describe('ImportsService — missing file guard', () => {
     await expect(
       service.import('co-1', buildImportRequestDto(), null as unknown as Express.Multer.File),
     ).rejects.toThrow(BadRequestException);
+  });
+});
+
+describe('ImportsService — bank account guard', () => {
+  it('rejeita importação em conta bancária inativa', async () => {
+    const prisma = buildPrismaMock({
+      bankAccount: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'ba-1', companyId: 'co-1', conta: '0001', isActive: false }),
+      },
+    });
+    const service = new ImportsService(prisma, buildRulesMock());
+
+    await expect(service.import('co-1', buildImportRequestDto(), buildFile(MINIMAL_OFX))).rejects.toThrow(
+      /inativa/,
+    );
+    expect(prisma.importBatch.create).not.toHaveBeenCalled();
   });
 });

@@ -40,6 +40,9 @@ export class ImportsService {
     if (!bankAccount || bankAccount.companyId !== companyId) {
       throw new BadRequestException('Conta bancária inválida para esta empresa');
     }
+    if (!bankAccount.isActive) {
+      throw new BadRequestException('Conta bancária inativa — reative-a antes de importar extratos');
+    }
 
     const rawContent = decodeFileBuffer(file.buffer);
     const parsed = this.parseFile(dto, rawContent);
