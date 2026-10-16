@@ -12,6 +12,7 @@ export interface TransactionFilters {
   year?: number;
   month?: number;
   categoryId?: string;
+  uncategorized?: boolean;
   status?: ReconciliationStatus;
   search?: string;
   page: number;

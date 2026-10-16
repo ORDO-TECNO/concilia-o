@@ -31,6 +31,7 @@ function parseFiltersFromSearchParams(params: URLSearchParams): TransactionFilte
     year: params.get('year') ? Number(params.get('year')) : undefined,
     month: params.get('month') ? Number(params.get('month')) : undefined,
     categoryId: params.get('categoryId') ?? undefined,
+    uncategorized: params.get('uncategorized') === 'true' ? true : undefined,
     status: parseStatus(params.get('status')),
     search: params.get('search') ?? undefined,
     page: params.get('page') ? Number(params.get('page')) : 1,
