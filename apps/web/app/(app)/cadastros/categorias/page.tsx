@@ -109,11 +109,8 @@ export default function CategoriasPage() {
   }
 
   function handleDelete(id: string) {
-    deleteCategory.mutate(id, {
-      onError: (err: any) => {
-        alert(err?.message ?? 'Não foi possível excluir esta categoria.');
-      },
-    });
+    // Erros (ex: categoria com lançamentos) aparecem no toast global.
+    deleteCategory.mutate(id);
   }
 
   const parentOptions = flattenForParentOptions(tree);
