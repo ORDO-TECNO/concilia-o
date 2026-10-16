@@ -1133,6 +1133,8 @@ flowchart TB
     ['auth', 'GET', '/auth/google/callback', 'Resolve ou vincula a conta, grava o cookie e redireciona', 'público'],
     ['auth', 'GET', '/auth/me', 'Usuário atual e as empresas dele', 'JWT'],
     ['app', 'GET', '/health', 'Healthcheck com SELECT 1 (Railway)', 'público'],
+    ['docs', 'GET', '/docs/ledger-manual', 'Este manual, servido pela API (no web, via rewrite de /docs/*)', 'público · DOCS_ENABLED'],
+    ['docs', 'GET', '/docs/api', 'Swagger UI; o OpenAPI em JSON fica em /docs/api-json', 'público · DOCS_ENABLED']
     ['companies', 'GET', '/companies', 'Empresas do usuário, com o papel', 'JWT'],
     ['companies', 'POST', '/companies', 'Cria empresa; o criador vira ADMIN. CNPJ só dígitos, validado', 'JWT'],
     ['companies', 'GET', '/companies/:companyId', 'Detalhe da empresa', 'JWT + empresa'],
@@ -1225,6 +1227,8 @@ flowchart TB
     ['WEB_APP_URL', 'api', 'com Google', 'destino do redirect pós-OAuth'],
     ['NEXT_PUBLIC_API_URL', 'web', 'sim', 'URL pública da API'],
     ['NODE_ENV=production', 'api', 'prod', 'cookie de refresh sameSite=none; secure'],
+    ['DOCS_ENABLED', 'api', 'não', 'false esconde o manual e o Swagger (padrão: ligado)'],
+    ['API_PUBLIC_URL', 'api', 'não', 'servidor do "Try it out" no Swagger'],
   ];
   $('#env-table').innerHTML = `<tr><th>Variável</th><th>App</th><th>Obrigatória</th><th>Observação</th></tr>` + ENV.map((e) => `<tr><td class="path">${e[0]}</td><td>${e[1]}</td><td>${e[2]}</td><td class="small muted">${e[3]}</td></tr>`).join('');
 
