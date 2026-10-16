@@ -220,4 +220,14 @@ describe('Imports — atomicity success path', () => {
     expect(res.body.ignoredRecords).toBe(1);
     expect(res.body.duplicateRecords).toBe(0);
   });
+
+  it('history does not ship the raw file content', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/companies/${companyId}/imports`)
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]).not.toHaveProperty('rawContent');
+    expect(res.body[0]).toHaveProperty('newRecords');
+  });
 });

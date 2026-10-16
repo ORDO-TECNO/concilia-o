@@ -297,10 +297,34 @@ export class ImportsService {
   }
 
   async listHistory(companyId: string) {
+    // rawContent (o arquivo inteiro, guardado para auditoria) fica de fora:
+    // listar o histórico não pode trafegar todos os extratos já enviados.
     return this.prisma.importBatch.findMany({
       where: { companyId },
       orderBy: { createdAt: 'desc' },
-      include: { periods: true, bankAccount: true },
+      select: {
+        id: true,
+        companyId: true,
+        bankAccountId: true,
+        source: true,
+        originalFileName: true,
+        status: true,
+        parsedBankName: true,
+        parsedAgencia: true,
+        parsedConta: true,
+        statementStartDate: true,
+        statementEndDate: true,
+        statementStartBalance: true,
+        statementEndBalance: true,
+        totalRecords: true,
+        newRecords: true,
+        duplicateRecords: true,
+        ignoredRecords: true,
+        errorMessage: true,
+        createdAt: true,
+        periods: true,
+        bankAccount: true,
+      },
     });
   }
 
