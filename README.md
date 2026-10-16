@@ -86,10 +86,17 @@ guardado junto com o conteúdo bruto do arquivo para auditoria.
   banco/agência/conta identificados no arquivo, data e saldo de
   abertura/fechamento informados pelo extrato.
 - **Derivados**: status da importação (processando/concluído/parcial/
-  falhou); contagem de lançamentos totais, novos, duplicados e ignorados;
-  por período (ano/mês) dentro do arquivo, a contagem de lançamentos e os
-  saldos de abertura/fechamento daquele período — tudo calculado a partir
-  dos lançamentos efetivamente inseridos, não editável pelo usuário.
+  falhou); contagem de lançamentos totais (= novos + duplicados + ignorados),
+  novos (efetivamente inseridos), duplicados (já existiam) e ignorados
+  (linhas de saldo e valores zero); por período (ano/mês) dentro do arquivo,
+  a contagem de lançamentos efetivamente inseridos naquele mês e os saldos
+  de abertura (saldo antes do 1º lançamento) e fechamento do período segundo
+  o extrato — nada disso é editável pelo usuário.
+- **Regras**: o saldo de abertura do extrato é o saldo *antes* do primeiro
+  lançamento. CSVs em ordem decrescente (mais recente primeiro) são
+  reordenados para ordem cronológica antes de calcular saldos. Valores
+  aceitam os formatos `-1.234,56`, `(1.234,56)`, `1.234,56-` e `1.234,56 D/C`;
+  datas inexistentes (ex: 31/02) descartam a linha.
 
 ### Lançamento (`Transaction`)
 Uma movimentação bancária — o núcleo do sistema. Cada linha de extrato vira
@@ -105,8 +112,13 @@ um lançamento.
   regra) e qual regra foi aplicada.
 - **Derivados**: ano e mês de competência (extraídos da data do lançamento);
   hash de deduplicação (calculado a partir de conta + data + valor +
-  descrição normalizada, usado para não reinserir o mesmo lançamento em
-  importações futuras).
+  descrição normalizada + ordem da ocorrência dentro do extrato, usado para
+  não reinserir o mesmo lançamento em importações futuras sem descartar
+  lançamentos idênticos legítimos do mesmo arquivo).
+- **Regras**: a categoria atribuída (manualmente, em lote ou por regra) tem
+  de ser uma categoria-folha ativa da mesma empresa, mapeada a uma linha da
+  DFC; o fornecedor/cliente também tem de ser da mesma empresa. Remover a
+  categoria limpa também a origem da classificação.
 
 ### Regra de classificação (`ClassificationRule`)
 Uma regra que classifica lançamentos automaticamente. Todas as regras ativas
