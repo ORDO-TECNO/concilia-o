@@ -76,3 +76,9 @@ jobs:
         run: npm --workspace=apps/api run prisma:generate
 
       - run: npm --workspace=apps/api run test
+
+      - name: Apply migrations to the test database
+        run: npm --workspace=apps/api run prisma:deploy
+
+      - name: API e2e tests
+        run: npm --workspace=apps/api run test:e2e
