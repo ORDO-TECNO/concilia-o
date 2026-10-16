@@ -33,12 +33,17 @@ export class CategoriesService {
     return roots;
   }
 
+  private async assertValidParent(companyId: string, parentId: string) {
+    const parent = await this.prisma.category.findUnique({ where: { id: parentId } });
+    if (!parent || parent.companyId !== companyId) {
+      throw new BadRequestException('Categoria pai inválida');
+    }
+    return parent;
+  }
+
   async create(companyId: string, dto: CategoryDto) {
     if (dto.parentId) {
-      const parent = await this.prisma.category.findUnique({ where: { id: dto.parentId } });
-      if (!parent || parent.companyId !== companyId) {
-        throw new BadRequestException('Categoria pai inválida');
-      }
+      await this.assertValidParent(companyId, dto.parentId);
     }
     return this.prisma.category.create({
       data: {
@@ -58,6 +63,9 @@ export class CategoriesService {
 
     if (dto.parentId === id) {
       throw new BadRequestException('Uma categoria não pode ser pai de si mesma');
+    }
+    if (dto.parentId) {
+      await this.assertValidParent(category.companyId, dto.parentId);
     }
 
     return this.prisma.category.update({

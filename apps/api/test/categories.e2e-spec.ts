@@ -36,4 +36,14 @@ describe('Categories', () => {
     const list = await api(ctx.app, tenant.token).get(`${url()}?flat=true`);
     expect(list.body.map((c: { id: string }) => c.id)).not.toContain(created.body.id);
   });
+
+  it('não aceita como pai uma categoria de outra empresa', async () => {
+    const foreign = await api(ctx.app, other.token)
+      .post(`/companies/${other.companyId}/categories`)
+      .send({ name: 'Alheia', kind: 'DESPESA' });
+    const mine = await create({ name: 'Minha', kind: 'DESPESA', dfcLine: 'FOLHA' });
+
+    const res = await api(ctx.app, tenant.token).patch(`/categories/${mine.body.id}`).send({ parentId: foreign.body.id });
+    expect(res.status).toBe(400);
+  });
 });
