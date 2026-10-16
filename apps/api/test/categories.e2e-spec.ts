@@ -46,4 +46,13 @@ describe('Categories', () => {
     const res = await api(ctx.app, tenant.token).patch(`/categories/${mine.body.id}`).send({ parentId: foreign.body.id });
     expect(res.status).toBe(400);
   });
+
+  it('impede ciclos ao mover uma categoria para baixo de um descendente', async () => {
+    const avo = await create({ name: 'Avô', kind: 'DESPESA' });
+    const pai = await create({ name: 'Pai', kind: 'DESPESA', parentId: avo.body.id });
+    const neto = await create({ name: 'Neto', kind: 'DESPESA', parentId: pai.body.id });
+
+    const res = await api(ctx.app, tenant.token).patch(`/categories/${avo.body.id}`).send({ parentId: neto.body.id });
+    expect(res.status).toBe(400);
+  });
 });

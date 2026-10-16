@@ -41,6 +41,27 @@ export class CategoriesService {
     return parent;
   }
 
+  /**
+   * Mover uma categoria para debaixo de um dos seus descendentes criaria um
+   * ciclo — e categorias em ciclo somem da árvore (nenhuma vira raiz).
+   * Sobe a partir do novo pai até a raiz procurando a própria categoria.
+   */
+  private async assertNotDescendant(categoryId: string, newParentId: string) {
+    let current: string | null = newParentId;
+    const visited = new Set<string>();
+    while (current && !visited.has(current)) {
+      if (current === categoryId) {
+        throw new BadRequestException('Uma categoria não pode ficar abaixo de uma das suas subcategorias');
+      }
+      visited.add(current);
+      const node: { parentId: string | null } | null = await this.prisma.category.findUnique({
+        where: { id: current },
+        select: { parentId: true },
+      });
+      current = node?.parentId ?? null;
+    }
+  }
+
   async create(companyId: string, dto: CategoryDto) {
     if (dto.parentId) {
       await this.assertValidParent(companyId, dto.parentId);
@@ -66,6 +87,7 @@ export class CategoriesService {
     }
     if (dto.parentId) {
       await this.assertValidParent(category.companyId, dto.parentId);
+      await this.assertNotDescendant(id, dto.parentId);
     }
 
     return this.prisma.category.update({
