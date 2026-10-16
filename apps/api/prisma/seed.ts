@@ -34,7 +34,6 @@ const CATEGORY_TREE: CategorySeed[] = [
       {
         name: 'Comercial',
         kind: CategoryKind.DESPESA,
-        dfcLine: DFCLine.COMERCIAL,
         children: [
           { name: 'Marketing', kind: CategoryKind.DESPESA, dfcLine: DFCLine.COMERCIAL },
           { name: 'Frete', kind: CategoryKind.DESPESA, dfcLine: DFCLine.COMERCIAL },
@@ -48,7 +47,6 @@ const CATEGORY_TREE: CategorySeed[] = [
       {
         name: 'Despesas Fixas',
         kind: CategoryKind.DESPESA,
-        dfcLine: DFCLine.DESPESAS_FIXAS,
         children: [
           { name: 'Aluguel', kind: CategoryKind.DESPESA, dfcLine: DFCLine.DESPESAS_FIXAS },
           { name: 'Energia', kind: CategoryKind.DESPESA, dfcLine: DFCLine.DESPESAS_FIXAS },
@@ -92,7 +90,8 @@ async function createCategoryTree(companyId: string, nodes: CategorySeed[], pare
         parentId,
         name: node.name,
         kind: node.kind,
-        dfcLine: node.dfcLine ?? null,
+        // Só folhas têm linha da DFC; agrupadoras ficam nulas.
+        dfcLine: node.children?.length ? null : (node.dfcLine ?? null),
       },
     });
     if (node.children?.length) {
