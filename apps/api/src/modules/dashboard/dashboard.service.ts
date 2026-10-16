@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CASHFLOW_EXCLUDED_STATUSES } from '@conciliacao/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -7,7 +8,7 @@ export class DashboardService {
 
   async getSummary(companyId: string, year: number) {
     const transactions = await this.prisma.transaction.findMany({
-      where: { companyId, competenceYear: year, status: { not: 'IGNORADO' } },
+      where: { companyId, competenceYear: year, status: { notIn: [...CASHFLOW_EXCLUDED_STATUSES] } },
       include: { category: true },
     });
 
