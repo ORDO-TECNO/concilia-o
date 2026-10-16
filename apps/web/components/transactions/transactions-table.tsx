@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatBRL, formatDateBR } from '@conciliacao/shared';
 import type { TransactionDTO } from '@conciliacao/shared';
 import type { CategoryNode } from '@/lib/hooks/use-categories';
+import { toCategoryOptions } from '@/lib/categories';
 
 const STATUS_VARIANT: Record<string, 'secondary' | 'success' | 'outline' | 'destructive'> = {
   PENDENTE: 'secondary',
@@ -29,13 +30,6 @@ const STATUS_LABELS: Record<string, string> = {
   IGNORADO: 'Ignorado',
   DUPLICADO: 'Duplicado',
 };
-
-function flattenCategories(nodes: CategoryNode[] = [], depth = 0): { id: string; label: string }[] {
-  return nodes.flatMap((n) => [
-    { id: n.id, label: `${'— '.repeat(depth)}${n.name}` },
-    ...flattenCategories(n.children, depth + 1),
-  ]);
-}
 
 export function TransactionsTable({
   data,
@@ -52,7 +46,7 @@ export function TransactionsTable({
   onCategoryChange: (id: string, categoryId: string) => void;
   onStatusChange: (id: string, status: string) => void;
 }) {
-  const categoryOptions = React.useMemo(() => flattenCategories(categories), [categories]);
+  const categoryOptions = React.useMemo(() => toCategoryOptions(categories), [categories]);
 
   const columns = React.useMemo<ColumnDef<TransactionDTO>[]>(
     () => [
@@ -115,7 +109,7 @@ export function TransactionsTable({
             </SelectTrigger>
             <SelectContent>
               {categoryOptions.map((opt) => (
-                <SelectItem key={opt.id} value={opt.id}>
+                <SelectItem key={opt.id} value={opt.id} disabled={!opt.selectable}>
                   {opt.label}
                 </SelectItem>
               ))}
