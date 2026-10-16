@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
-import { BankAccountDto } from './dto/bank-account.dto';
+import { BankAccountDto, UpdateBankAccountDto } from './dto/bank-account.dto';
 
 @Injectable()
 export class BankAccountsService {
@@ -20,7 +20,7 @@ export class BankAccountsService {
     });
   }
 
-  async update(userId: string, id: string, dto: Partial<BankAccountDto>) {
+  async update(userId: string, id: string, dto: UpdateBankAccountDto) {
     const account = await this.prisma.bankAccount.findUnique({ where: { id } });
     if (!account) throw new NotFoundException('Conta bancária não encontrada');
     await assertUserBelongsToCompany(this.prisma, userId, account.companyId);

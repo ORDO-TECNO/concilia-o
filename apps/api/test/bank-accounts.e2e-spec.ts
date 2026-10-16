@@ -47,4 +47,11 @@ describe('Bank accounts', () => {
     expect(res.status).toBe(400);
     expect(await ctx.prisma.transaction.count({ where: { bankAccountId: account.body.id } })).toBe(1);
   });
+
+  it('PATCH parcial desativa a conta sem reenviar os demais campos', async () => {
+    const account = await create({ conta: '333', apelido: 'Principal' });
+    const res = await api(ctx.app, tenant.token).patch(`/bank-accounts/${account.body.id}`).send({ isActive: false });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ isActive: false, conta: '333', apelido: 'Principal' });
+  });
 });
