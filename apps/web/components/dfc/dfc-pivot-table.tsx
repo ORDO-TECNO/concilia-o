@@ -142,6 +142,20 @@ export function DfcPivotTable({ report }: { report: DFCReport }) {
             ))}
             <MoneyCell value={report.closingBalance[11] ?? 0} bold />
           </tr>
+          {report.unclassified?.some((v) => v !== 0) && (
+            <tr className="border-t border-dashed">
+              <td
+                className="sticky left-0 bg-card px-3 py-1.5 text-xs italic text-muted-foreground"
+                title="Lançamentos sem categoria ou em categoria agrupadora — não entram nos grupos nem nos saldos acima."
+              >
+                Não classificado (fora da DFC)
+              </td>
+              {report.unclassified.map((v, i) => (
+                <MoneyCell key={i} value={v} />
+              ))}
+              <MoneyCell value={report.unclassified.reduce((a, b) => a + b, 0)} />
+            </tr>
+          )}
         </tbody>
       </table>
       </div>
