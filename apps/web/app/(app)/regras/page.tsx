@@ -10,6 +10,7 @@ import {
   useCreateRule,
   useDeleteRule,
   useRules,
+  useUpdateRule,
   type RuleInput,
 } from '@/lib/hooks/use-rules';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,7 @@ export default function RegrasPage() {
   const { data: parties } = useParties(currentCompanyId);
   const createRule = useCreateRule(currentCompanyId);
   const deleteRule = useDeleteRule(currentCompanyId);
+  const updateRule = useUpdateRule(currentCompanyId);
   const applyRules = useApplyRules(currentCompanyId);
 
   const [open, setOpen] = React.useState(false);
@@ -254,7 +256,15 @@ export default function RegrasPage() {
               <TableCell>
                 <Badge variant={r.isActive ? 'success' : 'secondary'}>{r.isActive ? 'Ativa' : 'Inativa'}</Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={updateRule.isPending}
+                  onClick={() => updateRule.mutate({ id: r.id, input: { isActive: !r.isActive } })}
+                >
+                  {r.isActive ? 'Desativar' : 'Ativar'}
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => deleteRule.mutate(r.id)}>
                   Excluir
                 </Button>
