@@ -1,10 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PartiesService } from './parties.service';
 import { PartyDto, UpdatePartyDto } from './dto/party.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 
+@ApiTags('parties')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class PartiesController {
