@@ -14,6 +14,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { ClassificationRulesModule } from './modules/classification-rules/classification-rules.module';
 import { DfcModule } from './modules/dfc/dfc.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { DocsModule } from './modules/docs/docs.module';
 
 const REQUIRED_ENV_VARS = [
   'JWT_ACCESS_SECRET',
@@ -54,6 +55,7 @@ function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
     ClassificationRulesModule,
     DfcModule,
     DashboardModule,
+    DocsModule,
   ],
   controllers: [AppController],
   providers: [
