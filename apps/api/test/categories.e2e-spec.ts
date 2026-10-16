@@ -55,4 +55,13 @@ describe('Categories', () => {
     const res = await api(ctx.app, tenant.token).patch(`/categories/${avo.body.id}`).send({ parentId: neto.body.id });
     expect(res.status).toBe(400);
   });
+
+  it('exige linha da DFC compatível com o tipo da categoria', async () => {
+    expect((await create({ name: 'Receita errada', kind: 'RECEITA', dfcLine: 'DIVIDENDOS' })).status).toBe(400);
+
+    const ok = await create({ name: 'Receita certa', kind: 'RECEITA', dfcLine: 'OUTRAS_RECEITAS' });
+    expect(ok.status).toBe(201);
+    const changedKind = await api(ctx.app, tenant.token).patch(`/categories/${ok.body.id}`).send({ kind: 'DESPESA' });
+    expect(changedKind.status).toBe(400);
+  });
 });

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Category } from '@prisma/client';
+import { Category, CategoryKind, DFCLine } from '@prisma/client';
+import { isDfcLineAllowedForKind } from '@conciliacao/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
 import { CategoryDto, UpdateCategoryDto } from './dto/category.dto';
@@ -33,6 +34,12 @@ export class CategoriesService {
     return roots;
   }
 
+  private assertKindMatchesLine(kind: CategoryKind, dfcLine: DFCLine | null | undefined) {
+    if (dfcLine && !isDfcLineAllowedForKind(kind, dfcLine)) {
+      throw new BadRequestException('A linha da DFC escolhida não é compatível com o tipo da categoria');
+    }
+  }
+
   private async assertValidParent(companyId: string, parentId: string) {
     const parent = await this.prisma.category.findUnique({ where: { id: parentId } });
     if (!parent || parent.companyId !== companyId) {
@@ -63,6 +70,7 @@ export class CategoriesService {
   }
 
   async create(companyId: string, dto: CategoryDto) {
+    this.assertKindMatchesLine(dto.kind, dto.dfcLine);
     if (dto.parentId) {
       await this.assertValidParent(companyId, dto.parentId);
     }
@@ -82,6 +90,10 @@ export class CategoriesService {
     if (!category) throw new NotFoundException('Categoria não encontrada');
     await assertUserBelongsToCompany(this.prisma, userId, category.companyId);
 
+    this.assertKindMatchesLine(
+      dto.kind ?? category.kind,
+      dto.dfcLine !== undefined ? dto.dfcLine : category.dfcLine,
+    );
     if (dto.parentId === id) {
       throw new BadRequestException('Uma categoria não pode ser pai de si mesma');
     }
