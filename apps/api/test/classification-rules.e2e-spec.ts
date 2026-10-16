@@ -58,4 +58,26 @@ describe('Classification rules', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ isActive: false, pattern: 'ENERGISA' });
   });
+
+  it.each([
+    ['sem categoria nem fornecedor', () => ({ name: 'Vazia', pattern: 'X' })],
+    ['com regex inválida', () => ({ name: 'Regex', pattern: '(', matchType: 'REGEX', categoryId: leafId })],
+  ])('rejeita regra %s', async (_label, body) => {
+    expect((await createRule(body())).status).toBe(400);
+  });
+
+  it('rejeita categoria ou fornecedor de outra empresa', async () => {
+    const foreignCat = await ctx.prisma.category.create({
+      data: { companyId: other.companyId, name: 'Alheia', kind: 'DESPESA', dfcLine: 'FOLHA' },
+    });
+    const foreignParty = await ctx.prisma.party.create({ data: { companyId: other.companyId, name: 'Alheio' } });
+    expect((await createRule({ name: 'A', pattern: 'A', categoryId: foreignCat.id })).status).toBe(400);
+    expect((await createRule({ name: 'B', pattern: 'B', partyId: foreignParty.id })).status).toBe(400);
+  });
+
+  it('PATCH não pode deixar a regra sem alvo', async () => {
+    const rule = await createRule({ name: 'Luz', pattern: 'LUZ', categoryId: leafId });
+    const res = await api(ctx.app, tenant.token).patch(`/rules/${rule.body.id}`).send({ categoryId: null });
+    expect(res.status).toBe(400);
+  });
 });
