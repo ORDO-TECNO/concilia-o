@@ -71,6 +71,15 @@ export function previewCsv(content: string, delimiter: string): CsvPreviewResult
   return { headers, sampleRows, suggestedMapping };
 }
 
+/** Monta YYYY-MM-DD só se a data existir no calendário (rejeita 31/02, mês 13 etc.). */
+function toIsoDate(year: string, month: string, day: string): string | undefined {
+  const [y, m, d] = [Number(year), Number(month), Number(day)];
+  if (m < 1 || m > 12 || d < 1) return undefined;
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  if (d > daysInMonth) return undefined;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
+
 function parseDate(raw: string | undefined, format: CsvColumnMapping['dateFormat']): string | undefined {
   if (!raw) return undefined;
   const s = raw.trim();
@@ -78,7 +87,7 @@ function parseDate(raw: string | undefined, format: CsvColumnMapping['dateFormat
   if (format === 'YYYY-MM-DD') {
     const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
     if (!m) return undefined;
-    return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+    return toIsoDate(m[1], m[2], m[3]);
   }
 
   const m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})/);
@@ -86,7 +95,7 @@ function parseDate(raw: string | undefined, format: CsvColumnMapping['dateFormat
   const [, a, b, rawYear] = m;
   const year = rawYear.length === 2 ? (Number(rawYear) > 50 ? `19${rawYear}` : `20${rawYear}`) : rawYear;
   const [day, month] = format === 'MM/DD/YYYY' ? [b, a] : [a, b];
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  return toIsoDate(year, month, day);
 }
 
 /**

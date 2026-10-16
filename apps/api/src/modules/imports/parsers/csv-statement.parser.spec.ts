@@ -109,4 +109,14 @@ describe('parseCsvStatement', () => {
     const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
     expect(result.transactions[0].amount).toBe(expected);
   });
+
+  it('descarta datas inexistentes (ex: mês 13 ou 31/02) em vez de quebrar o import', () => {
+    const csv = `Data;Historico;Valor
+13/13/2026;Mês inválido;10,00
+31/02/2026;Dia inválido;10,00
+29/02/2028;Bissexto válido;10,00
+`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
+    expect(result.transactions.map((t) => t.date)).toEqual(['2028-02-29']);
+  });
 });
