@@ -59,4 +59,11 @@ describe('ruleMatches', () => {
     const rule = makeRule({ field: RuleField.DOCUMENTO, matchType: RuleMatchType.EQUALS, pattern: '' });
     expect(ruleMatches(rule, { description: 'x', historico: null, document: null })).toBe(true);
   });
+
+  it('CONTAINS/EQUALS ignoram acentos e espaços repetidos', () => {
+    const rule = makeRule({ pattern: 'Energia Elétrica' });
+    expect(ruleMatches(rule, { description: 'PAG ENERGIA   ELETRICA SA', historico: null, document: null })).toBe(true);
+    const equals = makeRule({ matchType: RuleMatchType.EQUALS, pattern: 'tarifa  pacote serviços' });
+    expect(ruleMatches(equals, { description: 'TARIFA PACOTE SERVICOS', historico: null, document: null })).toBe(true);
+  });
 });
