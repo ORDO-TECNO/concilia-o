@@ -230,7 +230,7 @@ export default function RegrasPage() {
             <TableHead>Nome</TableHead>
             <TableHead>Campo</TableHead>
             <TableHead>Correspondência</TableHead>
-            <TableHead>Categoria</TableHead>
+            <TableHead>Categoria / Fornecedor</TableHead>
             <TableHead>Prioridade</TableHead>
             <TableHead>Status</TableHead>
             <TableHead />
@@ -251,7 +251,10 @@ export default function RegrasPage() {
               <TableCell>
                 {MATCH_LABELS[r.matchType]}: <code className="text-xs">{r.pattern}</code>
               </TableCell>
-              <TableCell>{r.category?.name ?? '-'}</TableCell>
+              <TableCell>
+                {r.category?.name ?? '-'}
+                {r.party && <p className="text-xs text-muted-foreground">{r.party.name}</p>}
+              </TableCell>
               <TableCell>{r.priority}</TableCell>
               <TableCell>
                 <Badge variant={r.isActive ? 'success' : 'secondary'}>{r.isActive ? 'Ativa' : 'Inativa'}</Badge>
