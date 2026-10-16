@@ -22,7 +22,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CategoryKind, dfcLinesForKind } from '@conciliacao/shared';
+import { allDFCLines, CategoryKind, dfcLinesForKind } from '@conciliacao/shared';
+
+const DFC_LINE_LABELS = new Map(allDFCLines().map((l) => [l.line, l.label]));
 
 const KIND_LABELS: Record<string, string> = {
   RECEITA: 'Receita',
@@ -53,7 +55,7 @@ function CategoryRow({ node, depth, onDelete }: { node: CategoryNode; depth: num
           <Badge variant="outline">{KIND_LABELS[node.kind]}</Badge>
           {node.dfcLine && (
             <Badge variant="secondary" className="text-[10px]">
-              {node.dfcLine}
+              {DFC_LINE_LABELS.get(node.dfcLine) ?? node.dfcLine}
             </Badge>
           )}
         </div>
