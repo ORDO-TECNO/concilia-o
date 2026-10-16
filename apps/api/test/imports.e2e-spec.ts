@@ -193,6 +193,7 @@ describe('Imports — atomicity success path', () => {
     expect(again.status).toBe(201);
     expect(again.body.newRecords).toBe(0);
     expect(again.body.duplicateRecords).toBe(2);
+    expect(again.body.periods).toEqual([expect.objectContaining({ year: 2026, month: 2, recordCount: 0 })]);
   });
 
   it('inserts only the new occurrence when an overlapping statement has one more equal fee', async () => {

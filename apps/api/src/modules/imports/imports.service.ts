@@ -89,7 +89,12 @@ export class ImportsService {
     try {
       const result = await this.prisma.$transaction(
         async (tx) => {
-          const { newRecords, duplicateRecords, insertedIds: ids } = await this.insertTransactions(
+          const {
+            newRecords,
+            duplicateRecords,
+            insertedIds: ids,
+            insertedPeriods,
+          } = await this.insertTransactions(
             companyId,
             dto.bankAccountId,
             importBatch.id,
@@ -98,7 +103,7 @@ export class ImportsService {
             tx,
           );
 
-          await this.createPeriods(importBatch.id, parsed.transactions, tx);
+          await this.createPeriods(importBatch.id, parsed.transactions, insertedPeriods, tx);
 
           const batch = await tx.importBatch.update({
             where: { id: importBatch.id },
@@ -235,7 +240,7 @@ export class ImportsService {
         ? await tx.transaction.createManyAndReturn({
             data: toInsert,
             skipDuplicates: true,
-            select: { id: true },
+            select: { id: true, competenceYear: true, competenceMonth: true },
           })
         : [];
 
@@ -243,22 +248,34 @@ export class ImportsService {
       newRecords: inserted.length,
       duplicateRecords: transactions.length - inserted.length,
       insertedIds: inserted.map((t) => t.id),
+      insertedPeriods: inserted.map((t) => `${t.competenceYear}-${t.competenceMonth}`),
     };
   }
 
+  /**
+   * Um registro por ano/mês do extrato. recordCount conta só os lançamentos
+   * efetivamente inseridos naquele mês; os saldos de abertura/fechamento vêm
+   * do extrato inteiro (inclusive linhas já importadas antes), porque
+   * descrevem o arquivo, não o que entrou.
+   */
   private async createPeriods(
     importBatchId: string,
     transactions: ParsedTransaction[],
+    insertedPeriods: string[],
     tx: Prisma.TransactionClient,
   ) {
+    const insertedByPeriod = new Map<string, number>();
+    for (const key of insertedPeriods) insertedByPeriod.set(key, (insertedByPeriod.get(key) ?? 0) + 1);
+
     const byPeriod = new Map<string, ParsedTransaction[]>();
     for (const t of transactions) {
-      const [year, month] = t.date.split('-');
+      const [year, month] = t.date.split('-').map(Number);
       const key = `${year}-${month}`;
       if (!byPeriod.has(key)) byPeriod.set(key, []);
       byPeriod.get(key)!.push(t);
     }
 
+    const data: Prisma.ImportBatchPeriodCreateManyInput[] = [];
     for (const [key, txns] of byPeriod) {
       const [year, month] = key.split('-').map(Number);
       const sorted = [...txns].sort((a, b) => a.date.localeCompare(b.date));
@@ -266,21 +283,17 @@ export class ImportsService {
       const first = withBalance[0];
       const last = withBalance[withBalance.length - 1];
 
-      await tx.importBatchPeriod.upsert({
-        where: { importBatchId_year_month: { importBatchId, year, month } },
-        create: {
-          importBatchId,
-          year,
-          month,
-          recordCount: txns.length,
-          openingBalance: first ? first.balanceAfter! - first.amount : null,
-          closingBalance: last ? last.balanceAfter! : null,
-        },
-        update: {
-          recordCount: txns.length,
-        },
+      data.push({
+        importBatchId,
+        year,
+        month,
+        recordCount: insertedByPeriod.get(key) ?? 0,
+        openingBalance: first ? Math.round((first.balanceAfter! - first.amount) * 100) / 100 : null,
+        closingBalance: last ? last.balanceAfter! : null,
       });
     }
+
+    await tx.importBatchPeriod.createMany({ data });
   }
 
   async listHistory(companyId: string) {
