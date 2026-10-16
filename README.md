@@ -139,25 +139,37 @@ um lançamento.
 ### Regra de classificação (`ClassificationRule`)
 Uma regra que classifica lançamentos automaticamente. Todas as regras ativas
 de uma empresa são avaliadas em ordem de prioridade (maior primeiro,
-desempate pela mais antiga); a primeira que bater define categoria e/ou
-fornecedor/cliente do lançamento. Aplicadas automaticamente logo após cada
-importação (apenas nos lançamentos recém-inseridos) e sob demanda pelo
-usuário ("Reaplicar em pendentes").
+desempate pela mais antiga), campo a campo: a categoria vem da primeira
+regra que bate e define categoria; o fornecedor/cliente, da primeira regra
+que bate e define um — e só se o lançamento ainda não tiver um (nunca
+sobrescreve o que o usuário escolheu). Uma regra só de fornecedor, portanto,
+não impede que uma regra de categoria de prioridade menor classifique o
+lançamento. Só lançamentos pendentes e sem categoria são considerados.
+Aplicadas automaticamente logo após cada importação (apenas nos lançamentos
+recém-inseridos) e sob demanda pelo usuário ("Reaplicar em pendentes").
+"Contém" e "igual" comparam sem diferenciar maiúsculas, acentos e espaços
+repetidos; "regex" usa o texto original (sem diferenciar maiúsculas).
 - **Armazenados**: nome, campo do lançamento a comparar (descrição,
   histórico ou documento), tipo de comparação (contém, regex, igual),
-  padrão de busca, categoria e/ou fornecedor/cliente a aplicar quando bate,
-  prioridade, se está ativa.
+  padrão de busca, categoria e/ou fornecedor/cliente a aplicar quando bate
+  (pelo menos um dos dois; mesmas restrições da classificação manual),
+  prioridade, se está ativa. Regex inválida é recusada ao salvar.
 
 ### DFC (Demonstração do Fluxo de Caixa)
 **Não é uma entidade armazenada** — é inteiramente derivada, calculada sob
-demanda a partir dos lançamentos classificados de um ano. Cada lançamento
-soma seu valor na linha da DFC mapeada pela sua categoria; grupos, seções e
+demanda a partir dos lançamentos classificados de um ano. Lançamentos
+marcados como ignorados ou duplicados não entram (nem no dashboard). Cada
+lançamento soma seu valor na linha da DFC mapeada pela sua categoria; grupos, seções e
 subtotais (Operacional, Investimento, Financiamento) são somas dessas
 linhas, definidas em código em `packages/shared/src/dfc-structure.ts`. O
 saldo inicial/final mostrado é o acumulado do fluxo de caixa classificado
 dentro do ano selecionado, começando de zero — **não** é o saldo bancário
 real da conta (que exigiria snapshots de todas as contas ao longo dos anos,
-fora do escopo do MVP). Isso é indicado explicitamente na tela.
+fora do escopo do MVP). Isso é indicado explicitamente na tela. O fluxo
+ainda não classificado (sem categoria ou em categoria sem linha da DFC)
+aparece numa linha à parte, "Não classificado", fora dos grupos e dos saldos,
+com atalho para a grade filtrada — para a DFC nunca parecer completa quando
+não está. Valores são arredondados ao centavo.
 
 ## Stack
 
