@@ -1,0 +1,39 @@
+/**
+ * e2e: regras de negócio da árvore de categorias.
+ */
+import { api, bootApp, createTenant, destroyTenant, type E2EContext, type E2ETenant } from './helpers';
+
+describe('Categories', () => {
+  let ctx: E2EContext;
+  let tenant: E2ETenant;
+  let other: E2ETenant;
+
+  const url = () => `/companies/${tenant.companyId}/categories`;
+  const create = (body: Record<string, unknown>) => api(ctx.app, tenant.token).post(url()).send(body);
+
+  beforeAll(async () => {
+    ctx = await bootApp();
+    tenant = await createTenant(ctx.app, 'categories');
+    other = await createTenant(ctx.app, 'categories-other');
+  });
+
+  afterAll(async () => {
+    await destroyTenant(ctx.prisma, tenant);
+    await destroyTenant(ctx.prisma, other);
+    await ctx.app.close();
+  });
+
+  it('PATCH aceita atualização parcial e permite desativar', async () => {
+    const created = await create({ name: 'Energia', kind: 'DESPESA', dfcLine: 'DESPESAS_FIXAS' });
+    expect(created.status).toBe(201);
+
+    const renamed = await api(ctx.app, tenant.token).patch(`/categories/${created.body.id}`).send({ name: 'Energia elétrica' });
+    expect(renamed.status).toBe(200);
+    expect(renamed.body).toMatchObject({ name: 'Energia elétrica', kind: 'DESPESA', dfcLine: 'DESPESAS_FIXAS' });
+
+    const deactivated = await api(ctx.app, tenant.token).patch(`/categories/${created.body.id}`).send({ isActive: false });
+    expect(deactivated.status).toBe(200);
+    const list = await api(ctx.app, tenant.token).get(`${url()}?flat=true`);
+    expect(list.body.map((c: { id: string }) => c.id)).not.toContain(created.body.id);
+  });
+});

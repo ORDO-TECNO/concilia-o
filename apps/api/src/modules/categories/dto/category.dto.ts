@@ -1,4 +1,5 @@
-import { IsEnum, IsOptional, IsString, IsUUID, Length } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 import { CategoryKind, DFCLine } from '@prisma/client';
 
 export class CategoryDto {
@@ -16,4 +17,11 @@ export class CategoryDto {
   @IsOptional()
   @IsEnum(DFCLine)
   dfcLine?: DFCLine;
+}
+
+/** PATCH: todos os campos opcionais; `isActive` permite desativar em vez de excluir. */
+export class UpdateCategoryDto extends PartialType(CategoryDto) {
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

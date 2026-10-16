@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Category } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
-import { CategoryDto } from './dto/category.dto';
+import { CategoryDto, UpdateCategoryDto } from './dto/category.dto';
 
 interface CategoryNode extends Category {
   children: CategoryNode[];
@@ -51,7 +51,7 @@ export class CategoriesService {
     });
   }
 
-  async update(userId: string, id: string, dto: Partial<CategoryDto>) {
+  async update(userId: string, id: string, dto: UpdateCategoryDto) {
     const category = await this.prisma.category.findUnique({ where: { id } });
     if (!category) throw new NotFoundException('Categoria não encontrada');
     await assertUserBelongsToCompany(this.prisma, userId, category.companyId);
@@ -67,6 +67,7 @@ export class CategoriesService {
         kind: dto.kind,
         dfcLine: dto.dfcLine,
         parentId: dto.parentId,
+        isActive: dto.isActive,
       },
     });
   }
