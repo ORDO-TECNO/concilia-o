@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatBRL, MONTH_LABELS } from '@conciliacao/shared';
@@ -148,7 +149,12 @@ export function DfcPivotTable({ report }: { report: DFCReport }) {
                 className="sticky left-0 bg-card px-3 py-1.5 text-xs italic text-muted-foreground"
                 title="Lançamentos sem categoria ou em categoria agrupadora — não entram nos grupos nem nos saldos acima."
               >
-                Não classificado (fora da DFC)
+                <Link
+                  href={`/lancamentos?uncategorized=true&year=${report.year}`}
+                  className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+                >
+                  Não classificado (fora da DFC)
+                </Link>
               </td>
               {report.unclassified.map((v, i) => (
                 <MoneyCell key={i} value={v} />
