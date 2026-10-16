@@ -90,7 +90,7 @@ export default function ImportarPage() {
                 <SelectValue placeholder="Selecione a conta" />
               </SelectTrigger>
               <SelectContent>
-                {bankAccounts?.map((acc) => (
+                {bankAccounts?.filter((acc) => acc.isActive).map((acc) => (
                   <SelectItem key={acc.id} value={acc.id}>
                     {acc.apelido ?? `${acc.bankName ?? ''} ${acc.conta}`}
                   </SelectItem>
