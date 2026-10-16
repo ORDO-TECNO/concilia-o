@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { invalidateTransactionViews } from './invalidate';
 import type { CsvPreviewResponse, ImportSummary } from '@conciliacao/shared';
 
 export interface CsvMapping {
@@ -57,7 +58,7 @@ export function useImportStatement(companyId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['imports', companyId] });
-      queryClient.invalidateQueries({ queryKey: ['transactions', companyId] });
+      invalidateTransactionViews(queryClient, companyId);
     },
   });
 }
