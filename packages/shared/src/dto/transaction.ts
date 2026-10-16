@@ -35,6 +35,8 @@ export interface TransactionListFilters {
   year?: number;
   month?: number;
   categoryId?: string;
+  /** Só lançamentos sem categoria; tem precedência sobre categoryId. */
+  uncategorized?: boolean;
   status?: ReconciliationStatus;
   partyId?: string;
   search?: string;
