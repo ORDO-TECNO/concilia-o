@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-10-16 — fix(transactions): block cross-company and group-category assignments → [doc](2026-10-16-app-tenant-integrity.md)
 - 2026-10-16 — fix(categories): enforce category tree rules → [doc](2026-10-16-categories-tree-rules.md)
 - 2026-10-16 — fix(dfc): exclude ignored/duplicate, unclassified row, cents rounding → [doc](2026-10-16-dfc-consistency.md)
 - 2026-10-16 — fix(classification-rules): per-field rule resolution and target validation → [doc](2026-10-16-classification-rules-engine.md)
