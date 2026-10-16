@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
-import { CompanyDto } from './dto/company.dto';
+import { CompanyDto, UpdateCompanyDto } from './dto/company.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
@@ -28,7 +28,7 @@ export class CompaniesController {
 
   @UseGuards(CompanyAccessGuard)
   @Patch(':companyId')
-  update(@Param('companyId') companyId: string, @Body() dto: CompanyDto) {
+  update(@Param('companyId') companyId: string, @Body() dto: UpdateCompanyDto) {
     return this.companiesService.update(companyId, dto);
   }
 }

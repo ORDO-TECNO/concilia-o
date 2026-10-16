@@ -7,6 +7,7 @@ import {
   useCategoryTree,
   useCreateCategory,
   useDeleteCategory,
+  useUpdateCategory,
   type CategoryNode,
 } from '@/lib/hooks/use-categories';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CategoryKind, DFC_STRUCTURE } from '@conciliacao/shared';
+import { allDFCLines, CategoryKind, dfcLinesForKind, type DFCLine } from '@conciliacao/shared';
+
+const DFC_LINE_LABELS = new Map(allDFCLines().map((l) => [l.line, l.label]));
 
 const KIND_LABELS: Record<string, string> = {
   RECEITA: 'Receita',
@@ -31,7 +34,17 @@ const KIND_LABELS: Record<string, string> = {
   FINANCIAMENTO: 'Financiamento',
 };
 
-function CategoryRow({ node, depth, onDelete }: { node: CategoryNode; depth: number; onDelete: (id: string) => void }) {
+function CategoryRow({
+  node,
+  depth,
+  onDelete,
+  onDeactivate,
+}: {
+  node: CategoryNode;
+  depth: number;
+  onDelete: (id: string) => void;
+  onDeactivate: (id: string) => void;
+}) {
   const [expanded, setExpanded] = React.useState(true);
   const hasChildren = node.children.length > 0;
 
@@ -53,18 +66,29 @@ function CategoryRow({ node, depth, onDelete }: { node: CategoryNode; depth: num
           <Badge variant="outline">{KIND_LABELS[node.kind]}</Badge>
           {node.dfcLine && (
             <Badge variant="secondary" className="text-[10px]">
-              {node.dfcLine}
+              {DFC_LINE_LABELS.get(node.dfcLine) ?? node.dfcLine}
             </Badge>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={() => onDelete(node.id)}>
-          Excluir
-        </Button>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="sm" onClick={() => onDeactivate(node.id)}>
+            Desativar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(node.id)}>
+            Excluir
+          </Button>
+        </div>
       </div>
       {hasChildren && expanded && (
         <div>
           {node.children.map((child) => (
-            <CategoryRow key={child.id} node={child} depth={depth + 1} onDelete={onDelete} />
+            <CategoryRow
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              onDelete={onDelete}
+              onDeactivate={onDeactivate}
+            />
           ))}
         </div>
       )}
@@ -77,6 +101,7 @@ export default function CategoriasPage() {
   const { data: tree, isLoading } = useCategoryTree(currentCompanyId);
   const createCategory = useCreateCategory(currentCompanyId);
   const deleteCategory = useDeleteCategory(currentCompanyId);
+  const updateCategory = useUpdateCategory(currentCompanyId);
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState('');
   const [kind, setKind] = React.useState<string>(CategoryKind.DESPESA);
@@ -99,7 +124,7 @@ export default function CategoriasPage() {
     await createCategory.mutateAsync({
       name,
       kind: kind as CategoryKind,
-      dfcLine: dfcLine === 'none' ? undefined : (dfcLine as any),
+      dfcLine: dfcLine === 'none' ? undefined : (dfcLine as DFCLine),
       parentId: parentId === 'none' ? undefined : parentId,
     });
     setName('');
@@ -109,15 +134,13 @@ export default function CategoriasPage() {
   }
 
   function handleDelete(id: string) {
-    deleteCategory.mutate(id, {
-      onError: (err: any) => {
-        alert(err?.message ?? 'Não foi possível excluir esta categoria.');
-      },
-    });
+    // Erros (ex: categoria com lançamentos) aparecem no toast global.
+    deleteCategory.mutate(id);
   }
 
   const parentOptions = flattenForParentOptions(tree);
-  const allLines = DFC_STRUCTURE.flatMap((g) => g.sections.flatMap((s) => s.lines));
+  // Só as linhas compatíveis com o tipo (a API rejeita, p.ex., Receita → Dividendos).
+  const allowedLines = dfcLinesForKind(kind as CategoryKind);
 
   return (
     <div className="space-y-4">
@@ -138,7 +161,15 @@ export default function CategoriasPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Tipo</Label>
-                <Select value={kind} onValueChange={setKind}>
+                <Select
+                  value={kind}
+                  onValueChange={(next) => {
+                    setKind(next);
+                    if (dfcLine !== 'none' && !dfcLinesForKind(next as CategoryKind).some((l) => l.line === dfcLine)) {
+                      setDfcLine('none');
+                    }
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -175,7 +206,7 @@ export default function CategoriasPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">(nenhuma — categoria agrupadora)</SelectItem>
-                    {allLines.map((l) => (
+                    {allowedLines.map((l) => (
                       <SelectItem key={l.line} value={l.line}>
                         {l.label}
                       </SelectItem>
@@ -196,7 +227,13 @@ export default function CategoriasPage() {
       <div className="rounded-lg border bg-card p-2">
         {isLoading && <p className="p-2 text-sm text-muted-foreground">Carregando...</p>}
         {tree?.map((node) => (
-          <CategoryRow key={node.id} node={node} depth={0} onDelete={handleDelete} />
+          <CategoryRow
+            key={node.id}
+            node={node}
+            depth={0}
+            onDelete={handleDelete}
+            onDeactivate={(id) => updateCategory.mutate({ id, input: { isActive: false } })}
+          />
         ))}
       </div>
     </div>

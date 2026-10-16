@@ -2,13 +2,15 @@
 
 import * as React from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
-import { useCategoriesFlat } from '@/lib/hooks/use-categories';
+import { useCategoryTree } from '@/lib/hooks/use-categories';
+import { toCategoryOptions } from '@/lib/categories';
 import { useParties } from '@/lib/hooks/use-parties';
 import {
   useApplyRules,
   useCreateRule,
   useDeleteRule,
   useRules,
+  useUpdateRule,
   type RuleInput,
 } from '@/lib/hooks/use-rules';
 import { Button } from '@/components/ui/button';
@@ -44,10 +46,12 @@ const NONE = '__none__';
 export default function RegrasPage() {
   const { currentCompanyId } = useAuth();
   const { data: rules, isLoading } = useRules(currentCompanyId);
-  const { data: categories } = useCategoriesFlat(currentCompanyId);
+  const { data: categoryTree } = useCategoryTree(currentCompanyId);
+  const categoryOptions = React.useMemo(() => toCategoryOptions(categoryTree), [categoryTree]);
   const { data: parties } = useParties(currentCompanyId);
   const createRule = useCreateRule(currentCompanyId);
   const deleteRule = useDeleteRule(currentCompanyId);
+  const updateRule = useUpdateRule(currentCompanyId);
   const applyRules = useApplyRules(currentCompanyId);
 
   const [open, setOpen] = React.useState(false);
@@ -164,9 +168,9 @@ export default function RegrasPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE}>(nenhuma)</SelectItem>
-                        {categories?.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
+                        {categoryOptions.map((opt) => (
+                          <SelectItem key={opt.id} value={opt.id} disabled={!opt.selectable}>
+                            {opt.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -226,7 +230,7 @@ export default function RegrasPage() {
             <TableHead>Nome</TableHead>
             <TableHead>Campo</TableHead>
             <TableHead>Correspondência</TableHead>
-            <TableHead>Categoria</TableHead>
+            <TableHead>Categoria / Fornecedor</TableHead>
             <TableHead>Prioridade</TableHead>
             <TableHead>Status</TableHead>
             <TableHead />
@@ -247,12 +251,23 @@ export default function RegrasPage() {
               <TableCell>
                 {MATCH_LABELS[r.matchType]}: <code className="text-xs">{r.pattern}</code>
               </TableCell>
-              <TableCell>{r.category?.name ?? '-'}</TableCell>
+              <TableCell>
+                {r.category?.name ?? '-'}
+                {r.party && <p className="text-xs text-muted-foreground">{r.party.name}</p>}
+              </TableCell>
               <TableCell>{r.priority}</TableCell>
               <TableCell>
                 <Badge variant={r.isActive ? 'success' : 'secondary'}>{r.isActive ? 'Ativa' : 'Inativa'}</Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={updateRule.isPending}
+                  onClick={() => updateRule.mutate({ id: r.id, input: { isActive: !r.isActive } })}
+                >
+                  {r.isActive ? 'Desativar' : 'Ativar'}
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => deleteRule.mutate(r.id)}>
                   Excluir
                 </Button>

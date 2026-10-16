@@ -39,6 +39,9 @@ jobs:
       - name: Typecheck web
         run: npm --workspace=apps/web run build
 
+      - name: Web unit tests
+        run: npm --workspace=apps/web run test
+
   test:
     name: API tests
     runs-on: ubuntu-latest
@@ -76,3 +79,9 @@ jobs:
         run: npm --workspace=apps/api run prisma:generate
 
       - run: npm --workspace=apps/api run test
+
+      - name: Apply migrations to the test database
+        run: npm --workspace=apps/api run prisma:deploy
+
+      - name: API e2e tests
+        run: npm --workspace=apps/api run test:e2e

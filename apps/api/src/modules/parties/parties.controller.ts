@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { PartiesService } from './parties.service';
-import { PartyDto } from './dto/party.dto';
+import { PartyDto, UpdatePartyDto } from './dto/party.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
@@ -23,7 +23,7 @@ export class PartiesController {
   }
 
   @Patch('parties/:id')
-  update(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() dto: PartyDto) {
+  update(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() dto: UpdatePartyDto) {
     return this.partiesService.update(user.userId, id, dto);
   }
 

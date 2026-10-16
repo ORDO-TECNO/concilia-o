@@ -6,10 +6,15 @@ O Ledger ajuda uma empresa a entender para onde vai e de onde vem o seu
 dinheiro, a partir dos extratos bancários que ela já tem.
 
 1. **Importar extratos**: o usuário envia um arquivo CSV ou OFX de uma conta
-   bancária. O sistema lê os lançamentos (data, descrição, valor) e os
+   bancária ativa. O sistema lê os lançamentos (data, descrição, valor) e os
    guarda, ignorando automaticamente qualquer lançamento que já tenha sido
    importado antes (mesma conta, mesma data, mesmo valor e mesma descrição —
-   ou o mesmo identificador único do banco, no caso de OFX).
+   ou o mesmo identificador único do banco, no caso de OFX). Lançamentos
+   idênticos dentro do mesmo extrato (ex: duas tarifas iguais no mesmo dia)
+   são movimentações distintas e entram os dois. Linhas informativas de saldo
+   ("SALDO ANTERIOR", "SALDO DO DIA"…) e lançamentos de valor zero não são
+   movimentação e são descartados (contados como "ignorados"). Um OFX cuja
+   conta claramente não é a conta escolhida é recusado.
 2. **Classificar cada lançamento**: cada lançamento pode ser associado a uma
    categoria (ex: "Matéria-Prima", "Recebimentos de Clientes") e,
    opcionalmente, a um fornecedor ou cliente. Isso pode ser feito à mão, ou
@@ -42,7 +47,8 @@ nunca editado diretamente).
 Uma empresa/CNPJ para a qual o usuário conciliará movimentações. Todo dado
 transacional (contas, categorias, lançamentos, regras, importações) pertence
 a exatamente uma empresa.
-- **Armazenados**: nome, CNPJ (opcional).
+- **Armazenados**: nome, CNPJ (opcional; gravado só com dígitos e com dígito
+  verificador validado).
 
 ### Usuário e vínculo com empresa (`User`, `UserCompany`)
 Um usuário pode acessar várias empresas. `UserCompany.role` é hoje um texto
@@ -57,6 +63,9 @@ verificado que já existe é vinculado à conta existente.
 ### Conta bancária (`BankAccount`)
 Uma conta bancária da empresa, para a qual os extratos são importados.
 - **Armazenados**: banco, agência, conta e dígito, apelido, se está ativa.
+- **Regras**: conta inativa não recebe importações. Uma conta que já tem
+  extratos importados não pode ser excluída (a exclusão apagaria todo o
+  histórico de lançamentos dela) — desative-a.
 
 ### Categoria (`Category`)
 Uma árvore de categorias usada para classificar lançamentos. Categorias-pai
@@ -64,15 +73,27 @@ apenas agrupam (ex: "Despesas Operacionais"); só as categorias-folha recebem
 lançamentos e precisam estar mapeadas a uma linha da DFC.
 - **Armazenados**: nome, tipo (Receita, Despesa, Investimento,
   Financiamento), categoria-pai (opcional), linha da DFC (obrigatória em
-  folhas, nula em categorias-pai), se está ativa.
+  folhas que recebem lançamentos, nula em categorias-pai), se está ativa.
+- **Regras**:
+  - A linha da DFC precisa ser compatível com o tipo: Receita → entradas
+    operacionais; Despesa → saídas operacionais; Investimento → grupo
+    Investimento; Financiamento → grupo Financiamento.
+  - Uma folha que ganha a primeira subcategoria vira agrupadora e perde a
+    linha da DFC; por isso isso só é permitido se ela ainda não tiver
+    lançamentos nem regras apontando para ela.
+  - A categoria-pai precisa ser da mesma empresa, e mover uma categoria para
+    baixo de uma das suas descendentes (ciclo) é recusado.
+  - Exclusão só é permitida sem subcategorias, lançamentos ou regras; caso
+    contrário, desative a categoria (ela some das listas, o histórico fica).
 - **Derivados**: os grupos, seções e subtotais da DFC não são categorias —
   são calculados a partir do mapeamento categoria → linha da DFC (ver
   `packages/shared/src/dfc-structure.ts`).
 
 ### Fornecedor/Cliente (`Party`)
 Uma pessoa ou empresa com quem a empresa transaciona.
-- **Armazenados**: nome, documento (CNPJ/CPF, opcional e único por empresa),
-  tipo (Fornecedor, Cliente ou Ambos).
+- **Armazenados**: nome, documento (CNPJ/CPF, opcional e único por empresa,
+  gravado só com dígitos e com dígito verificador validado), tipo
+  (Fornecedor, Cliente ou Ambos).
 
 ### Importação de extrato (`ImportBatch` e `ImportBatchPeriod`)
 Registro de um upload de arquivo (CSV ou OFX) para uma conta bancária,
@@ -81,10 +102,17 @@ guardado junto com o conteúdo bruto do arquivo para auditoria.
   banco/agência/conta identificados no arquivo, data e saldo de
   abertura/fechamento informados pelo extrato.
 - **Derivados**: status da importação (processando/concluído/parcial/
-  falhou); contagem de lançamentos totais, novos, duplicados e ignorados;
-  por período (ano/mês) dentro do arquivo, a contagem de lançamentos e os
-  saldos de abertura/fechamento daquele período — tudo calculado a partir
-  dos lançamentos efetivamente inseridos, não editável pelo usuário.
+  falhou); contagem de lançamentos totais (= novos + duplicados + ignorados),
+  novos (efetivamente inseridos), duplicados (já existiam) e ignorados
+  (linhas de saldo e valores zero); por período (ano/mês) dentro do arquivo,
+  a contagem de lançamentos efetivamente inseridos naquele mês e os saldos
+  de abertura (saldo antes do 1º lançamento) e fechamento do período segundo
+  o extrato — nada disso é editável pelo usuário.
+- **Regras**: o saldo de abertura do extrato é o saldo *antes* do primeiro
+  lançamento. CSVs em ordem decrescente (mais recente primeiro) são
+  reordenados para ordem cronológica antes de calcular saldos. Valores
+  aceitam os formatos `-1.234,56`, `(1.234,56)`, `1.234,56-` e `1.234,56 D/C`;
+  datas inexistentes (ex: 31/02) descartam a linha.
 
 ### Lançamento (`Transaction`)
 Uma movimentação bancária — o núcleo do sistema. Cada linha de extrato vira
@@ -100,31 +128,48 @@ um lançamento.
   regra) e qual regra foi aplicada.
 - **Derivados**: ano e mês de competência (extraídos da data do lançamento);
   hash de deduplicação (calculado a partir de conta + data + valor +
-  descrição normalizada, usado para não reinserir o mesmo lançamento em
-  importações futuras).
+  descrição normalizada + ordem da ocorrência dentro do extrato, usado para
+  não reinserir o mesmo lançamento em importações futuras sem descartar
+  lançamentos idênticos legítimos do mesmo arquivo).
+- **Regras**: a categoria atribuída (manualmente, em lote ou por regra) tem
+  de ser uma categoria-folha ativa da mesma empresa, mapeada a uma linha da
+  DFC; o fornecedor/cliente também tem de ser da mesma empresa. Remover a
+  categoria limpa também a origem da classificação.
 
 ### Regra de classificação (`ClassificationRule`)
 Uma regra que classifica lançamentos automaticamente. Todas as regras ativas
 de uma empresa são avaliadas em ordem de prioridade (maior primeiro,
-desempate pela mais antiga); a primeira que bater define categoria e/ou
-fornecedor/cliente do lançamento. Aplicadas automaticamente logo após cada
-importação (apenas nos lançamentos recém-inseridos) e sob demanda pelo
-usuário ("Reaplicar em pendentes").
+desempate pela mais antiga), campo a campo: a categoria vem da primeira
+regra que bate e define categoria; o fornecedor/cliente, da primeira regra
+que bate e define um — e só se o lançamento ainda não tiver um (nunca
+sobrescreve o que o usuário escolheu). Uma regra só de fornecedor, portanto,
+não impede que uma regra de categoria de prioridade menor classifique o
+lançamento. Só lançamentos pendentes e sem categoria são considerados.
+Aplicadas automaticamente logo após cada importação (apenas nos lançamentos
+recém-inseridos) e sob demanda pelo usuário ("Reaplicar em pendentes").
+"Contém" e "igual" comparam sem diferenciar maiúsculas, acentos e espaços
+repetidos; "regex" usa o texto original (sem diferenciar maiúsculas).
 - **Armazenados**: nome, campo do lançamento a comparar (descrição,
   histórico ou documento), tipo de comparação (contém, regex, igual),
-  padrão de busca, categoria e/ou fornecedor/cliente a aplicar quando bate,
-  prioridade, se está ativa.
+  padrão de busca, categoria e/ou fornecedor/cliente a aplicar quando bate
+  (pelo menos um dos dois; mesmas restrições da classificação manual),
+  prioridade, se está ativa. Regex inválida é recusada ao salvar.
 
 ### DFC (Demonstração do Fluxo de Caixa)
 **Não é uma entidade armazenada** — é inteiramente derivada, calculada sob
-demanda a partir dos lançamentos classificados de um ano. Cada lançamento
-soma seu valor na linha da DFC mapeada pela sua categoria; grupos, seções e
+demanda a partir dos lançamentos classificados de um ano. Lançamentos
+marcados como ignorados ou duplicados não entram (nem no dashboard). Cada
+lançamento soma seu valor na linha da DFC mapeada pela sua categoria; grupos, seções e
 subtotais (Operacional, Investimento, Financiamento) são somas dessas
 linhas, definidas em código em `packages/shared/src/dfc-structure.ts`. O
 saldo inicial/final mostrado é o acumulado do fluxo de caixa classificado
 dentro do ano selecionado, começando de zero — **não** é o saldo bancário
 real da conta (que exigiria snapshots de todas as contas ao longo dos anos,
-fora do escopo do MVP). Isso é indicado explicitamente na tela.
+fora do escopo do MVP). Isso é indicado explicitamente na tela. O fluxo
+ainda não classificado (sem categoria ou em categoria sem linha da DFC)
+aparece numa linha à parte, "Não classificado", fora dos grupos e dos saldos,
+com atalho para a grade filtrada — para a DFC nunca parecer completa quando
+não está. Valores são arredondados ao centavo.
 
 ## Stack
 

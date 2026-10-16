@@ -1,9 +1,11 @@
 import { XMLParser } from 'fast-xml-parser';
 import { BadRequestException } from '@nestjs/common';
 import { ParsedStatement, ParsedTransaction } from './statement-parser.types';
+import { isNonMovement } from './non-movement';
 
 /** Shapes returned by fast-xml-parser for OFX files — all fields are opaque strings or nested objects. */
 interface OfxRawTransaction {
+  TRNTYPE?: string;
   DTPOSTED?: string;
   TRNAMT?: string;
   NAME?: string;
@@ -50,24 +52,18 @@ function toArray<T>(value: T | T[] | undefined): T[] {
 
 /**
  * OFX 1.x (SGML) não é XML bem-formado: tags-folha como <DTPOSTED>20240115 não
- * têm fechamento. Normaliza linha a linha, fechando qualquer tag-folha que
- * ainda não esteja fechada na própria linha. Idempotente para OFX 2.x (XML já
- * bem-formado) — se a tag já tem fechamento na linha, não mexe.
+ * têm fechamento. Fecha toda tag-folha com valor que não esteja fechada logo
+ * em seguida. Funciona tanto com uma tag por linha quanto com o arquivo
+ * inteiro em uma linha só (alguns bancos exportam assim), e é idempotente
+ * para OFX 2.x (XML já bem-formado).
  */
 function normalizeSgmlToXml(body: string): string {
-  return body
-    .split(/\r?\n/)
-    .map((line) => {
-      const trimmed = line.trim();
-      const match = trimmed.match(/^<(\w+)>([^<]+)$/);
-      if (match) {
-        const [, tag, value] = match;
-        return `<${tag}>${value.trim()}</${tag}>`;
-      }
-      return trimmed;
-    })
-    .filter(Boolean)
-    .join('\n');
+  return body.replace(/<([A-Za-z0-9_.]+)>([^<]+)(?=<)/g, (match, tag: string, value: string, offset: number) => {
+    const trimmed = value.trim();
+    if (!trimmed) return `<${tag}>`;
+    const alreadyClosed = body.startsWith(`</${tag}>`, offset + match.length);
+    return alreadyClosed ? `<${tag}>${trimmed}` : `<${tag}>${trimmed}</${tag}>`;
+  });
 }
 
 /** Datas OFX vêm como YYYYMMDD[HHMMSS[...]] — extrai só a data pura (sem timezone). */
@@ -127,11 +123,16 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
 
   const rawTransactions = toArray(bankTranList.STMTTRN);
 
-  const transactions: ParsedTransaction[] = rawTransactions
+  const parsed: ParsedTransaction[] = rawTransactions
     .map((t: OfxRawTransaction): ParsedTransaction | null => {
       const date = parseOfxDate(t.DTPOSTED);
-      const amount = parseOfxAmount(t.TRNAMT);
+      let amount = parseOfxAmount(t.TRNAMT);
       if (!date || amount === undefined) return null;
+      // Alguns bancos mandam TRNAMT sempre positivo e indicam a saída só no
+      // TRNTYPE. Débito com valor positivo é sempre saída de caixa.
+      if (String(t.TRNTYPE ?? '').trim().toUpperCase() === 'DEBIT' && amount > 0) {
+        amount = -amount;
+      }
 
       const description = (t.NAME ?? t.MEMO ?? t.PAYEE ?? 'Sem descrição').toString().trim();
       const historico = t.MEMO && t.MEMO !== description ? String(t.MEMO).trim() : undefined;
@@ -147,6 +148,8 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
     })
     .filter((t: ParsedTransaction | null): t is ParsedTransaction => t !== null);
 
+  const transactions = parsed.filter((t) => !isNonMovement(t));
+
   return {
     bankCode: bankAcctFrom.BANKID ? String(bankAcctFrom.BANKID).trim() : undefined,
     agencia: bankAcctFrom.BRANCHID ? String(bankAcctFrom.BRANCHID).trim() : undefined,
@@ -155,5 +158,6 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
     endDate: parseOfxDate(bankTranList.DTEND),
     endBalance: parseOfxAmount(ledgerBal.BALAMT),
     transactions,
+    ignoredCount: parsed.length - transactions.length,
   };
 }

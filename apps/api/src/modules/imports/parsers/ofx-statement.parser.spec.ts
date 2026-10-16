@@ -94,4 +94,45 @@ describe('parseOfxStatement', () => {
     expect(result.conta).toBe('12345-6');
     expect(result.transactions).toHaveLength(2);
   });
+
+  it('descarta STMTTRN de valor zero e conta como ignorado', () => {
+    const ofx = SAMPLE_OFX_1X.replace(
+      '</BANKTRANLIST>',
+      `<STMTTRN>
+<TRNTYPE>OTHER
+<DTPOSTED>20260511
+<TRNAMT>0.00
+<FITID>OFX-0003
+<NAME>AVISO DE LANCAMENTO
+</STMTTRN>
+</BANKTRANLIST>`,
+    );
+    const result = parseOfxStatement(ofx);
+    expect(result.transactions).toHaveLength(2);
+    expect(result.ignoredCount).toBe(1);
+  });
+
+  it('trata TRNTYPE DEBIT com valor positivo como saída', () => {
+    const ofx = SAMPLE_OFX_1X.replace('<TRNAMT>-320.50', '<TRNAMT>320.50');
+    const result = parseOfxStatement(ofx);
+    expect(result.transactions[1].amount).toBe(-320.5);
+  });
+
+  it('aceita OFX SGML com o arquivo inteiro em uma única linha', () => {
+    const body = SAMPLE_OFX_1X.slice(SAMPLE_OFX_1X.indexOf('<OFX>')).replace(/\r?\n/g, '');
+    const result = parseOfxStatement(body);
+    expect(result.transactions).toHaveLength(2);
+    expect(result.transactions[0].description).toBe('RECEBIMENTO PIX CLIENTE ABC');
+    expect(result.endBalance).toBe(1179.5);
+  });
+
+  it('continua aceitando OFX 2.x (XML com tags fechadas)', () => {
+    const xml = `<?xml version="1.0"?><OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><BANKTRANLIST>
+<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>20260505</DTPOSTED><TRNAMT>10.00</TRNAMT><FITID>X1</FITID><NAME>PIX</NAME></STMTTRN>
+</BANKTRANLIST></STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>`;
+    const result = parseOfxStatement(xml);
+    expect(result.transactions).toEqual([
+      { date: '2026-05-05', amount: 10, description: 'PIX', historico: undefined, document: undefined, fitId: 'X1' },
+    ]);
+  });
 });

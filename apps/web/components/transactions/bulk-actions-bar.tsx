@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CategoryNode } from '@/lib/hooks/use-categories';
+import { toCategoryOptions } from '@/lib/categories';
 
 export function BulkActionsBar({
   count,
@@ -23,13 +24,6 @@ export function BulkActionsBar({
   loading: boolean;
 }) {
   const [bulkCategory, setBulkCategory] = React.useState<string>('');
-
-  function flatten(nodes: CategoryNode[] = [], depth = 0): { id: string; label: string }[] {
-    return nodes.flatMap((n) => [
-      { id: n.id, label: `${'— '.repeat(depth)}${n.name}` },
-      ...flatten(n.children, depth + 1),
-    ]);
-  }
 
   if (count === 0) return null;
 
@@ -51,8 +45,8 @@ export function BulkActionsBar({
             <SelectValue placeholder="Categorizar como..." />
           </SelectTrigger>
           <SelectContent>
-            {flatten(categories).map((opt) => (
-              <SelectItem key={opt.id} value={opt.id}>
+            {toCategoryOptions(categories).map((opt) => (
+              <SelectItem key={opt.id} value={opt.id} disabled={!opt.selectable}>
                 {opt.label}
               </SelectItem>
             ))}

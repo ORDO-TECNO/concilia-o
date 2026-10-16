@@ -1,4 +1,4 @@
-import { DFCLine } from './enums';
+import { CategoryKind, DFCLine } from './enums';
 
 /**
  * Única fonte de verdade da hierarquia da Demonstração do Fluxo de Caixa (DFC).
@@ -103,6 +103,32 @@ export function findDFCGroupByLine(line: DFCLine): DFCGroupDef | undefined {
   return DFC_STRUCTURE.find((group) =>
     group.sections.some((section) => section.lines.some((l) => l.line === line)),
   );
+}
+
+/**
+ * Qual parte da DFC cada tipo de categoria pode alimentar. Receita e Despesa
+ * são as entradas e saídas operacionais; Investimento e Financiamento podem
+ * ter entradas e saídas, então valem para o grupo inteiro.
+ */
+const KIND_SCOPE: Record<CategoryKind, { group: DFCGroupKey; section?: string }> = {
+  [CategoryKind.RECEITA]: { group: 'OPERACIONAL', section: 'ENTRADAS' },
+  [CategoryKind.DESPESA]: { group: 'OPERACIONAL', section: 'SAIDAS' },
+  [CategoryKind.INVESTIMENTO]: { group: 'INVESTIMENTO' },
+  [CategoryKind.FINANCIAMENTO]: { group: 'FINANCIAMENTO' },
+};
+
+/** Linhas da DFC compatíveis com o tipo da categoria (para validar e para filtrar formulários). */
+export function dfcLinesForKind(kind: CategoryKind): DFCLineDef[] {
+  const scope = KIND_SCOPE[kind];
+  const group = DFC_STRUCTURE.find((g) => g.key === scope.group);
+  if (!group) return [];
+  return group.sections
+    .filter((section) => !scope.section || section.key === scope.section)
+    .flatMap((section) => section.lines);
+}
+
+export function isDfcLineAllowedForKind(kind: CategoryKind, line: DFCLine): boolean {
+  return dfcLinesForKind(kind).some((l) => l.line === line);
 }
 
 export const MONTH_LABELS = [

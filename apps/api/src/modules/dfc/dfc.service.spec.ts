@@ -85,4 +85,56 @@ describe('DfcService', () => {
     expect(report.openingBalance[2]).toBe(100);
     expect(report.closingBalance[11]).toBe(100);
   });
+
+  it('não soma lançamentos ignorados nem duplicados', async () => {
+    const prisma = buildPrismaMock([], []);
+    await new DfcService(prisma).getReport('company-1', 2026);
+    expect(prisma.transaction.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: { notIn: ['IGNORADO', 'DUPLICADO'] } }),
+      }),
+    );
+  });
+
+  it('arredonda somas ao centavo (sem lixo de ponto flutuante)', async () => {
+    const prisma = buildPrismaMock(
+      [
+        { categoryId: 'cat-a', competenceMonth: 1, _sum: { amount: 0.1 } },
+        { categoryId: 'cat-b', competenceMonth: 1, _sum: { amount: 0.2 } },
+      ],
+      [
+        { id: 'cat-a', dfcLine: DFCLine.RECEBIMENTOS_CLIENTES },
+        { id: 'cat-b', dfcLine: DFCLine.OUTRAS_RECEITAS },
+      ],
+    );
+    const report = await new DfcService(prisma).getReport('company-1', 2026);
+    expect(report.netFlow[0]).toBe(0.3);
+    expect(report.closingBalance[11]).toBe(0.3);
+  });
+
+  it('separa o fluxo não classificado sem misturá-lo aos grupos nem aos saldos', async () => {
+    const prisma = buildPrismaMock(
+      [
+        { categoryId: null, competenceMonth: 3, _sum: { amount: -80 } },
+        { categoryId: 'cat-grupo', competenceMonth: 3, _sum: { amount: 20 } },
+        { categoryId: 'cat-receita', competenceMonth: 3, _sum: { amount: 100 } },
+      ],
+      [
+        { id: 'cat-grupo', dfcLine: null },
+        { id: 'cat-receita', dfcLine: DFCLine.RECEBIMENTOS_CLIENTES },
+      ],
+    );
+    const report = await new DfcService(prisma).getReport('company-1', 2026);
+    expect(report.unclassified[2]).toBe(-60);
+    expect(report.netFlow[2]).toBe(100);
+    expect(report.closingBalance[11]).toBe(100);
+  });
+
+  it('export inclui a linha de não classificado após o saldo final', async () => {
+    const prisma = buildPrismaMock([{ categoryId: null, competenceMonth: 1, _sum: { amount: -10 } }], []);
+    const { buffer } = await new DfcService(prisma).exportReport('company-1', 2026, 'csv');
+    const lines = buffer.toString('utf-8').trim().split(/\r?\n/);
+    expect(lines[lines.length - 2]).toMatch(/^Saldo Final/);
+    expect(lines[lines.length - 1]).toMatch(/^Não classificado \(fora da DFC\)[;,]-10/);
+  });
 });

@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 
 export class BankAccountDto {
@@ -34,3 +35,5 @@ export class BankAccountDto {
   @IsBoolean()
   isActive?: boolean;
 }
+
+export class UpdateBankAccountDto extends PartialType(BankAccountDto) {}

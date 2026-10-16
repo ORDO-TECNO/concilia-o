@@ -16,6 +16,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const ALL = '__all__';
+const UNCATEGORIZED = '__uncategorized__';
 
 export function TransactionsFilters({
   companyId,
@@ -96,14 +97,21 @@ export function TransactionsFilters({
       <div className="w-48 space-y-1">
         <label className="text-xs text-muted-foreground">Categoria</label>
         <Select
-          value={filters.categoryId ?? ALL}
-          onValueChange={(v) => onChange({ categoryId: v === ALL ? undefined : v, page: 1 })}
+          value={filters.uncategorized ? UNCATEGORIZED : (filters.categoryId ?? ALL)}
+          onValueChange={(v) =>
+            onChange({
+              categoryId: v === ALL || v === UNCATEGORIZED ? undefined : v,
+              uncategorized: v === UNCATEGORIZED ? true : undefined,
+              page: 1,
+            })
+          }
         >
           <SelectTrigger>
             <SelectValue placeholder="Todas" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Todas</SelectItem>
+            <SelectItem value={UNCATEGORIZED}>Sem categoria</SelectItem>
             {categories?.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}

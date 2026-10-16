@@ -82,3 +82,13 @@ export const DFCLine = {
   DIVIDENDOS: 'DIVIDENDOS',
 } as const;
 export type DFCLine = (typeof DFCLine)[keyof typeof DFCLine];
+
+/**
+ * Status de conciliação cujos lançamentos não contam como movimentação de
+ * caixa em nenhuma agregação (DFC, dashboard): o usuário marcou como
+ * ignorado ou como duplicado de outro lançamento.
+ */
+export const CASHFLOW_EXCLUDED_STATUSES: readonly ReconciliationStatus[] = [
+  ReconciliationStatus.IGNORADO,
+  ReconciliationStatus.DUPLICADO,
+];

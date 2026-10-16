@@ -6,3 +6,4 @@ export * from './validation/schemas';
 export * from './dto/transaction';
 export * from './dto/dfc';
 export * from './dto/import';
+export * from './document';

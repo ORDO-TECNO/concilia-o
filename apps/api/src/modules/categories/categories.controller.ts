@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CategoryDto } from './dto/category.dto';
+import { CategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
@@ -26,7 +26,7 @@ export class CategoriesController {
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
-    @Body() dto: CategoryDto,
+    @Body() dto: UpdateCategoryDto,
   ) {
     return this.categoriesService.update(user.userId, id, dto);
   }

@@ -4,6 +4,7 @@ import type { Response } from 'express';
 import { Writable } from 'stream';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
+import { assertAssignableCategory, assertPartyBelongsToCompany } from '../../common/domain/assignable';
 import { ListTransactionsQueryDto } from './dto/list-transactions.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { BulkTransactionsDto } from './dto/bulk-transactions.dto';
@@ -21,7 +22,7 @@ export class TransactionsService {
       ...(query.bankAccountId ? { bankAccountId: query.bankAccountId } : {}),
       ...(query.year ? { competenceYear: query.year } : {}),
       ...(query.month ? { competenceMonth: query.month } : {}),
-      ...(query.categoryId ? { categoryId: query.categoryId } : {}),
+      ...(query.uncategorized ? { categoryId: null } : query.categoryId ? { categoryId: query.categoryId } : {}),
       ...(query.partyId ? { partyId: query.partyId } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.search
@@ -48,7 +49,9 @@ export class TransactionsService {
       this.prisma.transaction.findMany({
         where,
         include: { category: true, party: true },
-        orderBy: { [sortBy]: sortDir },
+        // Muitos lançamentos têm a mesma data/valor; sem desempate a ordem entre
+        // páginas não é determinística e linhas se repetem ou somem.
+        orderBy: [{ [sortBy]: sortDir }, { id: 'asc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -175,13 +178,21 @@ export class TransactionsService {
     const transaction = await this.prisma.transaction.findUnique({ where: { id } });
     if (!transaction) throw new NotFoundException('Lançamento não encontrado');
     await assertUserBelongsToCompany(this.prisma, userId, transaction.companyId);
+    if (dto.categoryId) {
+      await assertAssignableCategory(this.prisma, transaction.companyId, dto.categoryId);
+    }
+    if (dto.partyId) {
+      await assertPartyBelongsToCompany(this.prisma, transaction.companyId, dto.partyId);
+    }
 
     const updated = await this.prisma.transaction.update({
       where: { id },
       data: {
-        ...(dto.categoryId !== undefined
-          ? { categoryId: dto.categoryId, categorySource: CategorySource.MANUAL, appliedRuleId: null }
-          : {}),
+        ...(dto.categoryId === null
+          ? { categoryId: null, categorySource: null, appliedRuleId: null }
+          : dto.categoryId !== undefined
+            ? { categoryId: dto.categoryId, categorySource: CategorySource.MANUAL, appliedRuleId: null }
+            : {}),
         ...(dto.partyId !== undefined ? { partyId: dto.partyId } : {}),
         ...(dto.status !== undefined ? { status: dto.status } : {}),
       },
@@ -225,6 +236,7 @@ export class TransactionsService {
         if (!dto.categoryId) {
           throw new BadRequestException('categoryId é obrigatório para a ação CATEGORIZAR');
         }
+        await assertAssignableCategory(this.prisma, companyId, dto.categoryId);
         await this.prisma.transaction.updateMany({
           where: { id: { in: dto.ids } },
           data: {

@@ -1,4 +1,6 @@
+import { PartialType } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
+import { IsCpfOrCnpj, ToDigits } from '../../../common/validation/document.decorators';
 import { PartyKind } from '@prisma/client';
 
 export class PartyDto {
@@ -6,12 +8,16 @@ export class PartyDto {
   @Length(1, 160)
   name: string;
 
+  /** CPF ou CNPJ; gravado só com dígitos para a unicidade por empresa não depender da máscara. */
   @IsOptional()
   @IsString()
-  @Length(1, 20)
+  @ToDigits()
+  @IsCpfOrCnpj()
   document?: string;
 
   @IsOptional()
   @IsEnum(PartyKind)
   kind?: PartyKind;
 }
+
+export class UpdatePartyDto extends PartialType(PartyDto) {}

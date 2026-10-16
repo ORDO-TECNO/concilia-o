@@ -54,11 +54,12 @@ describe('parseCsvStatement', () => {
     expect(first.balanceAfter).toBe(5000);
   });
 
-  it('deriva startDate/endDate e startBalance/endBalance do range completo', () => {
+  it('deriva startDate/endDate e saldo de abertura (antes do 1º lançamento) e de fechamento', () => {
     const result = parseCsvStatement(SEMICOLON_CSV, baseMapping);
     expect(result.startDate).toBe('2026-07-01');
     expect(result.endDate).toBe('2026-07-15');
-    expect(result.startBalance).toBe(5000);
+    // saldo antes do 1º lançamento: 5000 depois de pagar 450 → abriu com 5450
+    expect(result.startBalance).toBe(5450);
     expect(result.endBalance).toBe(7164.6);
   });
 
@@ -94,5 +95,52 @@ describe('parseCsvStatement', () => {
     const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
     expect(result.transactions).toHaveLength(1);
     expect(result.transactions[0].description).toBe('Linha válida');
+  });
+
+  it.each([
+    ['R$ -1.234,56', -1234.56],
+    ['-R$ 1.234,56', -1234.56],
+    ['(1.234,56)', -1234.56],
+    ['1.234,56-', -1234.56],
+    ['1.234,56 D', -1234.56],
+    ['1.234,56 C', 1234.56],
+    ['+50,00', 50],
+  ])('interpreta o valor %s como %d', (raw, expected) => {
+    const csv = `Data;Historico;Valor\n01/07/2026;Lançamento;${raw}\n`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
+    expect(result.transactions[0].amount).toBe(expected);
+  });
+
+  it('descarta datas inexistentes (ex: mês 13 ou 31/02) em vez de quebrar o import', () => {
+    const csv = `Data;Historico;Valor
+13/13/2026;Mês inválido;10,00
+31/02/2026;Dia inválido;10,00
+29/02/2028;Bissexto válido;10,00
+`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
+    expect(result.transactions.map((t) => t.date)).toEqual(['2028-02-29']);
+  });
+
+  it('normaliza extratos em ordem decrescente para ordem cronológica', () => {
+    const csv = `Data;Historico;Valor;Saldo
+15/07/2026;Terceiro;-10,00;180,00
+15/07/2026;Segundo;-10,00;190,00
+01/07/2026;Primeiro;100,00;200,00
+`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined });
+    expect(result.transactions.map((t) => t.description)).toEqual(['Primeiro', 'Segundo', 'Terceiro']);
+    expect(result.endBalance).toBe(180);
+  });
+
+  it('descarta linhas de saldo do extrato e as conta como ignoradas', () => {
+    const csv = `Data;Historico;Valor;Saldo
+30/06/2026;SALDO ANTERIOR;1000,00;1000,00
+01/07/2026;PIX RECEBIDO;200,00;1200,00
+01/07/2026;SALDO DO DIA;1200,00;1200,00
+`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined });
+    expect(result.transactions.map((t) => t.description)).toEqual(['PIX RECEBIDO']);
+    expect(result.ignoredCount).toBe(2);
+    expect(result.startBalance).toBe(1000);
   });
 });

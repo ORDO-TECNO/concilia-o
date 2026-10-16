@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { ReconciliationStatus } from '@prisma/client';
 
 export class ListTransactionsQueryDto {
@@ -22,6 +22,12 @@ export class ListTransactionsQueryDto {
   @IsOptional()
   @IsUUID()
   categoryId?: string;
+
+  /** Só lançamentos ainda sem categoria (fila de classificação). Tem precedência sobre categoryId. */
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  uncategorized?: boolean;
 
   @IsOptional()
   @IsUUID()

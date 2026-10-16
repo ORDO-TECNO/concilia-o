@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PartyKind } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
-import { PartyDto } from './dto/party.dto';
+import { PartyDto, UpdatePartyDto } from './dto/party.dto';
 
 @Injectable()
 export class PartiesService {
@@ -29,7 +29,7 @@ export class PartiesService {
     });
   }
 
-  async update(userId: string, id: string, dto: Partial<PartyDto>) {
+  async update(userId: string, id: string, dto: UpdatePartyDto) {
     const party = await this.prisma.party.findUnique({ where: { id } });
     if (!party) throw new NotFoundException('Fornecedor/cliente não encontrado');
     await assertUserBelongsToCompany(this.prisma, userId, party.companyId);

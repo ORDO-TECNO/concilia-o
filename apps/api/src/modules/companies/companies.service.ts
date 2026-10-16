@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CompanyDto } from './dto/company.dto';
+import { CompanyDto, UpdateCompanyDto } from './dto/company.dto';
 
 @Injectable()
 export class CompaniesService {
@@ -29,7 +29,7 @@ export class CompaniesService {
     return this.prisma.company.findUniqueOrThrow({ where: { id: companyId } });
   }
 
-  async update(companyId: string, dto: Partial<CompanyDto>) {
+  async update(companyId: string, dto: UpdateCompanyDto) {
     return this.prisma.company.update({
       where: { id: companyId },
       data: { name: dto.name, cnpj: dto.cnpj },

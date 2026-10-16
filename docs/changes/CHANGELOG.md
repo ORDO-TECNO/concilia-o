@@ -8,6 +8,13 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-10-16 — fix(imports): dedupe of identical rows, balance lines, parser and counter fixes → [doc](2026-10-16-imports-correctness.md)
+- 2026-10-16 — fix(transactions): block cross-company and group-category assignments → [doc](2026-10-16-app-tenant-integrity.md)
+- 2026-10-16 — fix(categories): enforce category tree rules → [doc](2026-10-16-categories-tree-rules.md)
+- 2026-10-16 — fix(dfc): exclude ignored/duplicate, unclassified row, cents rounding → [doc](2026-10-16-dfc-consistency.md)
+- 2026-10-16 — fix(classification-rules): per-field rule resolution and target validation → [doc](2026-10-16-classification-rules-engine.md)
+- 2026-10-16 — feat(web): global error toast, cache invalidation and registry actions → [doc](2026-10-16-web-feedback-and-cache.md)
+- 2026-10-16 — chore(app): run e2e and web tests in CI → [doc](2026-10-16-app-ci-e2e.md)
 - 2026-09-26 — chore(web): rebrand de Ordo para Ledger → [doc](2026-09-26-web-rebrand-ledger.md)
 - 2026-08-24 — fix(imports): wrap data writes in $transaction for all-or-nothing import (NFR-2 atomicity) → [doc](2026-08-24-imports-atomic.md)
 - 2026-08-24 — chore(web): landing alinhada ao design system (Button + tokens de cor) → [doc](2026-08-24-web-landing-design-system.md)

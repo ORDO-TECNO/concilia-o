@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { BankAccountsService } from './bank-accounts.service';
-import { BankAccountDto } from './dto/bank-account.dto';
+import { BankAccountDto, UpdateBankAccountDto } from './dto/bank-account.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
@@ -26,7 +26,7 @@ export class BankAccountsController {
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
-    @Body() dto: BankAccountDto,
+    @Body() dto: UpdateBankAccountDto,
   ) {
     return this.bankAccountsService.update(user.userId, id, dto);
   }

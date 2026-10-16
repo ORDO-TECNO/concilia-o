@@ -56,7 +56,7 @@ function buildPrismaMock(overrides: Partial<Record<string, unknown>> = {}): Pris
 
   return {
     bankAccount: {
-      findUnique: jest.fn().mockResolvedValue({ id: 'ba-1', companyId: 'co-1', bankName: null, agencia: null, conta: '0001' }),
+      findUnique: jest.fn().mockResolvedValue({ id: 'ba-1', companyId: 'co-1', bankName: null, agencia: null, conta: '0001', isActive: true }),
     },
     importBatch: {
       create: jest.fn().mockResolvedValue({ id: batchId }),
@@ -133,6 +133,11 @@ describe('ImportsService — failure path', () => {
 });
 
 describe('ImportsService — missing file guard', () => {
+  it('preview sem arquivo responde 400 em vez de 500', () => {
+    const service = new ImportsService(buildPrismaMock(), buildRulesMock());
+    expect(() => service.previewCsvFile(undefined)).toThrow(BadRequestException);
+  });
+
   it('throws BadRequestException when file is absent', async () => {
     const prisma = buildPrismaMock();
     const rules = buildRulesMock();
@@ -141,5 +146,38 @@ describe('ImportsService — missing file guard', () => {
     await expect(
       service.import('co-1', buildImportRequestDto(), null as unknown as Express.Multer.File),
     ).rejects.toThrow(BadRequestException);
+  });
+});
+
+describe('ImportsService — bank account guard', () => {
+  it('rejeita importação em conta bancária inativa', async () => {
+    const prisma = buildPrismaMock({
+      bankAccount: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'ba-1', companyId: 'co-1', conta: '0001', isActive: false }),
+      },
+    });
+    const service = new ImportsService(prisma, buildRulesMock());
+
+    await expect(service.import('co-1', buildImportRequestDto(), buildFile(MINIMAL_OFX))).rejects.toThrow(
+      /inativa/,
+    );
+    expect(prisma.importBatch.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('ImportsService — rule application after commit', () => {
+  it('não falha a importação já gravada quando a aplicação de regras quebra', async () => {
+    const batch = { id: 'batch-1', status: ImportStatus.CONCLUIDO, periods: [], source: 'OFX' };
+    const prisma = buildPrismaMock({
+      $transaction: jest.fn().mockResolvedValue({ batch, ids: ['t-1'] }),
+    });
+    const rules = buildRulesMock();
+    (rules.applyToTransactions as jest.Mock).mockRejectedValue(new Error('rules exploded'));
+    const service = new ImportsService(prisma, rules);
+
+    await expect(service.import('co-1', buildImportRequestDto(), buildFile(MINIMAL_OFX))).resolves.toMatchObject({
+      importBatchId: 'batch-1',
+      status: ImportStatus.CONCLUIDO,
+    });
   });
 });

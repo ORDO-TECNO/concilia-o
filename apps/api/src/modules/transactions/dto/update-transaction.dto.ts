@@ -2,13 +2,15 @@ import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { ReconciliationStatus } from '@prisma/client';
 
 export class UpdateTransactionDto {
+  /** `null` remove a classificação. */
   @IsOptional()
   @IsUUID()
-  categoryId?: string;
+  categoryId?: string | null;
 
+  /** `null` desvincula o fornecedor/cliente. */
   @IsOptional()
   @IsUUID()
-  partyId?: string;
+  partyId?: string | null;
 
   @IsOptional()
   @IsEnum(ReconciliationStatus)

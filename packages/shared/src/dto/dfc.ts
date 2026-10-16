@@ -31,4 +31,6 @@ export interface DFCReport {
   openingBalance: number[];
   closingBalance: number[];
   netFlow: number[];
+  /** Fluxo do mês que ainda não está numa linha da DFC (sem categoria ou categoria sem linha). Fora dos saldos. */
+  unclassified: number[];
 }

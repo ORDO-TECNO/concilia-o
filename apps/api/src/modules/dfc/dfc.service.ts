@@ -1,22 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DFC_STRUCTURE, MONTH_LABELS } from '@conciliacao/shared';
+import { CASHFLOW_EXCLUDED_STATUSES, DFC_STRUCTURE, MONTH_LABELS } from '@conciliacao/shared';
 import { buildCsvBuffer, buildXlsxBuffer } from '../../common/export/table-export';
 
 function emptyMonths(): number[] {
   return Array(12).fill(0);
 }
 
+// Somas em ponto flutuante acumulam erro (0.1 + 0.2 ≠ 0.3); como os valores
+// são monetários com 2 casas, todo resultado é arredondado ao centavo.
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 function sumArrays(arrays: number[][]): number[] {
   const result = emptyMonths();
   for (const arr of arrays) {
-    for (let i = 0; i < 12; i++) result[i] += arr[i];
+    for (let i = 0; i < 12; i++) result[i] = round2(result[i] + arr[i]);
   }
   return result;
 }
 
 function total(arr: number[]): number {
-  return arr.reduce((a, b) => a + b, 0);
+  return arr.reduce((a, b) => round2(a + b), 0);
 }
 
 @Injectable()
@@ -26,7 +32,11 @@ export class DfcService {
   async getReport(companyId: string, year: number) {
     const grouped = await this.prisma.transaction.groupBy({
       by: ['categoryId', 'competenceMonth'],
-      where: { companyId, competenceYear: year, categoryId: { not: null } },
+      where: {
+        companyId,
+        competenceYear: year,
+        status: { notIn: [...CASHFLOW_EXCLUDED_STATUSES] },
+      },
       _sum: { amount: true },
     });
 
@@ -35,11 +45,19 @@ export class DfcService {
     const categoryDfcLine = new Map(categories.map((c) => [c.id, c.dfcLine]));
 
     const lineTotals = new Map<string, number[]>();
+    // Movimentação sem categoria (ou numa categoria sem linha da DFC) não entra
+    // nos grupos, mas é exibida à parte para o usuário saber o que falta
+    // classificar — sem isso a DFC parece completa quando não está.
+    const unclassified = emptyMonths();
     for (const g of grouped) {
       const dfcLine = g.categoryId ? categoryDfcLine.get(g.categoryId) : null;
-      if (!dfcLine) continue;
+      if (!dfcLine) {
+        unclassified[g.competenceMonth - 1] = round2(unclassified[g.competenceMonth - 1] + Number(g._sum.amount ?? 0));
+        continue;
+      }
       if (!lineTotals.has(dfcLine)) lineTotals.set(dfcLine, emptyMonths());
-      lineTotals.get(dfcLine)![g.competenceMonth - 1] += Number(g._sum.amount ?? 0);
+      const monthly = lineTotals.get(dfcLine)!;
+      monthly[g.competenceMonth - 1] = round2(monthly[g.competenceMonth - 1] + Number(g._sum.amount ?? 0));
     }
 
     const groups = DFC_STRUCTURE.map((groupDef) => {
@@ -72,7 +90,7 @@ export class DfcService {
     let running = 0;
     for (let i = 0; i < 12; i++) {
       openingBalance[i] = running;
-      running += netFlow[i];
+      running = round2(running + netFlow[i]);
       closingBalance[i] = running;
     }
 
@@ -83,6 +101,7 @@ export class DfcService {
       openingBalance,
       closingBalance,
       netFlow,
+      unclassified,
     };
   }
 
@@ -108,8 +127,9 @@ export class DfcService {
       rows.push([group.resultLabel, ...group.monthly, group.total]);
     }
 
-    rows.push(['Fluxo Líquido', ...report.netFlow, report.netFlow.reduce((a, b) => a + b, 0)]);
+    rows.push(['Fluxo Líquido', ...report.netFlow, total(report.netFlow)]);
     rows.push(['Saldo Final', ...report.closingBalance, report.closingBalance[11]]);
+    rows.push(['Não classificado (fora da DFC)', ...report.unclassified, total(report.unclassified)]);
 
     if (format === 'xlsx') {
       const buffer = await buildXlsxBuffer(headers, rows, `DFC ${year}`);

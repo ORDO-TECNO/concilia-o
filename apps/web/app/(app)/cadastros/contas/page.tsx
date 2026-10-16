@@ -6,6 +6,7 @@ import {
   useBankAccounts,
   useCreateBankAccount,
   useDeleteBankAccount,
+  useUpdateBankAccount,
 } from '@/lib/hooks/use-bank-accounts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ export default function ContasPage() {
   const { data: accounts, isLoading } = useBankAccounts(currentCompanyId);
   const createAccount = useCreateBankAccount(currentCompanyId);
   const deleteAccount = useDeleteBankAccount(currentCompanyId);
+  const updateAccount = useUpdateBankAccount(currentCompanyId);
   const [open, setOpen] = React.useState(false);
   const [form, setForm] = React.useState({ bankName: '', bankCode: '', agencia: '', conta: '', apelido: '' });
 
@@ -141,7 +143,15 @@ export default function ContasPage() {
                   {acc.isActive ? 'Ativa' : 'Inativa'}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateAccount.mutate({ id: acc.id, input: { isActive: !acc.isActive } })}
+                  disabled={updateAccount.isPending}
+                >
+                  {acc.isActive ? 'Desativar' : 'Reativar'}
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

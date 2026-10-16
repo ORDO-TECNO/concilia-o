@@ -18,4 +18,6 @@ export interface ParsedStatement {
   startBalance?: number;
   endBalance?: number;
   transactions: ParsedTransaction[];
+  /** Linhas descartadas por não serem movimentação (saldo, valor zero). */
+  ignoredCount: number;
 }
