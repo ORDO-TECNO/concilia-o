@@ -52,24 +52,18 @@ function toArray<T>(value: T | T[] | undefined): T[] {
 
 /**
  * OFX 1.x (SGML) não é XML bem-formado: tags-folha como <DTPOSTED>20240115 não
- * têm fechamento. Normaliza linha a linha, fechando qualquer tag-folha que
- * ainda não esteja fechada na própria linha. Idempotente para OFX 2.x (XML já
- * bem-formado) — se a tag já tem fechamento na linha, não mexe.
+ * têm fechamento. Fecha toda tag-folha com valor que não esteja fechada logo
+ * em seguida. Funciona tanto com uma tag por linha quanto com o arquivo
+ * inteiro em uma linha só (alguns bancos exportam assim), e é idempotente
+ * para OFX 2.x (XML já bem-formado).
  */
 function normalizeSgmlToXml(body: string): string {
-  return body
-    .split(/\r?\n/)
-    .map((line) => {
-      const trimmed = line.trim();
-      const match = trimmed.match(/^<(\w+)>([^<]+)$/);
-      if (match) {
-        const [, tag, value] = match;
-        return `<${tag}>${value.trim()}</${tag}>`;
-      }
-      return trimmed;
-    })
-    .filter(Boolean)
-    .join('\n');
+  return body.replace(/<([A-Za-z0-9_.]+)>([^<]+)(?=<)/g, (match, tag: string, value: string, offset: number) => {
+    const trimmed = value.trim();
+    if (!trimmed) return `<${tag}>`;
+    const alreadyClosed = body.startsWith(`</${tag}>`, offset + match.length);
+    return alreadyClosed ? `<${tag}>${trimmed}` : `<${tag}>${trimmed}</${tag}>`;
+  });
 }
 
 /** Datas OFX vêm como YYYYMMDD[HHMMSS[...]] — extrai só a data pura (sem timezone). */
