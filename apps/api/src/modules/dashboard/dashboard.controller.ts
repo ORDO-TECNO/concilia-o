@@ -1,9 +1,12 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { resolveYear, YearQueryDto } from '../../common/dto/year-query.dto';
 
+@ApiTags('dashboard')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, CompanyAccessGuard)
 @Controller()
 export class DashboardController {

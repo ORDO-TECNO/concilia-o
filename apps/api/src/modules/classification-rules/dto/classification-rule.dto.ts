@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 import { RuleField, RuleMatchType } from '@prisma/client';
 
@@ -8,10 +8,12 @@ export class ClassificationRuleDto {
   name: string;
 
   @IsOptional()
+  @ApiPropertyOptional({ enum: RuleField })
   @IsEnum(RuleField)
   field?: RuleField;
 
   @IsOptional()
+  @ApiPropertyOptional({ enum: RuleMatchType })
   @IsEnum(RuleMatchType)
   matchType?: RuleMatchType;
 

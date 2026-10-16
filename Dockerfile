@@ -40,6 +40,9 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 
+# Manual interativo servido em /docs/ledger-manual (fonte: docs/manual/index.html)
+COPY docs/manual ./docs/manual
+
 WORKDIR /app/apps/api
 
 EXPOSE 3001

@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -26,6 +27,7 @@ const AUTH_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
 
 const REFRESH_COOKIE = 'refresh_token';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { TransactionsService } from './transactions.service';
 import { ListTransactionsQueryDto } from './dto/list-transactions.dto';
@@ -9,6 +10,8 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 
+@ApiTags('transactions')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class TransactionsController {
