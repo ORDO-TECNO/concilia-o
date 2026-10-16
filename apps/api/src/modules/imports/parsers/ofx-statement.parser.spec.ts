@@ -111,4 +111,10 @@ describe('parseOfxStatement', () => {
     expect(result.transactions).toHaveLength(2);
     expect(result.ignoredCount).toBe(1);
   });
+
+  it('trata TRNTYPE DEBIT com valor positivo como saída', () => {
+    const ofx = SAMPLE_OFX_1X.replace('<TRNAMT>-320.50', '<TRNAMT>320.50');
+    const result = parseOfxStatement(ofx);
+    expect(result.transactions[1].amount).toBe(-320.5);
+  });
 });

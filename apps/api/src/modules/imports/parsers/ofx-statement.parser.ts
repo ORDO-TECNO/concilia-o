@@ -5,6 +5,7 @@ import { isNonMovement } from './non-movement';
 
 /** Shapes returned by fast-xml-parser for OFX files — all fields are opaque strings or nested objects. */
 interface OfxRawTransaction {
+  TRNTYPE?: string;
   DTPOSTED?: string;
   TRNAMT?: string;
   NAME?: string;
@@ -131,8 +132,13 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
   const parsed: ParsedTransaction[] = rawTransactions
     .map((t: OfxRawTransaction): ParsedTransaction | null => {
       const date = parseOfxDate(t.DTPOSTED);
-      const amount = parseOfxAmount(t.TRNAMT);
+      let amount = parseOfxAmount(t.TRNAMT);
       if (!date || amount === undefined) return null;
+      // Alguns bancos mandam TRNAMT sempre positivo e indicam a saída só no
+      // TRNTYPE. Débito com valor positivo é sempre saída de caixa.
+      if (String(t.TRNTYPE ?? '').trim().toUpperCase() === 'DEBIT' && amount > 0) {
+        amount = -amount;
+      }
 
       const description = (t.NAME ?? t.MEMO ?? t.PAYEE ?? 'Sem descrição').toString().trim();
       const historico = t.MEMO && t.MEMO !== description ? String(t.MEMO).trim() : undefined;
