@@ -171,6 +171,13 @@ export function parseCsvStatement(content: string, mapping: CsvColumnMapping): P
     })
     .filter((t): t is ParsedTransaction => t !== null);
 
+  // Muitos bancos exportam do mais recente para o mais antigo. Normaliza para
+  // ordem cronológica: os saldos de abertura/fechamento (do extrato e de cada
+  // período) dependem da ordem dos lançamentos dentro do mesmo dia.
+  if (transactions.length > 1 && transactions[0].date > transactions[transactions.length - 1].date) {
+    transactions.reverse();
+  }
+
   const dates = transactions.map((t) => t.date).sort();
   const withBalance = transactions.filter((t) => t.balanceAfter !== undefined);
 

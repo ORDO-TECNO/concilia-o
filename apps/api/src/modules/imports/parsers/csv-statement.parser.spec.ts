@@ -119,4 +119,15 @@ describe('parseCsvStatement', () => {
     const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined, balanceColumn: undefined });
     expect(result.transactions.map((t) => t.date)).toEqual(['2028-02-29']);
   });
+
+  it('normaliza extratos em ordem decrescente para ordem cronológica', () => {
+    const csv = `Data;Historico;Valor;Saldo
+15/07/2026;Terceiro;-10,00;180,00
+15/07/2026;Segundo;-10,00;190,00
+01/07/2026;Primeiro;100,00;200,00
+`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined });
+    expect(result.transactions.map((t) => t.description)).toEqual(['Primeiro', 'Segundo', 'Terceiro']);
+    expect(result.endBalance).toBe(180);
+  });
 });
