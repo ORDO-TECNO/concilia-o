@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/swagger';
 import { IsOptional, IsString, Length } from 'class-validator';
 
 export class CompanyDto {
@@ -10,3 +11,5 @@ export class CompanyDto {
   @Length(11, 18)
   cnpj?: string;
 }
+
+export class UpdateCompanyDto extends PartialType(CompanyDto) {}
