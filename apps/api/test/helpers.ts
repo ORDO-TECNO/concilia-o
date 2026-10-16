@@ -6,6 +6,8 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { setupSwagger } from '../src/modules/docs/swagger';
+import { ConfigService } from '@nestjs/config';
 
 export interface E2EContext {
   app: INestApplication;
@@ -19,6 +21,7 @@ export async function bootApp(): Promise<E2EContext> {
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
+  setupSwagger(app, app.get(ConfigService));
   await app.init();
   return { app, prisma: moduleRef.get(PrismaService) };
 }

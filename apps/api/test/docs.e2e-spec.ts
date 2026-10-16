@@ -27,4 +27,20 @@ describe('Docs', () => {
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/docs/ledger-manual');
   });
+
+  it('publica o OpenAPI com as rotas da API em /docs/api-json', async () => {
+    const res = await request(ctx.app.getHttpServer()).get('/docs/api-json');
+    expect(res.status).toBe(200);
+    expect(res.body.info.title).toBe('Ledger API');
+    expect(Object.keys(res.body.paths)).toEqual(
+      expect.arrayContaining(['/companies/{companyId}/imports', '/companies/{companyId}/dfc', '/auth/login']),
+    );
+    expect(Object.keys(res.body.paths)).not.toContain('/docs/ledger-manual');
+  });
+
+  it('serve o Swagger UI em /docs/api', async () => {
+    const res = await request(ctx.app.getHttpServer()).get('/docs/api');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('swagger-ui');
+  });
 });

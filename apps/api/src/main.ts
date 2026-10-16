@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { setupSwagger } from './modules/docs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -30,6 +31,8 @@ async function bootstrap() {
     origin: corsOrigin ? corsOrigin.split(',') : 'http://localhost:3000',
     credentials: true,
   });
+
+  setupSwagger(app, config);
 
   const port = config.get<number>('PORT') ?? config.get<number>('API_PORT') ?? 3001;
   await app.listen(port);
