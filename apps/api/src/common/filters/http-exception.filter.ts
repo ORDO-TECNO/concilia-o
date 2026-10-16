@@ -6,13 +6,33 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type { Request, Response } from 'express';
+
+/**
+ * Erros conhecidos do Prisma que são culpa da requisição, não do servidor.
+ * Sem esse mapeamento, um CNPJ ou conta duplicada respondia 500.
+ */
+function fromPrismaError(error: Prisma.PrismaClientKnownRequestError): HttpException | null {
+  switch (error.code) {
+    case 'P2002':
+      return new HttpException('Já existe um registro com esses dados', HttpStatus.CONFLICT);
+    case 'P2003':
+      return new HttpException('Registro relacionado inexistente ou ainda em uso', HttpStatus.CONFLICT);
+    case 'P2025':
+      return new HttpException('Registro não encontrado', HttpStatus.NOT_FOUND);
+    default:
+      return null;
+  }
+}
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(caught: unknown, host: ArgumentsHost) {
+    const exception =
+      caught instanceof Prisma.PrismaClientKnownRequestError ? (fromPrismaError(caught) ?? caught) : caught;
     const ctx = host.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
