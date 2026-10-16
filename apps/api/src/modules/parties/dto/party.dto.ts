@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { PartyKind } from '@prisma/client';
 
@@ -15,3 +16,5 @@ export class PartyDto {
   @IsEnum(PartyKind)
   kind?: PartyKind;
 }
+
+export class UpdatePartyDto extends PartialType(PartyDto) {}
