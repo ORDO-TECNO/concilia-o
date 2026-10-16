@@ -47,7 +47,8 @@ nunca editado diretamente).
 Uma empresa/CNPJ para a qual o usuário conciliará movimentações. Todo dado
 transacional (contas, categorias, lançamentos, regras, importações) pertence
 a exatamente uma empresa.
-- **Armazenados**: nome, CNPJ (opcional).
+- **Armazenados**: nome, CNPJ (opcional; gravado só com dígitos e com dígito
+  verificador validado).
 
 ### Usuário e vínculo com empresa (`User`, `UserCompany`)
 Um usuário pode acessar várias empresas. `UserCompany.role` é hoje um texto
@@ -62,6 +63,9 @@ verificado que já existe é vinculado à conta existente.
 ### Conta bancária (`BankAccount`)
 Uma conta bancária da empresa, para a qual os extratos são importados.
 - **Armazenados**: banco, agência, conta e dígito, apelido, se está ativa.
+- **Regras**: conta inativa não recebe importações. Uma conta que já tem
+  extratos importados não pode ser excluída (a exclusão apagaria todo o
+  histórico de lançamentos dela) — desative-a.
 
 ### Categoria (`Category`)
 Uma árvore de categorias usada para classificar lançamentos. Categorias-pai
@@ -69,15 +73,27 @@ apenas agrupam (ex: "Despesas Operacionais"); só as categorias-folha recebem
 lançamentos e precisam estar mapeadas a uma linha da DFC.
 - **Armazenados**: nome, tipo (Receita, Despesa, Investimento,
   Financiamento), categoria-pai (opcional), linha da DFC (obrigatória em
-  folhas, nula em categorias-pai), se está ativa.
+  folhas que recebem lançamentos, nula em categorias-pai), se está ativa.
+- **Regras**:
+  - A linha da DFC precisa ser compatível com o tipo: Receita → entradas
+    operacionais; Despesa → saídas operacionais; Investimento → grupo
+    Investimento; Financiamento → grupo Financiamento.
+  - Uma folha que ganha a primeira subcategoria vira agrupadora e perde a
+    linha da DFC; por isso isso só é permitido se ela ainda não tiver
+    lançamentos nem regras apontando para ela.
+  - A categoria-pai precisa ser da mesma empresa, e mover uma categoria para
+    baixo de uma das suas descendentes (ciclo) é recusado.
+  - Exclusão só é permitida sem subcategorias, lançamentos ou regras; caso
+    contrário, desative a categoria (ela some das listas, o histórico fica).
 - **Derivados**: os grupos, seções e subtotais da DFC não são categorias —
   são calculados a partir do mapeamento categoria → linha da DFC (ver
   `packages/shared/src/dfc-structure.ts`).
 
 ### Fornecedor/Cliente (`Party`)
 Uma pessoa ou empresa com quem a empresa transaciona.
-- **Armazenados**: nome, documento (CNPJ/CPF, opcional e único por empresa),
-  tipo (Fornecedor, Cliente ou Ambos).
+- **Armazenados**: nome, documento (CNPJ/CPF, opcional e único por empresa,
+  gravado só com dígitos e com dígito verificador validado), tipo
+  (Fornecedor, Cliente ou Ambos).
 
 ### Importação de extrato (`ImportBatch` e `ImportBatchPeriod`)
 Registro de um upload de arquivo (CSV ou OFX) para uma conta bancária,
