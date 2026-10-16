@@ -25,7 +25,7 @@ export class ImportsController {
   @Post('companies/:companyId/imports/csv-preview')
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } }))
   previewCsv(@UploadedFile() file: Express.Multer.File) {
-    return this.importsService.previewCsvFile(file.buffer);
+    return this.importsService.previewCsvFile(file);
   }
 
   @UseGuards(CompanyAccessGuard)

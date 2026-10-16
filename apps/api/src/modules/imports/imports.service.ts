@@ -25,8 +25,11 @@ export class ImportsService {
     private readonly classificationRulesService: ClassificationRulesService,
   ) {}
 
-  previewCsvFile(buffer: Buffer) {
-    const content = decodeFileBuffer(buffer);
+  previewCsvFile(file: Express.Multer.File | undefined) {
+    if (!file) {
+      throw new BadRequestException('Nenhum arquivo enviado');
+    }
+    const content = decodeFileBuffer(file.buffer);
     const delimiter = detectDelimiter(content);
     const result = previewCsv(content, delimiter);
     return { ...result, delimiter, previewToken: 'stateless' };

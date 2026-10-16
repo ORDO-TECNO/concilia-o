@@ -133,6 +133,11 @@ describe('ImportsService — failure path', () => {
 });
 
 describe('ImportsService — missing file guard', () => {
+  it('preview sem arquivo responde 400 em vez de 500', () => {
+    const service = new ImportsService(buildPrismaMock(), buildRulesMock());
+    expect(() => service.previewCsvFile(undefined)).toThrow(BadRequestException);
+  });
+
   it('throws BadRequestException when file is absent', async () => {
     const prisma = buildPrismaMock();
     const rules = buildRulesMock();
