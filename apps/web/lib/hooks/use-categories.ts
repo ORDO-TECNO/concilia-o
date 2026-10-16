@@ -49,7 +49,7 @@ export function useCreateCategory(companyId: string | null) {
 export function useUpdateCategory(companyId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<CategoryInput> }) =>
+    mutationFn: ({ id, input }: { id: string; input: Partial<CategoryInput> & { isActive?: boolean } }) =>
       apiFetch(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories', companyId] });

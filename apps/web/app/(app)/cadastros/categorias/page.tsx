@@ -7,6 +7,7 @@ import {
   useCategoryTree,
   useCreateCategory,
   useDeleteCategory,
+  useUpdateCategory,
   type CategoryNode,
 } from '@/lib/hooks/use-categories';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,17 @@ const KIND_LABELS: Record<string, string> = {
   FINANCIAMENTO: 'Financiamento',
 };
 
-function CategoryRow({ node, depth, onDelete }: { node: CategoryNode; depth: number; onDelete: (id: string) => void }) {
+function CategoryRow({
+  node,
+  depth,
+  onDelete,
+  onDeactivate,
+}: {
+  node: CategoryNode;
+  depth: number;
+  onDelete: (id: string) => void;
+  onDeactivate: (id: string) => void;
+}) {
   const [expanded, setExpanded] = React.useState(true);
   const hasChildren = node.children.length > 0;
 
@@ -59,14 +70,25 @@ function CategoryRow({ node, depth, onDelete }: { node: CategoryNode; depth: num
             </Badge>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={() => onDelete(node.id)}>
-          Excluir
-        </Button>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="sm" onClick={() => onDeactivate(node.id)}>
+            Desativar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(node.id)}>
+            Excluir
+          </Button>
+        </div>
       </div>
       {hasChildren && expanded && (
         <div>
           {node.children.map((child) => (
-            <CategoryRow key={child.id} node={child} depth={depth + 1} onDelete={onDelete} />
+            <CategoryRow
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              onDelete={onDelete}
+              onDeactivate={onDeactivate}
+            />
           ))}
         </div>
       )}
@@ -79,6 +101,7 @@ export default function CategoriasPage() {
   const { data: tree, isLoading } = useCategoryTree(currentCompanyId);
   const createCategory = useCreateCategory(currentCompanyId);
   const deleteCategory = useDeleteCategory(currentCompanyId);
+  const updateCategory = useUpdateCategory(currentCompanyId);
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState('');
   const [kind, setKind] = React.useState<string>(CategoryKind.DESPESA);
@@ -204,7 +227,13 @@ export default function CategoriasPage() {
       <div className="rounded-lg border bg-card p-2">
         {isLoading && <p className="p-2 text-sm text-muted-foreground">Carregando...</p>}
         {tree?.map((node) => (
-          <CategoryRow key={node.id} node={node} depth={0} onDelete={handleDelete} />
+          <CategoryRow
+            key={node.id}
+            node={node}
+            depth={0}
+            onDelete={handleDelete}
+            onDeactivate={(id) => updateCategory.mutate({ id, input: { isActive: false } })}
+          />
         ))}
       </div>
     </div>
