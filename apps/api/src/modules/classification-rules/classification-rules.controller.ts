@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ClassificationRulesService } from './classification-rules.service';
-import { ClassificationRuleDto } from './dto/classification-rule.dto';
+import { ClassificationRuleDto, UpdateClassificationRuleDto } from './dto/classification-rule.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
@@ -32,7 +32,7 @@ export class ClassificationRulesController {
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
-    @Body() dto: ClassificationRuleDto,
+    @Body() dto: UpdateClassificationRuleDto,
   ) {
     return this.rulesService.update(user.userId, id, dto);
   }

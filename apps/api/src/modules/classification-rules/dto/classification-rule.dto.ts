@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 import { RuleField, RuleMatchType } from '@prisma/client';
 
@@ -34,3 +35,5 @@ export class ClassificationRuleDto {
   @IsBoolean()
   isActive?: boolean;
 }
+
+export class UpdateClassificationRuleDto extends PartialType(ClassificationRuleDto) {}

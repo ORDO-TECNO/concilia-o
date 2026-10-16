@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CategorySource } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
-import { ClassificationRuleDto } from './dto/classification-rule.dto';
+import { ClassificationRuleDto, UpdateClassificationRuleDto } from './dto/classification-rule.dto';
 import { ruleMatches } from './rule-matcher';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class ClassificationRulesService {
     });
   }
 
-  async update(userId: string, id: string, dto: Partial<ClassificationRuleDto>) {
+  async update(userId: string, id: string, dto: UpdateClassificationRuleDto) {
     const rule = await this.prisma.classificationRule.findUnique({ where: { id } });
     if (!rule) throw new NotFoundException('Regra não encontrada');
     await assertUserBelongsToCompany(this.prisma, userId, rule.companyId);
