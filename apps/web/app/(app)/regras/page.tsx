@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
-import { useCategoriesFlat } from '@/lib/hooks/use-categories';
+import { useCategoryTree } from '@/lib/hooks/use-categories';
+import { toCategoryOptions } from '@/lib/categories';
 import { useParties } from '@/lib/hooks/use-parties';
 import {
   useApplyRules,
@@ -44,7 +45,8 @@ const NONE = '__none__';
 export default function RegrasPage() {
   const { currentCompanyId } = useAuth();
   const { data: rules, isLoading } = useRules(currentCompanyId);
-  const { data: categories } = useCategoriesFlat(currentCompanyId);
+  const { data: categoryTree } = useCategoryTree(currentCompanyId);
+  const categoryOptions = React.useMemo(() => toCategoryOptions(categoryTree), [categoryTree]);
   const { data: parties } = useParties(currentCompanyId);
   const createRule = useCreateRule(currentCompanyId);
   const deleteRule = useDeleteRule(currentCompanyId);
@@ -164,9 +166,9 @@ export default function RegrasPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE}>(nenhuma)</SelectItem>
-                        {categories?.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
+                        {categoryOptions.map((opt) => (
+                          <SelectItem key={opt.id} value={opt.id} disabled={!opt.selectable}>
+                            {opt.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
