@@ -70,6 +70,13 @@ describe('Transactions', () => {
       expect(res.body).toMatchObject({ categoryId: leafId, categorySource: 'MANUAL' });
     });
 
+    it('categoryId null remove a classificação e a origem dela', async () => {
+      const t = await newTransaction({ categoryId: leafId, categorySource: 'REGRA' });
+      const res = await api(ctx.app, tenant.token).patch(`/transactions/${t.id}`).send({ categoryId: null });
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ categoryId: null, categorySource: null });
+    });
+
     it('rejeita categoria de outra empresa', async () => {
       const t = await newTransaction();
       const res = await api(ctx.app, tenant.token).patch(`/transactions/${t.id}`).send({ categoryId: foreignCategoryId });

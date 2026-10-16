@@ -186,9 +186,11 @@ export class TransactionsService {
     const updated = await this.prisma.transaction.update({
       where: { id },
       data: {
-        ...(dto.categoryId !== undefined
-          ? { categoryId: dto.categoryId, categorySource: CategorySource.MANUAL, appliedRuleId: null }
-          : {}),
+        ...(dto.categoryId === null
+          ? { categoryId: null, categorySource: null, appliedRuleId: null }
+          : dto.categoryId !== undefined
+            ? { categoryId: dto.categoryId, categorySource: CategorySource.MANUAL, appliedRuleId: null }
+            : {}),
         ...(dto.partyId !== undefined ? { partyId: dto.partyId } : {}),
         ...(dto.status !== undefined ? { status: dto.status } : {}),
       },
