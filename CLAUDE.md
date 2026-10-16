@@ -119,6 +119,10 @@ Toda mudança média-ou-maior gera um doc curto (um resumo, não um ensaio) em
 *verdade atual*. A convenção completa e o roadmap de fases estão em
 `docs/dev-phases.md`.
 
+A varredura de regras de negócio de out/2026 (achados corrigidos e plano dos
+abertos, P1–P11) está em `docs/review-2026-10-scan.md` — consulte antes de
+mexer em importação, classificação, categorias ou DFC.
+
 ## Disciplina de commits
 
 - Siga a metodologia de **commits pequenos** — uma mudança lógica por
