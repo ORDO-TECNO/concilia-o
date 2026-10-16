@@ -14,6 +14,7 @@ import {
 import type { ParsedStatement, ParsedTransaction } from './parsers/statement-parser.types';
 import { ImportRequestDto } from './dto/import-request.dto';
 import { computeDedupeHashes } from './dedupe';
+import { statementMatchesAccount } from './account-match';
 
 @Injectable()
 export class ImportsService {
@@ -46,6 +47,12 @@ export class ImportsService {
 
     const rawContent = decodeFileBuffer(file.buffer);
     const parsed = this.parseFile(dto, rawContent);
+
+    if (!statementMatchesAccount(parsed.conta, bankAccount)) {
+      throw new BadRequestException(
+        `O extrato é da conta ${parsed.conta}, diferente da conta selecionada (${bankAccount.conta}).`,
+      );
+    }
 
     if (parsed.transactions.length === 0) {
       throw new BadRequestException(
