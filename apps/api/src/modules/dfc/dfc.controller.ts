@@ -1,10 +1,13 @@
 import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { DfcService } from './dfc.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CompanyAccessGuard } from '../../common/guards/company-access.guard';
 import { resolveYear, YearExportQueryDto, YearQueryDto } from '../../common/dto/year-query.dto';
 
+@ApiTags('dfc')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, CompanyAccessGuard)
 @Controller()
 export class DfcController {
