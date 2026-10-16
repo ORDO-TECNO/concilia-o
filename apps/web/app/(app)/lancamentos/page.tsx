@@ -17,8 +17,13 @@ import { TransactionsTable } from '@/components/transactions/transactions-table'
 import { BulkActionsBar } from '@/components/transactions/bulk-actions-bar';
 import { Button } from '@/components/ui/button';
 import { downloadFile } from '@/lib/api-client';
+import { ReconciliationStatus } from '@conciliacao/shared';
 
 const PAGE_SIZE = 50;
+
+function parseStatus(value: string | null): ReconciliationStatus | undefined {
+  return value && value in ReconciliationStatus ? (value as ReconciliationStatus) : undefined;
+}
 
 function parseFiltersFromSearchParams(params: URLSearchParams): TransactionFilters {
   return {
@@ -26,7 +31,7 @@ function parseFiltersFromSearchParams(params: URLSearchParams): TransactionFilte
     year: params.get('year') ? Number(params.get('year')) : undefined,
     month: params.get('month') ? Number(params.get('month')) : undefined,
     categoryId: params.get('categoryId') ?? undefined,
-    status: (params.get('status') as any) ?? undefined,
+    status: parseStatus(params.get('status')),
     search: params.get('search') ?? undefined,
     page: params.get('page') ? Number(params.get('page')) : 1,
     pageSize: PAGE_SIZE,
@@ -67,7 +72,8 @@ export default function LancamentosPage() {
   }
 
   async function handleExport(format: 'csv' | 'xlsx') {
-    const query = buildQuery({ ...filters, page: undefined, pageSize: undefined } as any);
+    const { page: _page, pageSize: _pageSize, ...exportFilters } = filters;
+    const query = buildQuery(exportFilters);
     await downloadFile(
       `/companies/${currentCompanyId}/transactions/export?format=${format}${query ? `&${query}` : ''}`,
       `lancamentos.${format}`,
@@ -117,7 +123,7 @@ export default function LancamentosPage() {
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
             onCategoryChange={(id, categoryId) => updateTransaction.mutate({ id, input: { categoryId } })}
-            onStatusChange={(id, status) => updateTransaction.mutate({ id, input: { status: status as any } })}
+            onStatusChange={(id, status) => updateTransaction.mutate({ id, input: { status: parseStatus(status) } })}
           />
         )}
       </div>
