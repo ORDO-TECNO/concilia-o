@@ -121,7 +121,9 @@ Toda mudança média-ou-maior gera um doc curto (um resumo, não um ensaio) em
 
 A varredura de regras de negócio de out/2026 (achados corrigidos e plano dos
 abertos, P1–P11) está em `docs/review-2026-10-scan.md` — consulte antes de
-mexer em importação, classificação, categorias ou DFC.
+mexer em importação, classificação, categorias ou DFC. O manual interativo
+do projeto fica em `docs/manual/index.html` — atualize-o junto quando mudar
+regras, rotas ou o modelo de dados.
 
 ## Disciplina de commits
 
