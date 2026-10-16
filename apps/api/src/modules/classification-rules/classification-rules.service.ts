@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
 import { assertAssignableCategory, assertPartyBelongsToCompany } from '../../common/domain/assignable';
 import { ClassificationRuleDto, UpdateClassificationRuleDto } from './dto/classification-rule.dto';
-import { ruleMatches } from './rule-matcher';
+import { resolveClassification } from './rule-matcher';
 
 @Injectable()
 export class ClassificationRulesService {
@@ -108,25 +108,36 @@ export class ClassificationRulesService {
         status: 'PENDENTE',
         ...(transactionIds ? { id: { in: transactionIds } } : {}),
       },
-      select: { id: true, description: true, historico: true, document: true },
+      select: { id: true, description: true, historico: true, document: true, partyId: true },
     });
 
-    let appliedCount = 0;
+    // Agrupa lançamentos com o mesmo resultado para gravar com um updateMany
+    // por combinação (regra, categoria, fornecedor) em vez de um UPDATE por linha.
+    const batches = new Map<string, { categoryId: string | null; partyId: string | null; ruleId: string; ids: string[] }>();
     for (const t of transactions) {
-      const match = rules.find((r) => ruleMatches(r, t));
-      if (!match) continue;
-
-      await this.prisma.transaction.update({
-        where: { id: t.id },
-        data: {
-          categoryId: match.categoryId,
-          partyId: match.partyId ?? undefined,
-          categorySource: CategorySource.REGRA,
-          appliedRuleId: match.id,
-        },
-      });
-      appliedCount++;
+      const resolution = resolveClassification(rules, t);
+      if (!resolution) continue;
+      const key = `${resolution.ruleId}|${resolution.categoryId}|${resolution.partyId}`;
+      if (!batches.has(key)) batches.set(key, { ...resolution, ids: [] });
+      batches.get(key)!.ids.push(t.id);
     }
+
+    let appliedCount = 0;
+    await this.prisma.$transaction(
+      [...batches.values()].map((batch) => {
+        appliedCount += batch.ids.length;
+        return this.prisma.transaction.updateMany({
+          where: { id: { in: batch.ids } },
+          data: {
+            ...(batch.categoryId
+              ? { categoryId: batch.categoryId, categorySource: CategorySource.REGRA }
+              : {}),
+            ...(batch.partyId ? { partyId: batch.partyId } : {}),
+            appliedRuleId: batch.ruleId,
+          },
+        });
+      }),
+    );
 
     return { appliedCount };
   }

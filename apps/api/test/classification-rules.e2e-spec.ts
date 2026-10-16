@@ -80,4 +80,22 @@ describe('Classification rules', () => {
     const res = await api(ctx.app, tenant.token).patch(`/rules/${rule.body.id}`).send({ categoryId: null });
     expect(res.status).toBe(400);
   });
+
+  it('reaplicar classifica pendentes e não marca regra só-de-fornecedor como classificação', async () => {
+    const party = await ctx.prisma.party.create({ data: { companyId: tenant.companyId, name: 'Energisa' } });
+    await createRule({ name: 'Fornecedor', pattern: 'CEMIG', partyId: party.id, priority: 50 });
+    await createRule({ name: 'Categoria', pattern: 'CONTA DE LUZ', categoryId: leafId, priority: 1 });
+    const both = await newTransaction('CONTA DE LUZ CEMIG');
+    const partyOnly = await newTransaction('CEMIG OUTROS');
+
+    const res = await api(ctx.app, tenant.token).post(`/companies/${tenant.companyId}/rules/apply`);
+    expect(res.status).toBe(201);
+
+    const [a, b] = await Promise.all([
+      ctx.prisma.transaction.findUnique({ where: { id: both.id } }),
+      ctx.prisma.transaction.findUnique({ where: { id: partyOnly.id } }),
+    ]);
+    expect(a).toMatchObject({ categoryId: leafId, partyId: party.id, categorySource: 'REGRA' });
+    expect(b).toMatchObject({ categoryId: null, partyId: party.id, categorySource: null });
+  });
 });
