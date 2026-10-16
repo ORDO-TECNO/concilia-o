@@ -136,6 +136,10 @@ function parseAmount(raw: string | undefined, decimalSeparator: ',' | '.'): numb
   return negative ? -Math.abs(num) : num;
 }
 
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 export function parseCsvStatement(content: string, mapping: CsvColumnMapping): ParsedStatement {
   const records: Record<string, string>[] = parseSync(content, {
     delimiter: mapping.delimiter,
@@ -184,7 +188,8 @@ export function parseCsvStatement(content: string, mapping: CsvColumnMapping): P
   return {
     startDate: dates[0],
     endDate: dates[dates.length - 1],
-    startBalance: withBalance[0]?.balanceAfter,
+    // Saldo de abertura = saldo antes do 1º lançamento, não depois dele.
+    startBalance: withBalance[0] ? round2(withBalance[0].balanceAfter! - withBalance[0].amount) : undefined,
     endBalance: withBalance[withBalance.length - 1]?.balanceAfter,
     transactions,
   };

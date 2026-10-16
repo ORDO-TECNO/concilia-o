@@ -54,11 +54,12 @@ describe('parseCsvStatement', () => {
     expect(first.balanceAfter).toBe(5000);
   });
 
-  it('deriva startDate/endDate e startBalance/endBalance do range completo', () => {
+  it('deriva startDate/endDate e saldo de abertura (antes do 1º lançamento) e de fechamento', () => {
     const result = parseCsvStatement(SEMICOLON_CSV, baseMapping);
     expect(result.startDate).toBe('2026-07-01');
     expect(result.endDate).toBe('2026-07-15');
-    expect(result.startBalance).toBe(5000);
+    // saldo antes do 1º lançamento: 5000 depois de pagar 450 → abriu com 5450
+    expect(result.startBalance).toBe(5450);
     expect(result.endBalance).toBe(7164.6);
   });
 
