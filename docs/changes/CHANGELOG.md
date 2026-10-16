@@ -8,6 +8,7 @@ para um doc curto em `docs/changes/`. Convenção completa em
 
 ## Entradas
 
+- 2026-10-16 — fix(dfc): exclude ignored/duplicate, unclassified row, cents rounding → [doc](2026-10-16-dfc-consistency.md)
 - 2026-10-16 — fix(classification-rules): per-field rule resolution and target validation → [doc](2026-10-16-classification-rules-engine.md)
 - 2026-10-16 — feat(web): global error toast, cache invalidation and registry actions → [doc](2026-10-16-web-feedback-and-cache.md)
 - 2026-10-16 — chore(app): run e2e and web tests in CI → [doc](2026-10-16-app-ci-e2e.md)
