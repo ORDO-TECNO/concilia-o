@@ -95,4 +95,20 @@ describe('DfcService', () => {
       }),
     );
   });
+
+  it('arredonda somas ao centavo (sem lixo de ponto flutuante)', async () => {
+    const prisma = buildPrismaMock(
+      [
+        { categoryId: 'cat-a', competenceMonth: 1, _sum: { amount: 0.1 } },
+        { categoryId: 'cat-b', competenceMonth: 1, _sum: { amount: 0.2 } },
+      ],
+      [
+        { id: 'cat-a', dfcLine: DFCLine.RECEBIMENTOS_CLIENTES },
+        { id: 'cat-b', dfcLine: DFCLine.OUTRAS_RECEITAS },
+      ],
+    );
+    const report = await new DfcService(prisma).getReport('company-1', 2026);
+    expect(report.netFlow[0]).toBe(0.3);
+    expect(report.closingBalance[11]).toBe(0.3);
+  });
 });
