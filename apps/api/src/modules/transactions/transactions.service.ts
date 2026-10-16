@@ -49,7 +49,9 @@ export class TransactionsService {
       this.prisma.transaction.findMany({
         where,
         include: { category: true, party: true },
-        orderBy: { [sortBy]: sortDir },
+        // Muitos lançamentos têm a mesma data/valor; sem desempate a ordem entre
+        // páginas não é determinística e linhas se repetem ou somem.
+        orderBy: [{ [sortBy]: sortDir }, { id: 'asc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

@@ -112,4 +112,35 @@ describe('Transactions', () => {
       expect(res.status).toBe(400);
     });
   });
+
+  it('paginação é estável quando muitos lançamentos têm a mesma data', async () => {
+    const pagingTenant = await createTenant(ctx.app, 'transactions-paging');
+    try {
+      const ba = await ctx.prisma.bankAccount.create({ data: { companyId: pagingTenant.companyId, conta: '1' } });
+      await ctx.prisma.transaction.createMany({
+        data: Array.from({ length: 30 }, (_, i) => ({
+          companyId: pagingTenant.companyId,
+          bankAccountId: ba.id,
+          date: new Date('2026-04-01'),
+          description: `MESMO DIA ${i}`,
+          amount: -1,
+          type: TransactionType.DEBITO,
+          competenceYear: 2026,
+          competenceMonth: 4,
+          origin: ImportSource.CSV,
+          dedupeHash: `paging-${pagingTenant.companyId}-${i}`,
+        })),
+      });
+      const seen: string[] = [];
+      for (let page = 1; page <= 3; page++) {
+        const res = await api(ctx.app, pagingTenant.token).get(
+          `/companies/${pagingTenant.companyId}/transactions?page=${page}&pageSize=10`,
+        );
+        seen.push(...res.body.items.map((t: { id: string }) => t.id));
+      }
+      expect(new Set(seen).size).toBe(30);
+    } finally {
+      await destroyTenant(ctx.prisma, pagingTenant);
+    }
+  });
 });
