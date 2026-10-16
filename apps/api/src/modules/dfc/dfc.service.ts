@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DFC_STRUCTURE, MONTH_LABELS } from '@conciliacao/shared';
+import { CASHFLOW_EXCLUDED_STATUSES, DFC_STRUCTURE, MONTH_LABELS } from '@conciliacao/shared';
 import { buildCsvBuffer, buildXlsxBuffer } from '../../common/export/table-export';
 
 function emptyMonths(): number[] {
@@ -26,7 +26,12 @@ export class DfcService {
   async getReport(companyId: string, year: number) {
     const grouped = await this.prisma.transaction.groupBy({
       by: ['categoryId', 'competenceMonth'],
-      where: { companyId, competenceYear: year, categoryId: { not: null } },
+      where: {
+        companyId,
+        competenceYear: year,
+        categoryId: { not: null },
+        status: { notIn: [...CASHFLOW_EXCLUDED_STATUSES] },
+      },
       _sum: { amount: true },
     });
 

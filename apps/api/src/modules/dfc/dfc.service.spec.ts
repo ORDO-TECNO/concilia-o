@@ -85,4 +85,14 @@ describe('DfcService', () => {
     expect(report.openingBalance[2]).toBe(100);
     expect(report.closingBalance[11]).toBe(100);
   });
+
+  it('não soma lançamentos ignorados nem duplicados', async () => {
+    const prisma = buildPrismaMock([], []);
+    await new DfcService(prisma).getReport('company-1', 2026);
+    expect(prisma.transaction.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: { notIn: ['IGNORADO', 'DUPLICADO'] } }),
+      }),
+    );
+  });
 });
