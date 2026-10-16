@@ -164,4 +164,48 @@ describe('Imports — atomicity success path', () => {
     expect(res.body.newRecords).toBe(0);
     expect(res.body.duplicateRecords).toBe(2);
   });
+
+  function importCsv(content: string) {
+    return request(app.getHttpServer())
+      .post(`/companies/${companyId}/imports`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .field('bankAccountId', bankAccountId)
+      .field('source', 'CSV')
+      .field('dateColumn', 'Data')
+      .field('descriptionColumn', 'Descricao')
+      .field('amountColumn', 'Valor')
+      .field('delimiter', ';')
+      .attach('file', Buffer.from(content, 'utf-8'), {
+        filename: 'extrato.csv',
+        contentType: 'text/csv',
+      });
+  }
+
+  it('keeps identical transactions of the same file (two equal fees on the same day)', async () => {
+    const csv = ['Data;Descricao;Valor', '10/02/2026;TARIFA PIX;-2,50', '10/02/2026;TARIFA PIX;-2,50'].join('\n');
+
+    const res = await importCsv(csv);
+    expect(res.status).toBe(201);
+    expect(res.body.newRecords).toBe(2);
+    expect(res.body.duplicateRecords).toBe(0);
+
+    const again = await importCsv(csv);
+    expect(again.status).toBe(201);
+    expect(again.body.newRecords).toBe(0);
+    expect(again.body.duplicateRecords).toBe(2);
+  });
+
+  it('inserts only the new occurrence when an overlapping statement has one more equal fee', async () => {
+    const csv = [
+      'Data;Descricao;Valor',
+      '10/02/2026;TARIFA PIX;-2,50',
+      '10/02/2026;TARIFA PIX;-2,50',
+      '10/02/2026;TARIFA PIX;-2,50',
+    ].join('\n');
+
+    const res = await importCsv(csv);
+    expect(res.status).toBe(201);
+    expect(res.body.newRecords).toBe(1);
+    expect(res.body.duplicateRecords).toBe(2);
+  });
 });

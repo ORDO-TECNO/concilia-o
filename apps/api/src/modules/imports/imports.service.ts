@@ -1,4 +1,3 @@
-import { createHash, randomUUID } from 'crypto';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ImportSource, ImportStatus, Prisma, TransactionType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,16 +13,7 @@ import {
 } from './parsers/csv-statement.parser';
 import type { ParsedStatement, ParsedTransaction } from './parsers/statement-parser.types';
 import { ImportRequestDto } from './dto/import-request.dto';
-
-function normalizeDescription(description: string): string {
-  return description.trim().toUpperCase().replace(/\s+/g, ' ');
-}
-
-function computeDedupeHash(bankAccountId: string, t: ParsedTransaction): string {
-  return createHash('sha256')
-    .update(`${bankAccountId}|${t.date}|${t.amount.toFixed(2)}|${normalizeDescription(t.description)}`)
-    .digest('hex');
-}
+import { computeDedupeHashes } from './dedupe';
 
 @Injectable()
 export class ImportsService {
@@ -166,35 +156,45 @@ export class ImportsService {
     transactions: ParsedTransaction[],
     tx: Prisma.TransactionClient,
   ) {
-    const existing = await tx.transaction.findMany({
-      where: { bankAccountId },
-      select: { fitId: true, dedupeHash: true },
-    });
-    const existingFitIds = new Set(existing.filter((e) => e.fitId).map((e) => e.fitId as string));
-    const existingHashes = new Set(existing.map((e) => e.dedupeHash));
-    const seenInBatch = new Set<string>();
+    // Só precisamos comparar com lançamentos do mesmo intervalo de datas do
+    // arquivo (o hash inclui a data) e com os fitIds presentes no arquivo —
+    // evita carregar o histórico inteiro da conta a cada importação.
+    const dates = transactions.map((t) => t.date).sort();
+    const fitIds = transactions.map((t) => t.fitId).filter((f): f is string => !!f);
+    const [existingInRange, existingByFitId] = await Promise.all([
+      tx.transaction.findMany({
+        where: {
+          bankAccountId,
+          date: { gte: new Date(dates[0]), lte: new Date(dates[dates.length - 1]) },
+        },
+        select: { dedupeHash: true },
+      }),
+      fitIds.length > 0
+        ? tx.transaction.findMany({
+            where: { bankAccountId, fitId: { in: fitIds } },
+            select: { fitId: true },
+          })
+        : Promise.resolve([] as { fitId: string | null }[]),
+    ]);
+    const existingFitIds = new Set(existingByFitId.map((e) => e.fitId as string));
+    const existingHashes = new Set(existingInRange.map((e) => e.dedupeHash));
+    const seenFitIds = new Set<string>();
+    const hashes = computeDedupeHashes(bankAccountId, transactions);
 
     const toInsert: Prisma.TransactionCreateManyInput[] = [];
-    let duplicateRecords = 0;
 
-    for (const t of transactions) {
-      const dedupeHash = computeDedupeHash(bankAccountId, t);
-      const batchKey = t.fitId ?? dedupeHash;
+    transactions.forEach((t, i) => {
+      const dedupeHash = hashes[i];
       const isDuplicate =
-        (t.fitId && existingFitIds.has(t.fitId)) ||
-        existingHashes.has(dedupeHash) ||
-        seenInBatch.has(batchKey);
+        (t.fitId !== undefined && (existingFitIds.has(t.fitId) || seenFitIds.has(t.fitId))) ||
+        existingHashes.has(dedupeHash);
 
-      if (isDuplicate) {
-        duplicateRecords++;
-        continue;
-      }
-      seenInBatch.add(batchKey);
+      if (isDuplicate) return;
+      if (t.fitId) seenFitIds.add(t.fitId);
 
       const [year, month] = t.date.split('-').map(Number);
 
       toInsert.push({
-        id: randomUUID(),
         companyId,
         bankAccountId,
         importBatchId,
@@ -211,16 +211,24 @@ export class ImportsService {
         fitId: t.fitId ?? null,
         dedupeHash,
       });
-    }
+    });
 
-    if (toInsert.length > 0) {
-      await tx.transaction.createMany({ data: toInsert, skipDuplicates: true });
-    }
+    // skipDuplicates cobre a corrida entre duas importações simultâneas do
+    // mesmo extrato; createManyAndReturn devolve só o que de fato entrou, para
+    // que as contagens do resumo reflitam o banco e não a intenção.
+    const inserted =
+      toInsert.length > 0
+        ? await tx.transaction.createManyAndReturn({
+            data: toInsert,
+            skipDuplicates: true,
+            select: { id: true },
+          })
+        : [];
 
     return {
-      newRecords: toInsert.length,
-      duplicateRecords,
-      insertedIds: toInsert.map((t) => t.id as string),
+      newRecords: inserted.length,
+      duplicateRecords: transactions.length - inserted.length,
+      insertedIds: inserted.map((t) => t.id),
     };
   }
 
