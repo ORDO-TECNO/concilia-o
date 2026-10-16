@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { invalidateTransactionViews } from './invalidate';
 import type { CategoryKind, DFCLine } from '@conciliacao/shared';
 
 export interface CategoryNode {
@@ -50,7 +51,11 @@ export function useUpdateCategory(companyId: string | null) {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<CategoryInput> }) =>
       apiFetch(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories', companyId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', companyId] });
+      // Nome/linha da DFC/status da categoria aparecem na grade e mudam a DFC.
+      invalidateTransactionViews(queryClient, companyId);
+    },
   });
 }
 
@@ -58,6 +63,10 @@ export function useDeleteCategory(companyId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiFetch(`/categories/${id}`, { method: 'DELETE' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories', companyId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', companyId] });
+      // Nome/linha da DFC/status da categoria aparecem na grade e mudam a DFC.
+      invalidateTransactionViews(queryClient, companyId);
+    },
   });
 }
