@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { invalidateTransactionViews } from './invalidate';
 import type { RuleField, RuleMatchType } from '@conciliacao/shared';
 
 export interface ClassificationRule {
@@ -68,7 +69,7 @@ export function useApplyRules(companyId: string | null) {
     mutationFn: () => apiFetch<{ appliedCount: number }>(`/companies/${companyId}/rules/apply`, { method: 'POST' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rules', companyId] });
-      queryClient.invalidateQueries({ queryKey: ['transactions', companyId] });
+      invalidateTransactionViews(queryClient, companyId);
     },
   });
 }
