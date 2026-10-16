@@ -4,6 +4,7 @@ import type { Response } from 'express';
 import { Writable } from 'stream';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertUserBelongsToCompany } from '../../common/auth/company-membership';
+import { assertAssignableCategory, assertPartyBelongsToCompany } from '../../common/domain/assignable';
 import { ListTransactionsQueryDto } from './dto/list-transactions.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { BulkTransactionsDto } from './dto/bulk-transactions.dto';
@@ -175,6 +176,12 @@ export class TransactionsService {
     const transaction = await this.prisma.transaction.findUnique({ where: { id } });
     if (!transaction) throw new NotFoundException('Lançamento não encontrado');
     await assertUserBelongsToCompany(this.prisma, userId, transaction.companyId);
+    if (dto.categoryId) {
+      await assertAssignableCategory(this.prisma, transaction.companyId, dto.categoryId);
+    }
+    if (dto.partyId) {
+      await assertPartyBelongsToCompany(this.prisma, transaction.companyId, dto.partyId);
+    }
 
     const updated = await this.prisma.transaction.update({
       where: { id },
