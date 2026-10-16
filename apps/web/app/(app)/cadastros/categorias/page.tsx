@@ -22,7 +22,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CategoryKind, DFC_STRUCTURE } from '@conciliacao/shared';
+import { CategoryKind, dfcLinesForKind } from '@conciliacao/shared';
 
 const KIND_LABELS: Record<string, string> = {
   RECEITA: 'Receita',
@@ -114,7 +114,8 @@ export default function CategoriasPage() {
   }
 
   const parentOptions = flattenForParentOptions(tree);
-  const allLines = DFC_STRUCTURE.flatMap((g) => g.sections.flatMap((s) => s.lines));
+  // Só as linhas compatíveis com o tipo (a API rejeita, p.ex., Receita → Dividendos).
+  const allowedLines = dfcLinesForKind(kind as CategoryKind);
 
   return (
     <div className="space-y-4">
@@ -135,7 +136,15 @@ export default function CategoriasPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Tipo</Label>
-                <Select value={kind} onValueChange={setKind}>
+                <Select
+                  value={kind}
+                  onValueChange={(next) => {
+                    setKind(next);
+                    if (dfcLine !== 'none' && !dfcLinesForKind(next as CategoryKind).some((l) => l.line === dfcLine)) {
+                      setDfcLine('none');
+                    }
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -172,7 +181,7 @@ export default function CategoriasPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">(nenhuma — categoria agrupadora)</SelectItem>
-                    {allLines.map((l) => (
+                    {allowedLines.map((l) => (
                       <SelectItem key={l.line} value={l.line}>
                         {l.label}
                       </SelectItem>
