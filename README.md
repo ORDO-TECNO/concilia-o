@@ -6,10 +6,15 @@ O Ledger ajuda uma empresa a entender para onde vai e de onde vem o seu
 dinheiro, a partir dos extratos bancários que ela já tem.
 
 1. **Importar extratos**: o usuário envia um arquivo CSV ou OFX de uma conta
-   bancária. O sistema lê os lançamentos (data, descrição, valor) e os
+   bancária ativa. O sistema lê os lançamentos (data, descrição, valor) e os
    guarda, ignorando automaticamente qualquer lançamento que já tenha sido
    importado antes (mesma conta, mesma data, mesmo valor e mesma descrição —
-   ou o mesmo identificador único do banco, no caso de OFX).
+   ou o mesmo identificador único do banco, no caso de OFX). Lançamentos
+   idênticos dentro do mesmo extrato (ex: duas tarifas iguais no mesmo dia)
+   são movimentações distintas e entram os dois. Linhas informativas de saldo
+   ("SALDO ANTERIOR", "SALDO DO DIA"…) e lançamentos de valor zero não são
+   movimentação e são descartados (contados como "ignorados"). Um OFX cuja
+   conta claramente não é a conta escolhida é recusado.
 2. **Classificar cada lançamento**: cada lançamento pode ser associado a uma
    categoria (ex: "Matéria-Prima", "Recebimentos de Clientes") e,
    opcionalmente, a um fornecedor ou cliente. Isso pode ser feito à mão, ou
