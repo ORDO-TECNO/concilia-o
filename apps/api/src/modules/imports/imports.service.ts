@@ -135,8 +135,16 @@ export class ImportsService {
     // Rule application runs after the transaction commits — it is re-runnable
     // ("Reaplicar em pendentes"), so keeping it outside avoids holding a long
     // transaction and avoids pulling the rules service into the tx client.
+    // A importação já foi gravada: uma falha aqui não pode virar erro da
+    // requisição (o usuário reenviaria o arquivo e tudo viraria "duplicado").
+    // Os lançamentos ficam pendentes e "Reaplicar em pendentes" resolve.
     if (insertedIds.length > 0) {
-      await this.classificationRulesService.applyToTransactions(companyId, insertedIds);
+      try {
+        await this.classificationRulesService.applyToTransactions(companyId, insertedIds);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.error(`Rule application after import ${importBatch.id} failed: ${message}`);
+      }
     }
 
     return this.toSummary(updated);

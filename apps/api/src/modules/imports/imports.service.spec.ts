@@ -164,3 +164,20 @@ describe('ImportsService — bank account guard', () => {
     expect(prisma.importBatch.create).not.toHaveBeenCalled();
   });
 });
+
+describe('ImportsService — rule application after commit', () => {
+  it('não falha a importação já gravada quando a aplicação de regras quebra', async () => {
+    const batch = { id: 'batch-1', status: ImportStatus.CONCLUIDO, periods: [], source: 'OFX' };
+    const prisma = buildPrismaMock({
+      $transaction: jest.fn().mockResolvedValue({ batch, ids: ['t-1'] }),
+    });
+    const rules = buildRulesMock();
+    (rules.applyToTransactions as jest.Mock).mockRejectedValue(new Error('rules exploded'));
+    const service = new ImportsService(prisma, rules);
+
+    await expect(service.import('co-1', buildImportRequestDto(), buildFile(MINIMAL_OFX))).resolves.toMatchObject({
+      importBatchId: 'batch-1',
+      status: ImportStatus.CONCLUIDO,
+    });
+  });
+});
