@@ -131,4 +131,16 @@ describe('parseCsvStatement', () => {
     expect(result.transactions.map((t) => t.description)).toEqual(['Primeiro', 'Segundo', 'Terceiro']);
     expect(result.endBalance).toBe(180);
   });
+
+  it('descarta linhas de saldo do extrato e as conta como ignoradas', () => {
+    const csv = `Data;Historico;Valor;Saldo
+30/06/2026;SALDO ANTERIOR;1000,00;1000,00
+01/07/2026;PIX RECEBIDO;200,00;1200,00
+01/07/2026;SALDO DO DIA;1200,00;1200,00
+`;
+    const result = parseCsvStatement(csv, { ...baseMapping, documentColumn: undefined });
+    expect(result.transactions.map((t) => t.description)).toEqual(['PIX RECEBIDO']);
+    expect(result.ignoredCount).toBe(2);
+    expect(result.startBalance).toBe(1000);
+  });
 });

@@ -94,4 +94,21 @@ describe('parseOfxStatement', () => {
     expect(result.conta).toBe('12345-6');
     expect(result.transactions).toHaveLength(2);
   });
+
+  it('descarta STMTTRN de valor zero e conta como ignorado', () => {
+    const ofx = SAMPLE_OFX_1X.replace(
+      '</BANKTRANLIST>',
+      `<STMTTRN>
+<TRNTYPE>OTHER
+<DTPOSTED>20260511
+<TRNAMT>0.00
+<FITID>OFX-0003
+<NAME>AVISO DE LANCAMENTO
+</STMTTRN>
+</BANKTRANLIST>`,
+    );
+    const result = parseOfxStatement(ofx);
+    expect(result.transactions).toHaveLength(2);
+    expect(result.ignoredCount).toBe(1);
+  });
 });

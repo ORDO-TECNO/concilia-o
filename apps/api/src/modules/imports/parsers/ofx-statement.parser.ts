@@ -1,6 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import { BadRequestException } from '@nestjs/common';
 import { ParsedStatement, ParsedTransaction } from './statement-parser.types';
+import { isNonMovement } from './non-movement';
 
 /** Shapes returned by fast-xml-parser for OFX files — all fields are opaque strings or nested objects. */
 interface OfxRawTransaction {
@@ -127,7 +128,7 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
 
   const rawTransactions = toArray(bankTranList.STMTTRN);
 
-  const transactions: ParsedTransaction[] = rawTransactions
+  const parsed: ParsedTransaction[] = rawTransactions
     .map((t: OfxRawTransaction): ParsedTransaction | null => {
       const date = parseOfxDate(t.DTPOSTED);
       const amount = parseOfxAmount(t.TRNAMT);
@@ -147,6 +148,8 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
     })
     .filter((t: ParsedTransaction | null): t is ParsedTransaction => t !== null);
 
+  const transactions = parsed.filter((t) => !isNonMovement(t));
+
   return {
     bankCode: bankAcctFrom.BANKID ? String(bankAcctFrom.BANKID).trim() : undefined,
     agencia: bankAcctFrom.BRANCHID ? String(bankAcctFrom.BRANCHID).trim() : undefined,
@@ -155,5 +158,6 @@ export function parseOfxStatement(rawContent: string): ParsedStatement {
     endDate: parseOfxDate(bankTranList.DTEND),
     endBalance: parseOfxAmount(ledgerBal.BALAMT),
     transactions,
+    ignoredCount: parsed.length - transactions.length,
   };
 }

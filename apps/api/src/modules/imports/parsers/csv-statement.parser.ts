@@ -1,5 +1,6 @@
 import { parse as parseSync } from 'csv-parse/sync';
 import { ParsedStatement, ParsedTransaction } from './statement-parser.types';
+import { isNonMovement } from './non-movement';
 
 export interface CsvColumnMapping {
   dateColumn: string;
@@ -149,7 +150,7 @@ export function parseCsvStatement(content: string, mapping: CsvColumnMapping): P
     relax_column_count: true,
   });
 
-  const transactions: ParsedTransaction[] = records
+  const parsed: ParsedTransaction[] = records
     .map((row): ParsedTransaction | null => {
       const date = parseDate(row[mapping.dateColumn], mapping.dateFormat);
       let amount = parseAmount(row[mapping.amountColumn], mapping.decimalSeparator);
@@ -175,6 +176,8 @@ export function parseCsvStatement(content: string, mapping: CsvColumnMapping): P
     })
     .filter((t): t is ParsedTransaction => t !== null);
 
+  const transactions = parsed.filter((t) => !isNonMovement(t));
+
   // Muitos bancos exportam do mais recente para o mais antigo. Normaliza para
   // ordem cronológica: os saldos de abertura/fechamento (do extrato e de cada
   // período) dependem da ordem dos lançamentos dentro do mesmo dia.
@@ -192,5 +195,6 @@ export function parseCsvStatement(content: string, mapping: CsvColumnMapping): P
     startBalance: withBalance[0] ? round2(withBalance[0].balanceAfter! - withBalance[0].amount) : undefined,
     endBalance: withBalance[withBalance.length - 1]?.balanceAfter,
     transactions,
+    ignoredCount: parsed.length - transactions.length,
   };
 }
