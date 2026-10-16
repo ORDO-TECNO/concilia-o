@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { invalidateTransactionViews } from './invalidate';
 import type {
   BulkTransactionAction,
   ReconciliationStatus,
@@ -45,7 +46,7 @@ export function useUpdateTransaction(companyId: string | null) {
       id: string;
       input: { categoryId?: string; partyId?: string; status?: ReconciliationStatus };
     }) => apiFetch(`/transactions/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions', companyId] }),
+    onSuccess: () => invalidateTransactionViews(queryClient, companyId),
   });
 }
 
@@ -65,6 +66,6 @@ export function useBulkTransactions(companyId: string | null) {
         method: 'POST',
         body: JSON.stringify({ ids, action, categoryId }),
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions', companyId] }),
+    onSuccess: () => invalidateTransactionViews(queryClient, companyId),
   });
 }
