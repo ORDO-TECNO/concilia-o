@@ -129,6 +129,7 @@ export class DfcService {
 
     rows.push(['Fluxo Líquido', ...report.netFlow, total(report.netFlow)]);
     rows.push(['Saldo Final', ...report.closingBalance, report.closingBalance[11]]);
+    rows.push(['Não classificado (fora da DFC)', ...report.unclassified, total(report.unclassified)]);
 
     if (format === 'xlsx') {
       const buffer = await buildXlsxBuffer(headers, rows, `DFC ${year}`);

@@ -129,4 +129,12 @@ describe('DfcService', () => {
     expect(report.netFlow[2]).toBe(100);
     expect(report.closingBalance[11]).toBe(100);
   });
+
+  it('export inclui a linha de não classificado após o saldo final', async () => {
+    const prisma = buildPrismaMock([{ categoryId: null, competenceMonth: 1, _sum: { amount: -10 } }], []);
+    const { buffer } = await new DfcService(prisma).exportReport('company-1', 2026, 'csv');
+    const lines = buffer.toString('utf-8').trim().split(/\r?\n/);
+    expect(lines[lines.length - 2]).toMatch(/^Saldo Final/);
+    expect(lines[lines.length - 1]).toMatch(/^Não classificado \(fora da DFC\)[;,]-10/);
+  });
 });
